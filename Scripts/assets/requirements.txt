@@ -1,0 +1,4 @@
+openpyxl
+polars
+fastexcel
+pydantic
