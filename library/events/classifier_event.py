@@ -4,7 +4,6 @@ from typing import List
 
 class HabilityUser(BaseModel):
     id_hablity: int
-    hablity_name: str
     criteria_score: float
 
 class ClassifierEvent(BaseModel):
