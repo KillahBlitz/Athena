@@ -2,3 +2,4 @@ openpyxl
 polars
 fastexcel
 pydantic
+sqlalchemy
