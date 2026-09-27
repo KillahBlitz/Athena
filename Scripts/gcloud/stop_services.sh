@@ -1,0 +1,1 @@
+gcloud sql instances patch athena-db --activation-policy=NEVER
