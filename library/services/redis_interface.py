@@ -1,4 +1,4 @@
-import redis
+import services.redis_interface as redis_interface
 import base64
 
 class RedisConsumer:
@@ -10,7 +10,7 @@ class RedisConsumer:
         self.cache_client = self.set_cache_connection()
 
     def set_connection(self):
-        streams_client = redis.Redis(
+        streams_client = redis_interface.Redis(
             host=self.redis_host,
             port=self.redis_port,
             password=self.redis_password,
@@ -19,7 +19,7 @@ class RedisConsumer:
         return streams_client
 
     def set_cache_connection(self):
-        cache_client = redis.Redis(
+        cache_client = redis_interface.Redis(
             host=self.redis_host,
             port=self.redis_port,
             password=self.redis_password,

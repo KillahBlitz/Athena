@@ -1,13 +1,18 @@
-#en esta parte se busca construir una biblioteca con clases y funciones
-#que permitan manejar las variables de entorno y configuraciones de
-#sistema de manera centralizada y segura. Esto es útil para evitar la
-#exposición de información sensible en el código fuente y para facilitar
-#la gestión de configuraciones en diferentes entornos (desarrollo, pruebas,
-#producción, etc.). La biblioteca podría incluir funcionalidades como:
-#- Cargar variables de entorno desde archivos .env.
-#- Validar y tipar las variables de entorno.
-#- Proporcionar un acceso centralizado a las configuraciones de la aplicación.
-#- cargar variables de entorno anidadas como config maps
+import os
+from typing import Any, Dict, Optional
 
 class ConfigManager:
-    pass
+    @classmethod
+    def get_env(cls, key: str, default: Optional[str] = None) -> Optional[str]:
+        return os.environ.get(key, default)
+
+    @classmethod
+    def get_nested_config(cls, config_map: Dict[str, Any], key_path: str, default: Any = None) -> Any:
+        keys = key_path.split('.')
+        value = config_map
+        for key in keys:
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            else:
+                return default
+        return value
