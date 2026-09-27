@@ -1,4 +1,4 @@
-import services.redis_interface as redis_interface
+import kinasis_library.services.redis_interface as redis_interface
 import base64
 
 class RedisConsumer:
