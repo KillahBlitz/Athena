@@ -1,4 +1,4 @@
-import kinasis_library.services.redis_interface as redis_interface
+import redis
 import base64
 
 class RedisConsumer:
@@ -10,7 +10,7 @@ class RedisConsumer:
         self.cache_client = self.set_cache_connection()
 
     def set_connection(self):
-        streams_client = redis_interface.Redis(
+        streams_client = redis.Redis(
             host=self.redis_host,
             port=self.redis_port,
             password=self.redis_password,
