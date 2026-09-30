@@ -7,10 +7,34 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, k3s-devel]
     steps:
-      - name: Print status
-        run: echo "todo ok"
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validar estado del clúster K3s local
+        run: |
+          echo "✅ Conexión al servidor local exitosa."
+          sudo k3s kubectl get nodes
+
+      - name: Validar Autenticación y Artifact Registry
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          # Crear archivo temporal con la llave secreta
+          echo '${{ secrets.GCP_SA_KEY }}' > "${HOME}/key.json"
+          
+          # Autenticar en Google Cloud y Docker
+          gcloud auth activate-service-account --key-file="${HOME}/key.json"
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+          echo "✅ Autenticación en Google Cloud exitosa."
+          
+          # Confirmar acceso a Artifact Registry listando los repositorios
+          echo "Listando repositorios en us-central1 para verificar permisos:"
+          gcloud artifacts repositories list --location=us-central1 --project=$PROJECT_ID
+          
+          # Limpiar la llave por seguridad
+          rm "${HOME}/key.json"
 
   publish-library:
     runs-on: ubuntu-latest
