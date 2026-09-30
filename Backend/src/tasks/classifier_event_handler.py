@@ -28,12 +28,11 @@ class ClassifierEventHandler:
     def classifier_task(self, event: ClassifierEvent):
         print(f"Processing event: {event}")
 
-
 if __name__ == "__main__":
     handler = ClassifierEventHandler()
     handler.start_trainee_models()
     envs = get_dict_envs()
-    redis_consumer = RedisConsumer(host=envs["REDIS_HOST"], port=int(envs["REDIS_PORT"]), password=envs["REDIS_PASSWORD"])
+    redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
 
     while True:
         event = redis_consumer.start_redis_consumer(

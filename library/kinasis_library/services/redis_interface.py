@@ -19,7 +19,7 @@ class RedisConsumer:
         return streams_client
 
     def set_cache_connection(self):
-        cache_client = redis_interface.Redis(
+        cache_client = redis.Redis(
             host=self.redis_host,
             port=self.redis_port,
             password=self.redis_password,
