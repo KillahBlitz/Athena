@@ -45,7 +45,6 @@ jobs:
     defaults:
       run:
         working-directory: ./library
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
