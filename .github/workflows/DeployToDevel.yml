@@ -49,7 +49,7 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v4
 
-        - name: 1️⃣ Validar cambios en setup.py
+        - name: Validar cambios en setup.py
           uses: dorny/paths-filter@v3
           id: filter
           with:
@@ -63,7 +63,7 @@ jobs:
           with:
             python-version: '3.14'
 
-        - name: 2️⃣ Construir y Publicar
+        - name: Construir y Publicar
           if: steps.filter.outputs.setup == 'true'
           env:
             TWINE_USERNAME: __token__
