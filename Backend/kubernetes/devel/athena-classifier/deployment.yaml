@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-classifier
+  namespace: dev-athena
+  labels:
+    app: athena-classifier
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-classifier
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: athena-classifier
+    spec:
+      imagePullSecrets:
+        - name: gcp-artifact-registry
+      containers:
+        - name: athena-classifier
+          # __IMAGE__ lo reemplaza el pipeline con el tag del commit (SHA).
+          # Imagen generica compartida por todos los servicios.
+          image: __IMAGE__
+          imagePullPolicy: Always
+          # Selecciona el entrypoint de este servicio (ENTRYPOINT de la imagen = python)
+          args: ["src/tasks/classifier_event_handler.py"]
+          envFrom:
+            - secretRef:
+                name: athena-classifier-env
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always
