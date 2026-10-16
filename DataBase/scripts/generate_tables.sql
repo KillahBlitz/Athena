@@ -85,6 +85,7 @@ CREATE TABLE public.criterios (
     riasec_id INTEGER NOT NULL,
     desc_criterio TEXT NOT NULL,
     resumen_criterio VARCHAR(100) NOT NULL,
+    type_extraction TEXT,
     CONSTRAINT fk_criterio_carrera
         FOREIGN KEY (carrera_id) REFERENCES public.carreras (carrera_id),
     CONSTRAINT fk_criterio_tipo
