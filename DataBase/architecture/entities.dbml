@@ -1,0 +1,153 @@
+// ==========================================
+// PARTE 1: Áreas, Cuestionarios, Carreras, Escuelas y Criterios
+// ==========================================
+
+Table areas {
+  area_id int [pk, increment]
+  nom_area varchar(200) [not null]
+}
+
+Table tipos_riasec {
+  riasec_id int [pk, increment]
+  tipo_riasec varchar(100) [not null]
+}
+
+// Normalización de preguntas (Cumple 1NF y 3NF)
+Table pregunta_cuestionario {
+  pregunta_id int [pk, increment]
+  riasec_id int [not null, note: 'Clasificación de la pregunta (Realista, etc.)']
+  texto_pregunta text [not null]
+}
+
+// Cuestionario relaciona un área con una pregunta
+Table cuestionarios {
+  cuestionario_id int [pk, increment]
+  area_id int [not null, note: 'Llave foránea para relacionar con areas']
+  pregunta_id int [not null, note: 'Llave foránea para relacionar con pregunta_cuestionario']
+
+  indexes {
+    pregunta_id [name: 'idx_cuestionario_pregunta']
+  }
+}
+
+Table carreras {
+  carrera_id int [pk, increment]
+  area_id int [not null, note: 'Llave foránea para relacionar con areas']
+  nom_carrera varchar(200) [not null]
+  origina_objetivo text [not null]
+  objetivo text [not null]
+  pregunta_objetivo varchar(200)
+
+  indexes {
+    area_id [name: 'idx_carreras_area']
+  }
+}
+
+Table escuelas {
+  escuela_id int [pk, increment]
+  nom_escuela varchar(200) [not null]
+}
+
+Table escuela_carrera {
+  id_escuela int [not null]
+  id_carrera int [not null]
+
+  indexes {
+    (id_escuela, id_carrera) [pk, name: 'pk_escuela_carreras']
+  }
+}
+
+Table tipos_criterio {
+  type_id int [pk, increment]
+  desc_criterio text [not null]
+}
+
+Table criterios {
+  criterio_id int [pk, increment]
+  carrera_id int [not null, note: 'Llave foránea para relacionar con carreras']
+  type_id int [not null, note: 'Llave foránea para relacionar con tipos_criterio']
+  riasec_id int [not null, note: 'Llave foránea para relacionar con tipos_riasec']
+  desc_criterio text [not null]
+  resumen_criterio varchar(100) [not null]
+  type_extraction text
+
+  indexes {
+    carrera_id [name: 'idx_criterio_carrera']
+  }
+}
+
+// ==========================================
+// PARTE 2: Usuarios, Resultados, Criterios y Objetivos
+// ==========================================
+
+Table usuarios {
+  usuario_id int [pk, increment]
+  uuid_usuario text [unique, not null]
+  area_id int [note: 'El usuario selecciona un area']
+  nombre_usuario varchar(200) [not null]
+  correo_usuario varchar(150) [not null]
+  estatus_id int [not null]
+
+  indexes {
+    uuid_usuario [name: 'idx_usuario_uuid']
+    area_id [name: 'idx_usuario_area']
+  }
+}
+
+Table resultados {
+  id_resultado int [pk, increment]
+  usuario_id int [not null]
+  carrera_id int [not null]
+  porc_coincidencia float [not null]
+
+  indexes {
+    usuario_id [name: 'idx_resultados_usuario']
+    carrera_id [name: 'idx_resultados_carrera']
+  }
+}
+
+Table usuario_criterio {
+  usuario_id int [not null]
+  criterio_id int [not null]
+  repeticiones int [not null]
+  porc_coincidencia float [not null]
+
+  indexes {
+    (usuario_id, criterio_id, repeticiones) [pk, name: 'pk_usuario_criterio']
+  }
+}
+
+Table puntaje_objetivo {
+  usuario_id int [not null, note: 'Llave foránea para relacionar con usuarios']
+  carrera_id int [not null, note: 'Llave foránea para relacionar con carreras']
+  porc_objetivo float [not null]
+
+  indexes {
+    (usuario_id, carrera_id) [pk, name: 'pk_puntaje_objetivo']
+  }
+}
+
+// ==========================================
+// Definición de Relaciones (References)
+// ==========================================
+
+// --- Relaciones Parte 1 ---
+Ref fk_cuestionario_area: areas.area_id < cuestionarios.area_id
+Ref fk_cuestionario_pregunta: pregunta_cuestionario.pregunta_id < cuestionarios.pregunta_id
+Ref fk_pregunta_riasec: tipos_riasec.riasec_id < pregunta_cuestionario.riasec_id
+
+Ref fk_carreras_area: areas.area_id < carreras.area_id
+Ref fk_escuela_carreras_escuela: escuelas.escuela_id < escuela_carrera.id_escuela
+Ref fk_escuela_carreras_carrera: carreras.carrera_id < escuela_carrera.id_carrera
+Ref fk_criterio_carrera: carreras.carrera_id < criterios.carrera_id
+Ref fk_criterio_tipo: tipos_criterio.type_id < criterios.type_id
+Ref fk_criterio_riasec: tipos_riasec.riasec_id < criterios.riasec_id
+
+// --- Relaciones Parte 2 ---
+Ref fk_usuario_area: areas.area_id < usuarios.area_id
+Ref fk_resultados_usuario: usuarios.usuario_id < resultados.usuario_id
+Ref fk_resultados_carrera: carreras.carrera_id < resultados.carrera_id
+Ref fk_usuario_criterio_usuario: usuarios.usuario_id < usuario_criterio.usuario_id
+Ref fk_usuario_criterio_criterio: criterios.criterio_id < usuario_criterio.criterio_id
+Ref fk_puntaje_objetivo_usuario: usuarios.usuario_id < puntaje_objetivo.usuario_id
+Ref fk_puntaje_objetivo_carrera: carreras.carrera_id < puntaje_objetivo.carrera_id
