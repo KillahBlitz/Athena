@@ -110,6 +110,7 @@ CREATE TABLE public.usuarios (
     nombre_usuario VARCHAR(200) NOT NULL,
     correo_usuario VARCHAR(150) NOT NULL,
     estatus_id INTEGER NOT NULL,
+    type_user INTEGER NOT NULL,
     CONSTRAINT fk_usuario_area
         FOREIGN KEY (area_id) REFERENCES public.areas (area_id)
 );

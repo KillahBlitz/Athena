@@ -87,6 +87,7 @@ Table usuarios {
   nombre_usuario varchar(200) [not null]
   correo_usuario varchar(150) [not null]
   estatus_id int [not null]
+  type_user int [not null]
 
   indexes {
     uuid_usuario [name: 'idx_usuario_uuid']
