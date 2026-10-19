@@ -1,7 +1,10 @@
 from kinasis_library.services.redis_interface import RedisConsumer
 from kinasis_library.utils.config_manager import ConfigManager
 from kinasis_library.events.classifier_event import ClassifierEvent
-
+from handlers.command_handler import CommandHandler
+from handlers.query_handler import QueryHandler
+from handlers.trainee_model_handler import TraineeModelHandler
+from models.trainee_data import TrainedModel
 
 def get_dict_envs():
     cm = ConfigManager()
@@ -18,15 +21,19 @@ def get_dict_envs():
 
 
 class ClassifierEventHandler:
-    def __init__(self):
-        pass
+    def __init__(self, qh: QueryHandler = None, ch: CommandHandler = None):
+        self._qh = qh or QueryHandler()
+        self._ch = ch or CommandHandler()
+        self._tmh = TraineeModelHandler(self._qh, self._ch)
+        self._modelos: dict[int, TrainedModel | None] = {}
 
     def start_trainee_models(self):
         print("Starting trainee models...")
+        self._modelos = self._tmh.start_trainee_models()
         print("Trainee models started successfully.")
     
     def classifier_task(self, event: ClassifierEvent):
-        print(f"Processing event: {event}")
+        modelo = self._modelos.get(event.area_id)        
 
 if __name__ == "__main__":
     handler = ClassifierEventHandler()
