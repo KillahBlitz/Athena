@@ -33,7 +33,7 @@ class ClassifierEventHandler:
         print("Trainee models started successfully.")
     
     def classifier_task(self, event: ClassifierEvent):
-        modelo = self._modelos.get(event.area_id)        
+        modelo = self._modelos.get(event.id_area)
 
 if __name__ == "__main__":
     handler = ClassifierEventHandler()
