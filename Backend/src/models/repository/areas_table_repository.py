@@ -1,4 +1,4 @@
-from sqlalchemy import Connection, select
+from sqlalchemy import Engine, select
 
 from models.tables.areas import Area
 from models.tables.carreras import Carrera
@@ -10,17 +10,19 @@ TYPE_PERFIL = 1
 
 
 class AreasTableRepository:
-    def __init__(self, connection: Connection):
-        self.connection = connection
+    def __init__(self, engine: Engine):
+        self.engine = engine
 
     def get_all_areas(self) -> list[dict]:
         query = select(Area.area_id, Area.nom_area)
-        filas = self.connection.execute(query).mappings().all()
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
 
     def get_area_by_id(self, area_id: int) -> dict | None:
         query = select(Area.area_id, Area.nom_area).where(Area.area_id == area_id)
-        fila = self.connection.execute(query).mappings().first()
+        with self.engine.connect() as conn:
+            fila = conn.execute(query).mappings().first()
         return dict(fila) if fila else None
 
     def get_questions_by_area_id(self, area_id: int) -> list[dict]:
@@ -31,7 +33,8 @@ class AreasTableRepository:
             .where(Cuestionario.area_id == area_id)
             .order_by(PreguntaCuestionario.pregunta_id)
         )
-        filas = self.connection.execute(query).mappings().all()
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
 
     def get_objetivos_by_area_id(self, area_id: int) -> list[dict]:
@@ -40,7 +43,8 @@ class AreasTableRepository:
             .where(Carrera.area_id == area_id)
             .order_by(Carrera.carrera_id)
         )
-        filas = self.connection.execute(query).mappings().all()
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
 
     def get_criterios_by_area_id(self, area_id: int) -> list[dict]:
@@ -50,6 +54,7 @@ class AreasTableRepository:
             .where(Carrera.area_id == area_id, Criterio.type_id == TYPE_PERFIL)
             .order_by(Criterio.riasec_id, Criterio.criterio_id)
         )
-        filas = self.connection.execute(query).mappings().all()
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
         

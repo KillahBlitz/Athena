@@ -1,4 +1,4 @@
-from kinasis_library.services.postgre_interface import create_postgres_connection
+from kinasis_library.services.postgre_interface import create_postgres_engine
 from models.repository.usuarios_table_repository import UsuariosTableRepository
 from models.repository.carreras_table_repository import CarrerasTableRepository
 from models.repository.puntaje_objetivo_table_repository import PuntajeObjetivoTableRepository
@@ -11,15 +11,15 @@ DB_INFO = get_dict_envs_db_conection()
 
 class QueryHandler:
     def __init__(self):
-        self.db_conection = create_postgres_connection(DB_INFO["DB_HOST"], DB_INFO["DB_PORT"],
-                                                       DB_INFO["DB_USER"], DB_INFO["DB_PASSWORD"],
-                                                       DB_INFO["DB_NAME"])
-        self._usuarios_table_repository = UsuariosTableRepository(self.db_conection)
-        self._carreras_table_repository = CarrerasTableRepository(self.db_conection)
-        self._puntaje_objetivo_table_repository = PuntajeObjetivoTableRepository(self.db_conection)
-        self._usuario_criterio_table_repository = UsuarioCriterioTableRepository(self.db_conection)
-        self._resultados_table_repository = ResultadosTableRepository(self.db_conection)
-        self._areas_table_repository = AreasTableRepository(self.db_conection)
+        self.engine = create_postgres_engine(DB_INFO["DB_HOST"], DB_INFO["DB_PORT"],
+                                             DB_INFO["DB_USER"], DB_INFO["DB_PASSWORD"],
+                                             DB_INFO["DB_NAME"])
+        self._usuarios_table_repository = UsuariosTableRepository(self.engine)
+        self._carreras_table_repository = CarrerasTableRepository(self.engine)
+        self._puntaje_objetivo_table_repository = PuntajeObjetivoTableRepository(self.engine)
+        self._usuario_criterio_table_repository = UsuarioCriterioTableRepository(self.engine)
+        self._resultados_table_repository = ResultadosTableRepository(self.engine)
+        self._areas_table_repository = AreasTableRepository(self.engine)
 
     def get_users(self, area_id: int):
         return self._usuarios_table_repository.get_users_by_area_id(area_id)
