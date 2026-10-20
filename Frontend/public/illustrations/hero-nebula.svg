@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 540" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <radialGradient id="nebula-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E9D5FF" stop-opacity="0.8"/>
+      <stop offset="45%" stop-color="#EDE9FE" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FAF5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ribbon-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC" stop-opacity="0.85"/>
+      <stop offset="35%" stop-color="#E879F9" stop-opacity="0.7"/>
+      <stop offset="70%" stop-color="#67E8F9" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="ribbon-2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0E7FF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#DDD6FE" stop-opacity="0.6"/>
+      <stop offset="70%" stop-color="#BAE6FD" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#C084FC" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="soft-blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Ambient light -->
+  <rect width="600" height="540" rx="36" fill="#FBF8FE"/>
+  <circle cx="340" cy="270" r="230" fill="url(#nebula-glow)"/>
+
+  <!-- Flowing iridescent ribbon loops (flowing curved shapes reminiscent of silk) -->
+  <path d="M120,380 C80,240 180,90 320,80 C440,70 510,160 480,270 C450,380 340,460 220,440 C140,420 130,340 160,280 C200,200 320,170 410,210 C480,240 500,340 430,420" 
+        fill="none" stroke="url(#ribbon-2)" stroke-width="44" stroke-linecap="round" opacity="0.45" filter="url(#soft-blur)"/>
+
+  <path d="M140,360 C110,240 190,110 320,95 C430,85 500,170 470,270 C440,370 330,440 230,420 C160,400 150,330 180,270 C220,190 330,170 410,220 C460,250 470,330 420,390" 
+        fill="none" stroke="url(#ribbon-1)" stroke-width="26" stroke-linecap="round" opacity="0.85"/>
+
+  <path d="M150,340 C130,230 200,130 310,110 C410,95 480,175 450,265 C420,355 330,410 240,400 C180,380 170,320 200,270 C230,200 320,180 390,220" 
+        fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- Constellation Nodes & Connecting Lines -->
+  <!-- Line connections -->
+  <line x1="160" y1="230" x2="260" y2="185" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="260" y1="185" x2="380" y2="150" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="380" y1="150" x2="450" y2="230" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="450" y1="230" x2="410" y2="340" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="410" y1="340" x2="280" y2="370" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="280" y1="370" x2="160" y2="230" stroke="#8E52FF" stroke-width="1.8" stroke-dasharray="3,3" opacity="0.7"/>
+  <line x1="260" y1="185" x2="410" y2="340" stroke="#8E52FF" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.4"/>
+  <line x1="380" y1="150" x2="280" y2="370" stroke="#8E52FF" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.4"/>
+
+  <!-- Constellation Star Nodes -->
+  <!-- Star 1 -->
+  <circle cx="160" cy="230" r="4.5" fill="#8E52FF"/>
+  <path d="M160 223 L162 230 L169 230 L163 234 L165 241 L160 236 L155 241 L157 234 L151 230 L158 230 Z" fill="#8E52FF"/>
+  <!-- Star 2 -->
+  <circle cx="260" cy="185" r="5" fill="#8E52FF"/>
+  <circle cx="260" cy="185" r="9" stroke="#8E52FF" stroke-width="1" fill="none" opacity="0.4"/>
+  <!-- Star 3 -->
+  <circle cx="380" cy="150" r="6" fill="#8E52FF"/>
+  <circle cx="380" cy="150" r="12" stroke="#8E52FF" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M380 140 L382 150 L392 150 L384 156 L387 165 L380 159 L373 165 L376 156 L368 150 L378 150 Z" fill="#8E52FF"/>
+  <!-- Star 4 -->
+  <circle cx="450" cy="230" r="4.5" fill="#8E52FF"/>
+  <!-- Star 5 -->
+  <circle cx="410" cy="340" r="5" fill="#8E52FF"/>
+  <!-- Star 6 -->
+  <circle cx="280" cy="370" r="4" fill="#8E52FF"/>
+
+  <!-- Tiny floating stardust -->
+  <circle cx="210" cy="140" r="2" fill="#40FEFE" opacity="0.8"/>
+  <circle cx="340" cy="120" r="1.5" fill="#FD3EFD" opacity="0.8"/>
+  <circle cx="480" cy="180" r="2.5" fill="#40FEFE" opacity="0.7"/>
+  <circle cx="460" cy="310" r="2" fill="#8E52FF" opacity="0.8"/>
+  <circle cx="230" cy="340" r="1.5" fill="#FD3EFD" opacity="0.9"/>
+  <circle cx="170" cy="310" r="2" fill="#40FEFE" opacity="0.7"/>
+  <circle cx="310" cy="420" r="2.5" fill="#40FEFE" opacity="0.6"/>
+  <circle cx="490" cy="380" r="1.5" fill="#FD3EFD" opacity="0.8"/>
+</svg>
