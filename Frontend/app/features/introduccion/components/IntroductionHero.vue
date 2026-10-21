@@ -3,20 +3,19 @@
     <div class="hero-copy">
       <span class="eyebrow">
         <span>✦</span>
-        <span>TU FUTURO EMPIEZA CONTIGO</span>
+        <span>ATHENA</span>
       </span>
-      <h1 id="hero-main-title" class="hero-title">ATHENA</h1>
-      <h2 class="hero-subtitle">Sistema Inteligente de Orientación Vocacional</h2>
+      <h1 id="hero-main-title" class="hero-title">Sistema Inteligente de Orientación Vocacional</h1>
+      <h2 class="hero-subtitle">Instituto Politecnico Nacional</h2>
       <p class="hero-lead">
-        Descubre qué áreas académicas se alinean mejor con tus intereses, habilidades y metas.
+        Descubre dónde tu perfil se alinea mejor con los programas académicos del Instituto Politécnico Nacional.
       </p>
 
       <div class="hero-actions">
-        <NuxtLink to="/datos-personales" class="base-button btn-primary btn-lg hero-start-btn">
-          <span>Comenzar</span>
+        <a href="#application-details" class="base-button btn-primary btn-lg hero-start-btn">
+          <span>Empieza por aqui </span>
           <span aria-hidden="true">→</span>
-        </NuxtLink>
-        <span class="hero-subnote">Sin respuestas correctas o incorrectas. Solo tú.</span>
+        </a>
       </div>
     </div>
 
@@ -46,8 +45,8 @@
           </svg>
         </div>
         <div class="floating-card-text">
-          <strong class="floating-card-title">Tu camino aún está por dibujarse.</strong>
-          <span class="floating-card-subtitle">Cada interés es una estrella. Vamos a conectarlas.</span>
+          <strong class="floating-card-title">Alinea tu perfil con los programas académicos del IPN</strong>
+          <span class="floating-card-subtitle">Empieza dibujando tu camino.</span>
         </div>
       </div>
     </div>

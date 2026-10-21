@@ -1,13 +1,9 @@
 <template>
   <div class="rating-section">
-    <span :id="`rating-label-${carreraId}`" class="rating-question-label">
-      ¿Qué tanto te identificas con este objetivo?
-    </span>
-
     <div
       class="rating-buttons-row"
       role="radiogroup"
-      :aria-labelledby="`rating-label-${carreraId}`"
+      aria-label="¿Qué tanto te identificas con este objetivo?"
     >
       <button
         v-for="val in 5"

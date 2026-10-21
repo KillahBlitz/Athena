@@ -159,7 +159,7 @@
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
   font-weight: 700;
 }
 
@@ -189,6 +189,14 @@
   color: var(--color-text-main);
 }
 
+.justification-required {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+
 .justification-textarea {
   width: 100%;
   min-height: 84px;
@@ -207,11 +215,30 @@
 .justification-textarea:focus {
   background-color: #FFFFFF;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
 }
 
 .justification-textarea::placeholder {
   color: var(--color-text-light);
+}
+
+/* Rating 1: disabled, grayed out */
+.justification-textarea.is-disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-light);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+  resize: none;
+}
+
+/* Rating 5: mandatory, highlighted with primary color */
+.justification-textarea.is-required {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.justification-textarea.is-required:focus {
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18);
 }
 
 /* Bottom Navigation Bar */
@@ -267,7 +294,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #F5F3FF, #EDE9FE);
+  background: #FFFFFF;
   border: 1.5px solid var(--color-primary-border);
   border-radius: var(--radius-lg);
   margin-top: 1.5rem;

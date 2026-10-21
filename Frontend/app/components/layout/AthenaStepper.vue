@@ -58,6 +58,7 @@ const activeStepNumber = computed(() => {
   const path = route.path
   if (path.startsWith('/datos-personales')) return 2
   if (path.startsWith('/objetivos')) return 3
+  if (path.startsWith('/riasec')) return 4
   return 1 // default '/'
 })
 </script>

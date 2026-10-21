@@ -10,10 +10,7 @@
       </div>
 
       <div class="companion-panel-text">
-        <h2 class="companion-panel-heading">Una elección abre muchas posibilidades.</h2>
-        <p class="companion-panel-desc">
-          El área es un punto de partida, no un límite. Tus intereses nos ayudarán a descubrir nuevas conexiones.
-        </p>
+        <h2 class="companion-panel-heading">Siéntete acompañado en tu aventura</h2>
       </div>
 
 
@@ -24,7 +21,6 @@
         @select="selectAvatar"
       />
 
-      <!-- Speech balloon from selected avatar -->
       <div class="companion-speech-card" role="note">
         <div class="companion-speech-avatar" aria-hidden="true">
           <img :src="selectedAvatar?.image || '/avatars/nova.svg'" alt="">
@@ -33,9 +29,6 @@
           <strong class="companion-speech-title">
             {{ greetingText }}
           </strong>
-          <p class="companion-speech-body">
-            {{ selectedAvatar?.companionNote || '' }}
-          </p>
         </div>
       </div>
     </aside>
@@ -46,14 +39,6 @@
         <h2 class="form-card-title">Tus datos personales</h2>
         <span class="form-card-required-note">Todos los campos son obligatorios</span>
       </div>
-
-      <!-- General API error if any -->
-      <ErrorMessage
-        v-if="apiError"
-        :message="apiError"
-        :retryable="true"
-        @retry="loadAreas"
-      />
 
       <!-- 3 Inputs in a Row -->
       <div class="personal-inputs-row">
@@ -99,7 +84,7 @@
         :areas="areas"
         :selected-id="form.selectedAreaId"
         :loading="loadingAreas"
-        :api-error="null"
+        :api-error="apiError"
         :error="touched.area ? errors.area : ''"
         @select="selectArea"
         @retry="loadAreas"
@@ -115,8 +100,8 @@
             @change="touch('terms')"
           >
           <span>
-            Acepto los términos y condiciones.
-            <a href="#terminos" class="terms-link" @click.prevent="openTermsModal">Leer términos</a>
+            Acepto los
+            <a href="#terminos" class="terms-link" @click.prevent="openTermsModal">términos y condiciones.</a>
           </span>
         </label>
         <span v-if="touched.terms && errors.terms" class="input-error" role="alert">
@@ -156,7 +141,6 @@ import AvatarSelector from './AvatarSelector.vue'
 import AreaSelector from './AreaSelector.vue'
 import BaseInput from '../../../components/ui/BaseInput.vue'
 import BaseButton from '../../../components/ui/BaseButton.vue'
-import ErrorMessage from '../../../components/ui/ErrorMessage.vue'
 
 const {
   form,

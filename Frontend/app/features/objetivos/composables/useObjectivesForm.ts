@@ -45,6 +45,8 @@ export function useObjectivesForm() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       session.status = 'objectives-completed'
+      session.persist()
+      router.push('/riasec')
     }
   }
 

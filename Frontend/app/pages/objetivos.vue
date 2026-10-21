@@ -30,7 +30,7 @@
     <div v-if="isLastBlock && isCurrentBlockComplete" class="stage-completion-box" role="status">
       <div class="stage-completion-text">
         <h3>✦ ¡Has valorado todos los objetivos de esta área!</h3>
-        <p>Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RIASEC).</p>
+        <p>Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RISEC).</p>
       </div>
       <BaseButton variant="outline" size="sm" @click="handleBack">
         Revisar bloques anteriores

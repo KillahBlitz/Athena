@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import type { BackendQuestionaryResponseDTO } from '../types/area'
+import type { BackendPreguntaDTO, BackendQuestionaryResponseDTO } from '../types/area'
 import type { NormalizedObjective, ObjectiveBlock, RatingValue, ObjectivesProgress } from '../types/objective'
 import type { PersonalData } from '../types/session'
 import type { Avatar } from '../types/avatar'
+import type { RiasecAnswer, RiasecProgress } from '../types/riasec'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 
@@ -21,7 +22,9 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     objectives: [] as NormalizedObjective[],
     answers: {} as Record<number, { valoracion: RatingValue | null; justificacion: string }>,
     currentBlock: 1,
-    status: 'idle' as 'idle' | 'in-progress' | 'objectives-completed'
+    riasecAnswers: {} as Record<number, RiasecAnswer>,
+    currentRiasecIndex: 0,
+    status: 'idle' as 'idle' | 'in-progress' | 'objectives-completed' | 'riasec-completed'
   }),
 
   getters: {
@@ -107,8 +110,31 @@ export const useAthenaSessionStore = defineStore('athena-session', {
 
       return currentBlockData.objectives.every((obj: NormalizedObjective) => {
         const ans = state.answers[obj.carreraId]
-        return ans && ans.valoracion !== null && ans.valoracion >= 1 && ans.valoracion <= 5
+        if (!ans || ans.valoracion === null || ans.valoracion < 1 || ans.valoracion > 5) {
+          return false
+        }
+        // Rating 5 requires a non-empty justification
+        if (ans.valoracion === 5 && ans.justificacion.trim().length === 0) {
+          return false
+        }
+        return true
       })
+    },
+
+    riasecQuestions: (state): BackendPreguntaDTO[] => {
+      return state.areaData?.preguntas ?? []
+    },
+
+    riasecProgress: (state): RiasecProgress => {
+      const preguntas = state.areaData?.preguntas ?? []
+      const total = preguntas.length
+      const answeredCount = preguntas.filter(p => (state.riasecAnswers[p.riasec_id]?.opcionIds?.length ?? 0) > 0).length
+      return {
+        currentQuestion: Math.min(state.currentRiasecIndex + 1, total),
+        totalQuestions: total,
+        answeredCount,
+        percentage: total === 0 ? 0 : Math.round((Math.min(state.currentRiasecIndex + 1, total) / total) * 100)
+      }
     }
   },
 
@@ -135,6 +161,8 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         this.objectives = []
         this.answers = {}
         this.currentBlock = 1
+        this.riasecAnswers = {}
+        this.currentRiasecIndex = 0
         this.status = 'in-progress'
         this.persist()
       }
@@ -144,6 +172,8 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       this.areaData = areaData
       this.objectives = normalizeObjectives(areaData.objetivos)
       this.currentBlock = 1
+      this.riasecAnswers = {}
+      this.currentRiasecIndex = 0
       this.status = 'in-progress'
       this.persist()
     },
@@ -155,6 +185,50 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         justificacion: justificacion !== undefined ? justificacion : existing.justificacion
       }
       this.persist()
+    },
+
+    toggleRiasecOption(riasecId: number, opcionId: number) {
+      const existing = this.riasecAnswers[riasecId] || { opcionIds: [], respuestaAbierta: '' }
+      const opcionIds = existing.opcionIds ?? []
+      this.riasecAnswers[riasecId] = {
+        ...existing,
+        opcionIds: opcionIds.includes(opcionId)
+          ? opcionIds.filter(id => id !== opcionId)
+          : [...opcionIds, opcionId]
+      }
+      this.persist()
+    },
+
+    setRiasecOpenAnswer(riasecId: number, respuestaAbierta: string) {
+      const existing = this.riasecAnswers[riasecId] || { opcionIds: [], respuestaAbierta: '' }
+      this.riasecAnswers[riasecId] = { ...existing, respuestaAbierta }
+      this.persist()
+    },
+
+    goToRiasecQuestion(index: number) {
+      const total = this.areaData?.preguntas?.length ?? 0
+      if (index >= 0 && index < total) {
+        this.currentRiasecIndex = index
+        if (this.status === 'riasec-completed') this.status = 'objectives-completed'
+        this.persist()
+      }
+    },
+
+    nextRiasecQuestion() {
+      const total = this.areaData?.preguntas?.length ?? 0
+      if (this.currentRiasecIndex < total - 1) {
+        this.currentRiasecIndex++
+      } else {
+        this.status = 'riasec-completed'
+      }
+      this.persist()
+    },
+
+    prevRiasecQuestion() {
+      if (this.currentRiasecIndex > 0) {
+        this.currentRiasecIndex--
+        this.persist()
+      }
     },
 
     goToBlock(blockNumber: number) {
@@ -198,6 +272,8 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             objectives: this.objectives,
             answers: this.answers,
             currentBlock: this.currentBlock,
+            riasecAnswers: this.riasecAnswers,
+            currentRiasecIndex: this.currentRiasecIndex,
             status: this.status
           }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot))

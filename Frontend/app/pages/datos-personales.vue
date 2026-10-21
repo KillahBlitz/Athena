@@ -5,7 +5,7 @@
         <span>✦</span>
         <span>CONOCERTE ES EL PRIMER PASO</span>
       </span>
-      <h1 class="page-title">Empecemos por ti.</h1>
+      <h1 class="page-title">Empecemos por aqui.</h1>
       <p class="page-description">
         Cuéntanos un poco de ti y elige el área académica que te interesa explorar.
       </p>

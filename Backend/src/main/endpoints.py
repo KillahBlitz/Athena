@@ -1,8 +1,18 @@
 import fastapi
+from fastapi.middleware.cors import CORSMiddleware
 from handlers.api_handler import ApiHandler
 from models.response.questionary_response import QuestionaryResponse
 
 api = fastapi.FastAPI(title="Athena API", version="1.0.0")
+
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 ah = ApiHandler()
 
 @api.get("/get_areas")

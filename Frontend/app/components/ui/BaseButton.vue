@@ -79,12 +79,12 @@ defineEmits<{
 .btn-primary {
   background-color: var(--color-primary);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
 }
 
 .btn-secondary {

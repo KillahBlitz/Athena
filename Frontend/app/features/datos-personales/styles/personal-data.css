@@ -26,7 +26,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   border-radius: var(--radius-full);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.08);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-primary);
@@ -106,7 +106,7 @@
 .avatar-card.is-selected {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
 }
 
 .avatar-card-image {
@@ -157,7 +157,7 @@
   background: #FFFFFF;
   border: 1.5px solid var(--color-primary);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 4px 14px rgba(var(--color-primary-rgb), 0.1);
 }
 
 .companion-speech-avatar {

@@ -1,8 +1,8 @@
 <template>
   <div class="avatar-selector-section">
     <div class="companion-selector-header">
-      <span>Elige tu avatar</span>
-      <span class="companion-active-note">{{ selectedAvatar.name }} te acompaña</span>
+      <span>Elige a tu acompañero</span>
+      <span class="companion-active-note">{{ selectedAvatar.name }}</span>
     </div>
 
     <!-- 4 Avatars Grid -->

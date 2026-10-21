@@ -1,9 +1,9 @@
 <template>
-  <section class="intro-details-section" aria-labelledby="details-heading">
+  <section id="application-details" class="intro-details-section" aria-labelledby="details-heading">
     <div class="details-header">
       <span class="eyebrow">
         <span>✦</span>
-        <span>ORIENTACIÓN PERSONALIZADA</span>
+        <span>APOYO VOCACIONAL</span>
       </span>
       <h2 id="details-heading">¿Cómo funciona ATHENA?</h2>
       <p>
@@ -87,6 +87,11 @@
         </div>
       </div>
     </div>
+    <div class="details-actions">
+      <NuxtLink to="/datos-personales" class="base-button btn-primary btn-lg hero-start-btn">
+        <span>Comenzar</span>
+      </NuxtLink>
+    </div>
   </section>
 </template>
 
@@ -96,4 +101,32 @@
 
 <style scoped>
 @import '../styles/introduction.css';
+
+.details-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.details-actions .hero-start-btn {
+  font-size: 1.5rem;
+  padding: 1.15rem 3rem;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.details-actions .hero-start-btn:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(var(--intro-primary-rgb), 0.35);
+}
+
+.details-actions .hero-start-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .details-actions .hero-start-btn {
+    transition: none;
+    transform: none;
+  }
+}
 </style>

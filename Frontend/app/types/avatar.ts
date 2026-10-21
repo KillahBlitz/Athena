@@ -12,7 +12,7 @@ export interface Avatar {
   role: string
   image: string
   greeting: string
-  companionNote: string
   encouragement: string
+  color: string
   theme: AvatarTheme
 }

@@ -1,0 +1,416 @@
+/* RISEC Page Layout */
+.riasec-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Header: title spans the row, progress aligned with the title */
+.riasec-page .objectives-header-row {
+  align-items: flex-start;
+}
+
+.riasec-page .objectives-title-group {
+  max-width: none;
+}
+
+.riasec-page .page-description {
+  margin-bottom: 0;
+}
+
+/* Progress (top-right) */
+.riasec-progress {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 360px;
+  padding-top: 2.4rem;
+}
+
+.riasec-progress .progress-labels-row {
+  font-size: 0.85rem;
+  color: var(--color-text-main);
+  margin-bottom: 0.6rem;
+}
+
+.riasec-progress-dimension {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Dimension Tabs */
+.riasec-tabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.riasec-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.riasec-tab:hover:not(:disabled):not(.is-current) {
+  color: var(--color-primary);
+  background-color: var(--color-surface-hover);
+}
+
+.riasec-tab:disabled {
+  cursor: default;
+  color: var(--color-text-light);
+}
+
+.riasec-tab.is-current {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.riasec-tab.is-answered {
+  color: var(--color-text-secondary);
+}
+
+.riasec-tab-number {
+  font-size: 0.75rem;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.riasec-tab-check {
+  width: 14px;
+  height: 14px;
+  color: var(--color-success);
+}
+
+/* Main Grid: question card + connections panel */
+.riasec-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 368px;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* Question Card */
+.riasec-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.riasec-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.riasec-dimension-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background-color: var(--avatar-soft-cyan);
+  color: var(--athena-blue);
+}
+
+.riasec-dimension-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.riasec-dimension-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  letter-spacing: -0.01em;
+}
+
+.riasec-dimension-tagline {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.riasec-question-text {
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-text-main);
+}
+
+/* Options: 4-column grid of selectable skill tiles */
+.riasec-options-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+}
+
+.riasec-option {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  min-height: 84px;
+  padding: 0.85rem 0.9rem;
+  text-align: left;
+  background-color: #F8FAFC;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-main);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.riasec-option:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-primary-border);
+  transform: translateY(-1px);
+}
+
+.riasec-option.is-selected {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.riasec-option-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 20px;
+}
+
+.riasec-option-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-secondary);
+}
+
+.riasec-option.is-selected .riasec-option-icon {
+  color: var(--color-primary);
+}
+
+.riasec-option-check {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.riasec-option-text {
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.riasec-selection-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.riasec-selection-count svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.riasec-selection-count strong {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Connections Panel (right) */
+.riasec-connections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, #E6F7FB 0%, var(--color-primary-light) 45%, #FCE7F3 100%);
+  border: 1px solid var(--color-primary-border);
+}
+
+.riasec-connections-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+}
+
+.riasec-constellation {
+  width: 100%;
+  flex: 1;
+  min-height: 180px;
+}
+
+.constellation-orbit {
+  stroke: var(--color-primary-border);
+  stroke-width: 1;
+}
+
+.constellation-line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transition: all 0.3s ease;
+}
+
+.constellation-node {
+  fill: var(--color-primary-border);
+  transition: all 0.3s ease;
+}
+
+.constellation-node.is-selected {
+  fill: var(--color-primary);
+}
+
+.riasec-connections-message {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.riasec-connections-avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  box-shadow: 0 4px 14px rgba(var(--color-primary-rgb), 0.15);
+}
+
+.riasec-connections-avatar img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.riasec-connections-message strong {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-text-main);
+}
+
+.riasec-connections-note {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* Open Reflection */
+.riasec-reflection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.1rem 1.5rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.riasec-reflection.is-locked {
+  background-color: #F1F5F9;
+  border-color: var(--color-border);
+}
+
+.riasec-reflection-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.riasec-reflection-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.riasec-reflection.is-locked .riasec-reflection-icon {
+  color: var(--color-text-muted);
+}
+
+.riasec-reflection-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.riasec-reflection-caption {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.riasec-reflection-question {
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+}
+
+.riasec-reflection-status {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* Bottom Navigation Bar */
+.riasec-bottom-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.riasec-bottom-bar > :last-child {
+  justify-self: end;
+}
+
+.riasec-next-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* Back navigation button */
+.back-text-btn {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.back-text-btn:hover {
+  color: var(--color-text-main);
+}
