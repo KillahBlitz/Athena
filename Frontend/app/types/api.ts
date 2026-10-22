@@ -10,7 +10,6 @@ export interface ApiResponse<T> {
   loading: boolean
 }
 
-// Mirrors Backend/src/models/request/save_user_request.py
 export interface SaveUserObjectiveDTO {
   id_objetive: number
   puntuation: number

@@ -8,7 +8,6 @@ interface ValidationIssue {
   msg: string
 }
 
-// Turns a FastAPI 422 body into a readable list like "objetives.3.puntuation: ..."
 function describeValidationError(err: unknown): string | null {
   const detail = (err as { data?: { detail?: unknown } })?.data?.detail
   if (!Array.isArray(detail) || detail.length === 0) return null

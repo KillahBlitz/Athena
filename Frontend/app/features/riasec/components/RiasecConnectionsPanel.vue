@@ -46,7 +46,6 @@ const props = defineProps<{
   avatar: Avatar
 }>()
 
-// Deterministic positions around the orbit, slightly jittered so it reads as a constellation
 const nodes = computed(() => {
   const total = props.options.length || 1
   return props.options.map((option, index) => {
@@ -61,7 +60,6 @@ const nodes = computed(() => {
   })
 })
 
-// Connect stars in the order the user picked them
 const selectedPoints = computed(() =>
   props.selectedIds
     .map(id => nodes.value.find(n => n.id === id))

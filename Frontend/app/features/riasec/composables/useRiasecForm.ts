@@ -24,7 +24,6 @@ export function useRiasecForm() {
 
   onMounted(() => {
     session.restore()
-    // Without questionary data the user skipped the previous steps
     if (session.objectives.length === 0 || session.riasecQuestions.length === 0) {
       router.replace('/datos-personales')
     }
@@ -52,7 +51,6 @@ export function useRiasecForm() {
   })
   const currentAnswer = computed<RiasecAnswer>(() => getAnswerFor(currentQuestion.value?.riasec_id ?? -1))
 
-  // A dimension is reachable once every previous one has at least one selection
   const tabs = computed<RiasecTab[]>(() => {
     let reachable = true
     return questions.value.map((q, index) => {
@@ -98,7 +96,6 @@ export function useRiasecForm() {
     scrollTop()
   }
 
-  // Catches incomplete session data before the backend answers with a 422
   const findMissingData = (): string | null => {
     const payload = session.saveUserPayload
     if (!payload.username || !payload.email || !Number.isInteger(payload.age) || !payload.area_id) {
@@ -114,7 +111,6 @@ export function useRiasecForm() {
     return null
   }
 
-  // Sends every answer of the test; only a `true` response moves on to the waiting screen
   const handleFinish = async () => {
     if (isSubmitting.value) return
     submitError.value = findMissingData()

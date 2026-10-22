@@ -53,8 +53,6 @@ function lightTint(color: RGB): RGB {
   return mix(color, WHITE, 0.92)
 }
 
-// Algunos avatares tienen colores claros (amarillo, celeste) que no son legibles con texto blanco
-// ni como texto sobre su propio tinte; se oscurecen sin cambiar de tono hasta cumplir WCAG AA.
 function accessiblePrimary(base: RGB): RGB {
   let color = base
   for (let step = 0; step <= DARKEN_STEPS; step++) {

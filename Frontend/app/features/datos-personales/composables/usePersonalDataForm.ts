@@ -27,7 +27,6 @@ export function usePersonalDataForm() {
     termsAccepted: session.termsAccepted
   })
 
-  // Metadata mapping for the 3 official areas to match Image 2
   const AREA_METADATA: Record<number, { tagline: string; icon: string }> = {
     1: {
       tagline: 'Ideas que explican el mundo',
@@ -74,7 +73,6 @@ export function usePersonalDataForm() {
     apiError.value = null
     try {
       rawAreas.value = await fetchAreas()
-      // If session had area selected, keep it, otherwise do not preselect
       if (session.selectedAreaId && !form.selectedAreaId) {
         form.selectedAreaId = session.selectedAreaId
       }
@@ -101,7 +99,6 @@ export function usePersonalDataForm() {
   }
 
   const submit = async () => {
-    // Touch all fields to show errors if invalid
     ['name', 'email', 'age', 'avatar', 'area', 'terms'].forEach(f => {
       touched[f] = true
     })
@@ -114,7 +111,6 @@ export function usePersonalDataForm() {
     apiError.value = null
 
     try {
-      // 1. Save personal data in session
       session.setPersonalData({
         name: form.name,
         email: form.email,
@@ -123,14 +119,12 @@ export function usePersonalDataForm() {
       })
       session.selectAvatar(form.selectedAvatarId)
 
-      // 2. Fetch area data from backend
       const areaData = await fetchAreaData(form.selectedAreaId)
 
       if (!areaData || !areaData.objetivos || Object.keys(areaData.objetivos).length === 0) {
         throw new Error('La respuesta del servidor no contiene objetivos válidos para esta área.')
       }
 
-      // 3. Store normalized objectives & navigate to /objetivos
       session.setAreaData(areaData)
       await router.push('/objetivos')
     } catch (err: unknown) {
@@ -142,7 +136,6 @@ export function usePersonalDataForm() {
 
   onMounted(async () => {
     session.restore()
-    // Sync local form with restored session
     form.name = session.name
     form.email = session.email
     form.age = session.age

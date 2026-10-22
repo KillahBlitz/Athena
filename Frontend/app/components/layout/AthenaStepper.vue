@@ -74,7 +74,7 @@ const activeStepNumber = computed(() => {
   if (path.startsWith('/objetivos')) return 3
   if (path.startsWith('/riasec')) return 4
   if (path.startsWith('/espera')) return 5
-  return 1 // default '/'
+  return 1
 })
 
 const activeStep = computed(() => steps.find(step => step.number === activeStepNumber.value))

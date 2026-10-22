@@ -1,15 +1,12 @@
 import type { NormalizedObjective, ObjectiveBlock } from '../../../types/objective'
 import { OBJECTIVES_PER_BLOCK } from '../../../config/objectives'
 
-/**
- * Normalizes the raw backend dictionary of objectives into typed NormalizedObjective array
- */
+
 export function normalizeObjectives(rawObjetivos: Record<string, string | null>): NormalizedObjective[] {
   if (!rawObjetivos || typeof rawObjetivos !== 'object') {
     return []
   }
 
-  // Predefined category rotation for clean visual tags matching the design references
   const CATEGORIES = [
     'Curiosidad y Exploración',
     'Aprendizaje y Propósito',

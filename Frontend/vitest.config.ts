@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
-// Plugin que Nuxt ya instala para compilar SFC; se reutiliza para montar componentes en pruebas.
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({

@@ -10,7 +10,6 @@ export function useObjectivesForm() {
 
   onMounted(() => {
     session.restore()
-    // If no objectives loaded, user jumped here without selecting area
     if (session.objectives.length === 0) {
       router.replace('/datos-personales')
     }

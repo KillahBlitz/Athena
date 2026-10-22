@@ -55,9 +55,7 @@ defineEmits<{
   'update:justification': [text: string]
 }>()
 
-// Rating 1: justification disabled (not needed)
 const isDisabled = computed(() => props.answer.valoracion === 1)
-// Rating 5: justification is mandatory
 const isRequired = computed(() => props.answer.valoracion === 5)
 
 const placeholderText = computed(() => {

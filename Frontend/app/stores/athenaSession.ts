@@ -115,7 +115,6 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         if (!ans || ans.valoracion === null || ans.valoracion < 1 || ans.valoracion > 5) {
           return false
         }
-        // Rating 5 requires a non-empty justification
         if (ans.valoracion === 5 && ans.justificacion.trim().length === 0) {
           return false
         }
@@ -173,7 +172,6 @@ export const useAthenaSessionStore = defineStore('athena-session', {
 
     selectArea(areaId: number, areaName: string) {
       if (this.selectedAreaId !== areaId) {
-        // Changing area: discard previous area objectives and answers
         this.selectedAreaId = areaId
         this.selectedAreaName = areaName
         this.areaData = null
@@ -295,7 +293,6 @@ export const useAthenaSessionStore = defineStore('athena-session', {
           }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot))
         } catch {
-          // ignore storage quota issues
         }
       }
     },

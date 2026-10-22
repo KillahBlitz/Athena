@@ -1,4 +1,3 @@
-// Fuente única de animaciones de motion-v.
 const SPRING = { type: 'spring', stiffness: 420, damping: 26 } as const
 const FADE = { duration: 0.15, ease: 'linear' } as const
 

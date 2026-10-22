@@ -87,12 +87,10 @@ const presets = useMotionPresets()
 const selectedAvatar = computed(() => session.selectedAvatar)
 const firstName = computed(() => session.name.split(' ')[0] ?? '')
 
-// First step is already done (the save succeeded); the rest advance and stay on the last one
 const activeStep = ref(1)
 let timer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
-  // Only reachable after the backend confirmed the save
   if (localStorage.getItem(TEST_SUBMITTED_KEY) !== 'true') {
     router.replace('/riasec')
     return
