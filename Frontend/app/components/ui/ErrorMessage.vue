@@ -35,12 +35,13 @@ defineEmits<{
 .error-message-banner {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.8rem;
   padding: 0.9rem 1.2rem;
   background-color: var(--color-error-bg);
   border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-md);
-  color: var(--color-error);
+  border-radius: var(--radius-lg);
+  color: var(--color-error-text);
 }
 
 .error-icon {
@@ -59,8 +60,9 @@ defineEmits<{
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: underline;
-  color: var(--color-error);
+  color: var(--color-error-text);
   cursor: pointer;
-  padding: 0.2rem 0.5rem;
+  min-height: var(--tap-target);
+  padding: 0.2rem 0.75rem;
 }
 </style>

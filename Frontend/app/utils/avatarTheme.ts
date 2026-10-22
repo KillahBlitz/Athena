@@ -1,4 +1,3 @@
-
 type RGB = [number, number, number]
 
 function clamp(value: number): number {
@@ -29,8 +28,44 @@ function mix(color: RGB, target: RGB, weight: number): RGB {
   ]
 }
 
+function relativeLuminance([r, g, b]: RGB): number {
+  const [lr, lg, lb] = [r, g, b].map((channel) => {
+    const c = clamp(channel) / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }) as RGB
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb
+}
+
+/** Contraste WCAG 2.x entre dos colores hex. */
+export function contrastRatio(foreground: string, background: string): number {
+  const a = relativeLuminance(hexToRgb(foreground))
+  const b = relativeLuminance(hexToRgb(background))
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+}
+
 const WHITE: RGB = [255, 255, 255]
 const BLACK: RGB = [0, 0, 0]
+const ON_PRIMARY = '#FFFFFF'
+const MIN_TEXT_CONTRAST = 4.5
+const DARKEN_STEPS = 50
+
+function lightTint(color: RGB): RGB {
+  return mix(color, WHITE, 0.92)
+}
+
+// Algunos avatares tienen colores claros (amarillo, celeste) que no son legibles con texto blanco
+// ni como texto sobre su propio tinte; se oscurecen sin cambiar de tono hasta cumplir WCAG AA.
+function accessiblePrimary(base: RGB): RGB {
+  let color = base
+  for (let step = 0; step <= DARKEN_STEPS; step++) {
+    color = mix(base, BLACK, step / DARKEN_STEPS)
+    const hex = rgbToHex(color)
+    const readableOnIt = contrastRatio(ON_PRIMARY, hex) >= MIN_TEXT_CONTRAST
+    const readableOnTint = contrastRatio(hex, rgbToHex(lightTint(color))) >= MIN_TEXT_CONTRAST
+    if (readableOnIt && readableOnTint) return color
+  }
+  return color
+}
 
 export interface PrimaryScale {
   primary: string
@@ -39,17 +74,22 @@ export interface PrimaryScale {
   light: string
   border: string
   rgb: string
+  accent: string
+  onPrimary: string
 }
 
 export function buildPrimaryScale(baseColor: string): PrimaryScale {
-  const base = hexToRgb(baseColor)
+  const original = hexToRgb(baseColor)
+  const base = accessiblePrimary(original)
   return {
     primary: rgbToHex(base),
     hover: rgbToHex(mix(base, BLACK, 0.12)),
     active: rgbToHex(mix(base, BLACK, 0.24)),
-    light: rgbToHex(mix(base, WHITE, 0.92)),
+    light: rgbToHex(lightTint(base)),
     border: rgbToHex(mix(base, WHITE, 0.6)),
-    rgb: base.map(c => clamp(c)).join(', ')
+    rgb: base.map(c => clamp(c)).join(', '),
+    accent: rgbToHex(original),
+    onPrimary: ON_PRIMARY
   }
 }
 
@@ -64,4 +104,6 @@ export function applyAvatarTheme(baseColor: string): void {
   root.setProperty('--color-primary-border', scale.border)
   root.setProperty('--color-primary-rgb', scale.rgb)
   root.setProperty('--color-border-focus', scale.primary)
+  root.setProperty('--color-accent', scale.accent)
+  root.setProperty('--color-on-primary', scale.onPrimary)
 }

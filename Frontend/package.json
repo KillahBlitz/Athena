@@ -8,10 +8,12 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run"
   },
   "dependencies": {
     "@pinia/nuxt": "^1.0.3",
+    "motion-v": "^2.8.0",
     "nuxt": "^4.5.2",
     "pinia": "^4.1.0",
     "vue": "^3.5.42",
@@ -19,7 +21,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
+    "@vue/test-utils": "^2.5.1",
+    "happy-dom": "^21.0.4",
     "typescript": "^5.8.2",
+    "vitest": "^5.0.5",
     "vue-tsc": "^3.3.13"
   }
 }

@@ -1,20 +1,27 @@
 <template>
-  <button
+  <Motion
+    as="button"
     :type="type"
     :disabled="disabled || loading"
     class="base-button"
     :class="[`btn-${variant}`, `btn-${size}`, { 'is-loading': loading }]"
+    :while-hover="isInteractive ? presets.press.whileHover : undefined"
+    :while-press="isInteractive ? presets.press.whilePress : undefined"
+    :transition="presets.press.transition"
     @click="$emit('click', $event)"
   >
     <span v-if="loading" class="spinner" aria-hidden="true" />
     <slot name="prefix" />
     <span class="btn-label"><slot /></span>
     <slot name="suffix" />
-  </button>
+  </Motion>
 </template>
 
 <script setup lang="ts">
-withDefaults(
+import { computed } from 'vue'
+import { useMotionPresets } from '../../composables/useMotionPresets'
+
+const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset'
     variant?: 'primary' | 'secondary' | 'ghost' | 'outline'
@@ -34,6 +41,9 @@ withDefaults(
 defineEmits<{
   click: [event: MouseEvent]
 }>()
+
+const presets = useMotionPresets()
+const isInteractive = computed(() => !props.disabled && !props.loading)
 </script>
 
 <style scoped>
@@ -42,49 +52,47 @@ defineEmits<{
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, border-color var(--motion-base) ease, color var(--motion-base) ease;
+  text-align: center;
   user-select: none;
 }
 
-.base-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.base-button:active:not(:disabled) {
-  transform: translateY(0);
+@media (min-width: 768px) {
+  .base-button {
+    white-space: nowrap;
+  }
 }
 
 /* Sizes */
 .btn-sm {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  min-height: var(--tap-target);
 }
 
 .btn-md {
-  padding: 0.65rem 1.4rem;
-  font-size: 0.92rem;
-  min-height: 44px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.95rem;
+  min-height: var(--tap-target);
 }
 
 .btn-lg {
-  padding: 0.85rem 1.8rem;
+  padding: 0.85rem 2rem;
   font-size: 1rem;
-  min-height: 50px;
+  min-height: 52px;
 }
 
 /* Variants */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
+  background: var(--gradient-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-  box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+  box-shadow: 0 16px 36px -12px rgba(var(--color-primary-rgb), 0.65);
 }
 
 .btn-secondary {
@@ -109,9 +117,9 @@ defineEmits<{
 }
 
 .btn-outline {
-  background-color: transparent;
+  background-color: var(--color-surface);
   color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: 1.5px solid var(--color-primary);
 }
 
 .btn-outline:hover:not(:disabled) {
@@ -121,7 +129,6 @@ defineEmits<{
 .base-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
   box-shadow: none;
 }
 
@@ -129,7 +136,7 @@ defineEmits<{
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
+  border-top-color: var(--color-on-primary);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

@@ -18,13 +18,18 @@
 
     <!-- 3 Area Cards Grid -->
     <div v-else class="areas-grid" role="radiogroup" aria-label="Selección de área académica">
-      <AreaCard
-        v-for="area in areas"
+      <div
+        v-for="(area, index) in areas"
         :key="area.id"
-        :area="area"
-        :is-selected="area.id === selectedId"
-        @select="$emit('select', $event)"
-      />
+        class="selection-slot reveal"
+        :style="{ '--reveal-index': index }"
+      >
+        <AreaCard
+          :area="area"
+          :is-selected="area.id === selectedId"
+          @select="$emit('select', $event)"
+        />
+      </div>
     </div>
 
     <span v-if="error" class="input-error" role="alert">

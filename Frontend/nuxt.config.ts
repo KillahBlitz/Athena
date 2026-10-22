@@ -2,7 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@pinia/nuxt'],
+  modules: ['@pinia/nuxt', 'motion-v/nuxt'],
+  experimental: {
+    viewTransition: true
+  },
   css: [
     '~/assets/css/reset.css',
     '~/assets/css/variables.css',
@@ -13,7 +16,8 @@ export default defineNuxtConfig({
       title: 'ATHENA | Sistema Inteligente de Orientación Vocacional',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'theme-color', content: '#7C3AED' },
         {
           name: 'description',
           content: 'ATHENA te acompaña a explorar tus intereses y descubrir las áreas académicas que se alinean con tu futuro.'
@@ -25,7 +29,7 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
+          href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400;500;600;700;800;900&display=swap'
         }
       ]
     }

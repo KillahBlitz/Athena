@@ -20,13 +20,18 @@
       role="group"
       :aria-labelledby="`riasec-title-${question.riasec_id}`"
     >
-      <button
-        v-for="option in options"
+      <Motion
+        v-for="(option, index) in options"
         :key="option.opcionId"
+        as="button"
         type="button"
-        class="riasec-option"
+        class="riasec-option reveal"
         :class="{ 'is-selected': isSelected(option.opcionId) }"
+        :style="{ '--reveal-index': index }"
         :aria-pressed="isSelected(option.opcionId)"
+        :animate="isSelected(option.opcionId) ? presets.select.animate : {}"
+        :transition="presets.select.transition"
+        :while-press="presets.press.whilePress"
         @click="$emit('toggle', option.opcionId)"
       >
         <span class="riasec-option-top">
@@ -46,7 +51,7 @@
           </svg>
         </span>
         <span class="riasec-option-text">{{ option.texto }}</span>
-      </button>
+      </Motion>
     </div>
 
     <p class="riasec-selection-count" aria-live="polite">
@@ -64,6 +69,7 @@
 import { computed } from 'vue'
 import type { BackendPreguntaDTO } from '../../../types/area'
 import type { RiasecAnswer, RiasecDimension, RiasecOption } from '../../../types/riasec'
+import { useMotionPresets } from '../../../composables/useMotionPresets'
 
 const props = defineProps<{
   question: BackendPreguntaDTO
@@ -75,6 +81,8 @@ const props = defineProps<{
 defineEmits<{
   toggle: [opcionId: number]
 }>()
+
+const presets = useMotionPresets()
 
 const isSelected = (opcionId: number) => props.answer.opcionIds.includes(opcionId)
 

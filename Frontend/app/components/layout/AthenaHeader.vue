@@ -26,9 +26,9 @@ import AthenaStepper from './AthenaStepper.vue'
   z-index: 50;
   width: 100%;
   height: var(--header-height);
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: var(--surface-glass);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -36,19 +36,21 @@ import AthenaStepper from './AthenaStepper.vue'
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   width: 100%;
   max-width: var(--desktop-max-width);
-  min-width: var(--desktop-min-width);
   height: 100%;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 var(--space-page-x);
 }
 
 .brand-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
+  min-height: var(--tap-target);
   user-select: none;
+  flex-shrink: 0;
 }
 
 .brand-logo {
@@ -57,10 +59,16 @@ import AthenaStepper from './AthenaStepper.vue'
   justify-content: center;
 }
 
+.brand-logo img {
+  width: clamp(28px, 6vw, 36px);
+  height: auto;
+}
+
 .brand-text {
-  font-size: 1.25rem;
-  font-weight: 850;
-  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.3rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
   color: var(--athena-dark-blue);
 }
 </style>
