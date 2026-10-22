@@ -17,7 +17,7 @@
       <ObjectiveProgress :progress="progress" />
     </div>
 
-    <!-- Active Block Grid (Dynamic up to 4 questions in 2x2 layout) -->
+    <!-- Active Block Grid (up to OBJECTIVES_PER_BLOCK questions) -->
     <ObjectiveGrid
       v-if="currentBlockData"
       :block="currentBlockData"
@@ -27,15 +27,15 @@
     />
 
     <!-- Informative completion banner when all blocks are finished -->
-    <div v-if="isLastBlock && isCurrentBlockComplete" class="stage-completion-box" role="status">
-      <div class="stage-completion-text">
-        <h3>✦ ¡Has valorado todos los objetivos de esta área!</h3>
-        <p>Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RISEC).</p>
-      </div>
+    <StageCelebration
+      :show="isLastBlock && isCurrentBlockComplete"
+      title="¡Has valorado todos los objetivos de esta área!"
+      message="Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RISEC)."
+    >
       <BaseButton variant="outline" size="sm" @click="handleBack">
         Revisar bloques anteriores
       </BaseButton>
-    </div>
+    </StageCelebration>
 
     <!-- Bottom Navigation Bar matching Image 3 -->
     <div class="objectives-bottom-bar">
@@ -78,6 +78,7 @@ import { useObjectivesForm } from '../features/objetivos/composables/useObjectiv
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
+import StageCelebration from '../components/ui/StageCelebration.vue'
 
 useHead({
   title: 'ATHENA | Valoración de objetivos vocacionales'

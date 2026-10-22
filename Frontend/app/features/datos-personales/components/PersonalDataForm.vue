@@ -13,7 +13,6 @@
         <h2 class="companion-panel-heading">Siéntete acompañado en tu aventura</h2>
       </div>
 
-
       <AvatarSelector
         :avatars="avatarsList"
         :selected-id="form.selectedAvatarId"
@@ -22,9 +21,15 @@
       />
 
       <div class="companion-speech-card" role="note">
-        <div class="companion-speech-avatar" aria-hidden="true">
+        <Motion
+          :key="form.selectedAvatarId"
+          class="companion-speech-avatar"
+          aria-hidden="true"
+          :animate="presets.select.animate"
+          :transition="presets.select.transition"
+        >
           <img :src="selectedAvatar?.image || '/avatars/nova.svg'" alt="">
-        </div>
+        </Motion>
         <div class="companion-speech-content">
           <strong class="companion-speech-title">
             {{ greetingText }}
@@ -141,6 +146,7 @@ import AvatarSelector from './AvatarSelector.vue'
 import AreaSelector from './AreaSelector.vue'
 import BaseInput from '../../../components/ui/BaseInput.vue'
 import BaseButton from '../../../components/ui/BaseButton.vue'
+import { useMotionPresets } from '../../../composables/useMotionPresets'
 
 const {
   form,
@@ -160,6 +166,7 @@ const {
 } = usePersonalDataForm()
 
 const avatarsList = AVATARS
+const presets = useMotionPresets()
 
 const greetingText = computed(() => {
   const firstName = form.name.trim().split(' ')[0]

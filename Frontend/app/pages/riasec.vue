@@ -33,43 +33,59 @@
 
     <RiasecDimensionTabs :tabs="tabs" @select="goToDimension" />
 
-    <div v-if="isCompleted" class="stage-completion-box" role="status">
-      <div class="stage-completion-text">
-        <h3>✦ ¡Has explorado todas las dimensiones!</h3>
-        <p>Tus habilidades y reflexiones han sido registradas. Puedes revisarlas antes de ver tus resultados.</p>
-      </div>
+    <StageCelebration
+      :show="isCompleted"
+      title="¡Has explorado todas las dimensiones!"
+      message="Tus habilidades y reflexiones han sido registradas. Puedes revisarlas antes de ver tus resultados."
+    >
       <BaseButton variant="outline" size="sm" @click="handleBack">
         Revisar respuestas
       </BaseButton>
-    </div>
+    </StageCelebration>
 
-    <template v-else-if="currentQuestion">
-      <div class="riasec-main-grid">
-        <RiasecQuestionCard
+    <template v-if="!isCompleted && currentQuestion">
+      <AnimatePresence mode="wait" :initial="false">
+        <Motion
           :key="currentQuestion.riasec_id"
-          :question="currentQuestion"
-          :dimension="currentDimension"
-          :options="currentOptions"
-          :answer="currentAnswer"
-          @toggle="toggleOption"
-        />
+          class="riasec-dimension"
+          :initial="presets.swap.initial"
+          :animate="presets.swap.animate"
+          :exit="presets.swap.exit"
+          :transition="presets.swap.transition"
+        >
+          <div class="riasec-main-grid">
+            <RiasecQuestionCard
+              :question="currentQuestion"
+              :dimension="currentDimension"
+              :options="currentOptions"
+              :answer="currentAnswer"
+              @toggle="toggleOption"
+            />
 
-        <RiasecConnectionsPanel
-          :options="currentOptions"
-          :selected-ids="currentAnswer.opcionIds"
-          :avatar="selectedAvatar"
-        />
-      </div>
+            <div class="riasec-side">
+              <RiasecConnectionsPanel
+                :options="currentOptions"
+                :selected-ids="currentAnswer.opcionIds"
+                :avatar="selectedAvatar"
+              />
+              <AvatarStoryCard
+                :avatar="selectedAvatar"
+                :riasec-id="currentQuestion.riasec_id"
+                :selected-count="currentAnswer.opcionIds.length"
+              />
+            </div>
+          </div>
 
-      <RiasecReflection
-        :key="`reflection-${currentQuestion.riasec_id}`"
-        :riasec-id="currentQuestion.riasec_id"
-        :dimension-name="currentDimension.name"
-        :question="currentQuestion.pregunta_abierta"
-        :model-value="currentAnswer.respuestaAbierta"
-        :locked="!isCurrentComplete"
-        @update:model-value="setOpenAnswer"
-      />
+          <RiasecReflection
+            :riasec-id="currentQuestion.riasec_id"
+            :dimension-name="currentDimension.name"
+            :question="currentQuestion.pregunta_abierta"
+            :model-value="currentAnswer.respuestaAbierta"
+            :locked="!isCurrentComplete"
+            @update:model-value="setOpenAnswer"
+          />
+        </Motion>
+      </AnimatePresence>
     </template>
 
     <div v-if="!isCompleted" class="riasec-bottom-bar">
@@ -103,7 +119,10 @@ import RiasecDimensionTabs from '../features/riasec/components/RiasecDimensionTa
 import RiasecQuestionCard from '../features/riasec/components/RiasecQuestionCard.vue'
 import RiasecConnectionsPanel from '../features/riasec/components/RiasecConnectionsPanel.vue'
 import RiasecReflection from '../features/riasec/components/RiasecReflection.vue'
+import AvatarStoryCard from '../features/riasec/components/AvatarStoryCard.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
+import StageCelebration from '../components/ui/StageCelebration.vue'
+import { useMotionPresets } from '../composables/useMotionPresets'
 
 useHead({
   title: 'ATHENA | Perfil RISEC'
@@ -127,6 +146,8 @@ const {
   handleNext,
   handleBack
 } = useRiasecForm()
+
+const presets = useMotionPresets()
 </script>
 
 <style scoped>

@@ -2,18 +2,17 @@
   <div class="objectives-progress-widget" role="region" aria-label="Progreso de objetivos">
     <!-- Constellation lines art -->
     <svg class="constellation-art" viewBox="0 0 140 48" fill="none" aria-hidden="true">
-      <line x1="12" y1="36" x2="42" y2="20" stroke="#DDD6FE" stroke-width="1.5" stroke-dasharray="2 2" />
-      <line x1="42" y1="20" x2="84" y2="8" stroke="#A855F7" stroke-width="1.8" />
-      <line x1="84" y1="8" x2="128" y2="16" stroke="#A855F7" stroke-width="1.8" />
-      <line x1="128" y1="16" x2="110" y2="38" stroke="#DDD6FE" stroke-width="1.5" />
-      <line x1="110" y1="38" x2="84" y2="8" stroke="#C084FC" stroke-width="1.5" stroke-dasharray="2 2" />
+      <line class="constellation-line is-soft" x1="12" y1="36" x2="42" y2="20" stroke-width="1.5" stroke-dasharray="2 2" />
+      <line class="constellation-line" x1="42" y1="20" x2="84" y2="8" stroke-width="1.8" />
+      <line class="constellation-line" x1="84" y1="8" x2="128" y2="16" stroke-width="1.8" />
+      <line class="constellation-line is-soft" x1="128" y1="16" x2="110" y2="38" stroke-width="1.5" />
+      <line class="constellation-line is-soft" x1="110" y1="38" x2="84" y2="8" stroke-width="1.5" stroke-dasharray="2 2" />
 
-      <!-- Glowing Star Nodes -->
-      <circle cx="12" cy="36" r="3" fill="#DDD6FE" />
-      <circle cx="42" cy="20" r="3.5" fill="#C084FC" />
-      <circle cx="84" cy="8" r="4.5" fill="#7C3AED" />
-      <circle cx="128" cy="16" r="4" fill="#7C3AED" />
-      <circle cx="110" cy="38" r="3.5" fill="#A855F7" />
+      <circle class="constellation-star is-soft" cx="12" cy="36" r="3" />
+      <circle class="constellation-star" cx="42" cy="20" r="3.5" />
+      <circle class="constellation-star is-bright" cx="84" cy="8" r="4.5" />
+      <circle class="constellation-star is-bright" cx="128" cy="16" r="4" />
+      <circle class="constellation-star" cx="110" cy="38" r="3.5" />
     </svg>
 
     <div class="progress-labels-row">

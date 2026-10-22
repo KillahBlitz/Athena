@@ -1,10 +1,15 @@
 <template>
-  <button
+  <Motion
+    as="button"
     type="button"
     class="area-card"
     :class="{ 'is-selected': isSelected }"
     :aria-pressed="isSelected"
     :aria-label="`Seleccionar área: ${area.name}`"
+    :animate="isSelected ? presets.select.animate : {}"
+    :transition="presets.select.transition"
+    :while-hover="presets.press.whileHover"
+    :while-press="presets.press.whilePress"
     @click="$emit('select', area.id)"
   >
     <div class="area-card-top">
@@ -19,11 +24,12 @@
       <h3 class="area-card-name">{{ area.name }}</h3>
       <p class="area-card-tagline">{{ area.tagline }}</p>
     </div>
-  </button>
+  </Motion>
 </template>
 
 <script setup lang="ts">
 import type { Area } from '../../../types/area'
+import { useMotionPresets } from '../../../composables/useMotionPresets'
 
 defineProps<{
   area: Area
@@ -33,6 +39,8 @@ defineProps<{
 defineEmits<{
   select: [id: number]
 }>()
+
+const presets = useMotionPresets()
 </script>
 
 <style scoped>

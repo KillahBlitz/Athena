@@ -31,11 +31,11 @@ defineEmits<{
 <style scoped>
 .base-card {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) ease, border-color var(--motion-base) ease, background-color var(--motion-base) ease;
 }
 
 .is-interactive {
@@ -45,7 +45,13 @@ defineEmits<{
 .is-interactive:hover {
   border-color: var(--color-border-hover);
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-interactive:hover {
+    transform: none;
+  }
 }
 
 .is-selected {

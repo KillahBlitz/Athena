@@ -78,7 +78,7 @@ defineEmits<{
 }
 
 .required-indicator {
-  color: var(--color-error);
+  color: var(--color-error-text);
   margin-left: 0.2rem;
 }
 
@@ -90,15 +90,15 @@ defineEmits<{
 
 .input-control {
   width: 100%;
-  height: 46px;
+  height: 50px;
   padding: 0 1rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--color-text-main);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 .input-control::placeholder {
@@ -111,7 +111,7 @@ defineEmits<{
 
 .input-control:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+  box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.15);
 }
 
 .has-error .input-control {
@@ -119,12 +119,12 @@ defineEmits<{
 }
 
 .has-error .input-control:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 0 4px var(--color-error-ring);
 }
 
 .input-error {
-  font-size: 0.76rem;
-  color: var(--color-error);
+  font-size: 0.8rem;
+  color: var(--color-error-text);
   font-weight: 500;
   margin-top: 0.2rem;
 }

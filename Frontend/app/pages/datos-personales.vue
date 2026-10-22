@@ -1,6 +1,6 @@
 <template>
   <div class="datos-personales-page">
-    <div class="page-heading">
+    <div class="page-heading reveal">
       <span class="eyebrow">
         <span>✦</span>
         <span>CONOCERTE ES EL PRIMER PASO</span>
@@ -30,6 +30,6 @@ useHead({
 }
 
 .page-heading {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
 }
 </style>

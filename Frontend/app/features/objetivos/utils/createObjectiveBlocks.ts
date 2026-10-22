@@ -1,4 +1,5 @@
 import type { NormalizedObjective, ObjectiveBlock } from '../../../types/objective'
+import { OBJECTIVES_PER_BLOCK } from '../../../config/objectives'
 
 /**
  * Normalizes the raw backend dictionary of objectives into typed NormalizedObjective array
@@ -34,12 +35,12 @@ export function normalizeObjectives(rawObjetivos: Record<string, string | null>)
 }
 
 /**
- * Dynamically partitions normalized objectives into blocks of blockSize (default 4).
+ * Dynamically partitions normalized objectives into blocks of blockSize (default OBJECTIVES_PER_BLOCK).
  * Preserves order, handles incomplete last blocks, never mutates original array.
  */
 export function createObjectiveBlocks(
   objectives: readonly NormalizedObjective[],
-  blockSize = 4
+  blockSize = OBJECTIVES_PER_BLOCK
 ): ObjectiveBlock[] {
   if (!Array.isArray(objectives) || objectives.length === 0 || blockSize <= 0) {
     return []

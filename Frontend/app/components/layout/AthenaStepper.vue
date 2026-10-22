@@ -1,5 +1,23 @@
 <template>
   <nav class="athena-stepper" aria-label="Progreso del recorrido">
+    <!-- Compact summary for small screens -->
+    <div class="stepper-compact">
+      <div class="compact-labels">
+        <span class="compact-count">Paso {{ activeStepNumber }} de {{ steps.length }}</span>
+        <span class="compact-current">{{ activeStep?.label }}</span>
+      </div>
+      <div
+        class="compact-track"
+        role="progressbar"
+        :aria-valuenow="progressPercentage"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-label="`Paso ${activeStepNumber} de ${steps.length}`"
+      >
+        <span class="compact-fill" :style="{ width: `${progressPercentage}%` }" />
+      </div>
+    </div>
+
     <ol class="stepper-list">
       <li
         v-for="(step, index) in steps"
@@ -61,19 +79,73 @@ const activeStepNumber = computed(() => {
   if (path.startsWith('/riasec')) return 4
   return 1 // default '/'
 })
+
+const activeStep = computed(() => steps.find(step => step.number === activeStepNumber.value))
+const progressPercentage = computed(() => Math.round((activeStepNumber.value / steps.length) * 100))
 </script>
 
 <style scoped>
 .athena-stepper {
   display: flex;
   align-items: center;
+  min-width: 0;
+}
+
+/* Compact (mobile) */
+.stepper-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: min(11rem, 46vw);
+}
+
+.compact-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.compact-current {
+  color: var(--color-primary);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-track {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  overflow: hidden;
+}
+
+.compact-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-brand);
+  transition: width var(--motion-slow) var(--ease-out);
 }
 
 .stepper-list {
-  display: flex;
+  display: none;
   align-items: center;
   list-style: none;
   gap: 0;
+}
+
+@media (min-width: 1024px) {
+  .stepper-compact {
+    display: none;
+  }
+
+  .stepper-list {
+    display: flex;
+  }
 }
 
 .step-item {
@@ -82,15 +154,17 @@ const activeStepNumber = computed(() => {
 }
 
 .step-connector {
-  width: 2.5rem;
-  height: 1px;
+  width: clamp(1rem, 2vw, 2.5rem);
+  height: 2px;
+  border-radius: var(--radius-full);
   background-color: var(--color-border);
   margin: 0 0.6rem;
   flex-shrink: 0;
 }
 
-.step-item.is-completed .step-connector {
-  background-color: var(--color-primary-border);
+.step-item.is-completed .step-connector,
+.step-item.is-active .step-connector {
+  background: var(--gradient-brand);
 }
 
 .step-link,
@@ -98,36 +172,36 @@ const activeStepNumber = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: var(--tap-target);
   user-select: none;
   font-size: 0.85rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: color var(--motion-base) ease;
 }
 
 .step-badge {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 700;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
   color: var(--color-text-muted);
-  transition: all 0.2s ease;
+  transition: transform var(--motion-base) var(--ease-spring), background-color var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 
 .step-label {
   color: var(--color-text-muted);
-  transition: color 0.2s ease;
+  transition: color var(--motion-base) ease;
 }
 
-/* Active Step: Solid Purple Circle with white number */
 .step-item.is-active .step-badge {
-  background-color: var(--color-primary);
+  background: var(--gradient-primary);
   border-color: var(--color-primary);
-  color: #FFFFFF;
+  color: var(--color-on-primary);
   box-shadow: 0 0 0 4px var(--color-primary-light);
 }
 
@@ -136,7 +210,6 @@ const activeStepNumber = computed(() => {
   font-weight: 700;
 }
 
-/* Completed Step: Soft purple checked */
 .step-item.is-completed .step-badge {
   border-color: var(--color-primary-border);
   background-color: var(--color-primary-light);
@@ -153,20 +226,26 @@ const activeStepNumber = computed(() => {
 
 .step-link:hover .step-badge {
   border-color: var(--color-primary);
+  transform: scale(1.08);
 }
 
-/* Future Step */
 .step-item.is-future .step-badge {
   border-color: var(--color-border);
-  background-color: #F8FAFC;
-  color: var(--color-text-light);
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
 }
 
 .step-item.is-future .step-label {
-  color: var(--color-text-light);
+  color: var(--color-text-muted);
 }
 
 .check-icon {
   stroke: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-link:hover .step-badge {
+    transform: none;
+  }
 }
 </style>

@@ -5,20 +5,24 @@
       role="radiogroup"
       aria-label="¿Qué tanto te identificas con este objetivo?"
     >
-      <button
+      <Motion
         v-for="val in 5"
         :key="val"
+        as="button"
         type="button"
         role="radio"
         class="rating-btn"
         :class="{ 'is-selected': modelValue === val }"
         :aria-checked="modelValue === val"
         :aria-label="`Valoración ${val} de 5`"
+        :animate="modelValue === val ? presets.select.animate : {}"
+        :transition="presets.select.transition"
+        :while-press="presets.press.whilePress"
         @click="$emit('update:modelValue', val as RatingValue)"
       >
         <span v-if="modelValue === val" class="rating-star-icon" aria-hidden="true">✦</span>
         <span>{{ val }}</span>
-      </button>
+      </Motion>
     </div>
 
     <div class="rating-legend-row" aria-hidden="true">
@@ -30,6 +34,7 @@
 
 <script setup lang="ts">
 import type { RatingValue } from '../../../types/objective'
+import { useMotionPresets } from '../../../composables/useMotionPresets'
 
 defineProps<{
   carreraId: number
@@ -39,6 +44,8 @@ defineProps<{
 defineEmits<{
   'update:modelValue': [value: RatingValue]
 }>()
+
+const presets = useMotionPresets()
 </script>
 
 <style scoped>

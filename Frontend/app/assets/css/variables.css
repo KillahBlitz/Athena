@@ -14,6 +14,16 @@
   --color-primary-border: #DDD6FE;
   --color-primary-active: #5B21B6;
   --color-primary-rgb: 124, 58, 237;
+  --color-on-primary: #FFFFFF;
+  --color-accent: #7C3AED;
+
+  /* Brand gradients */
+  --gradient-brand: linear-gradient(120deg, #E879F9 0%, #8B5CF6 48%, #22D3EE 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #ECFEFF 100%);
+  --background-glow:
+    radial-gradient(60rem 30rem at 100% -10%, rgba(var(--color-primary-rgb), 0.08), transparent 70%),
+    radial-gradient(40rem 24rem at -10% 10%, rgba(34, 211, 238, 0.08), transparent 70%);
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
 
   /* Introduction screen palette (independent of avatar theming) */
   --intro-primary: #7C3AED;
@@ -21,6 +31,8 @@
   --intro-primary-light: #F5F3FF;
   --intro-primary-border: #DDD6FE;
   --intro-gradient: linear-gradient(115deg, #E8A2F5 0%, #C4B5FD 50%, #8BDFF3 100%);
+  --intro-gradient-primary: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+  --intro-shadow-glow: 0 12px 32px -10px rgba(var(--intro-primary-rgb), 0.55);
   --intro-gradient-hover: linear-gradient(115deg, #DF8FEF 0%, #B7A5F7 50%, #76D4ED 100%);
 
   /* Avatar complements */
@@ -34,6 +46,7 @@
   --color-background: #F9FAFC;
   --color-surface: #FFFFFF;
   --color-surface-hover: #F8FAFC;
+  --surface-glass: rgba(255, 255, 255, 0.82);
   --color-border: #E2E8F0;
   --color-border-hover: #CBD5E1;
   --color-border-focus: #7C3AED;
@@ -44,10 +57,17 @@
   --color-text-muted: #64748B;
   --color-text-light: #94A3B8;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Bricolage Grotesque', var(--font-sans);
+  --text-hero: clamp(2.25rem, 1.35rem + 4vw, 4rem);
+  --text-title: clamp(1.85rem, 1.35rem + 2.2vw, 2.75rem);
+  --text-subtitle: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+  --text-lead: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
 
   /* Status */
   --color-success: #10B981;
   --color-error: #EF4444;
+  --color-error-text: #B91C1C;
+  --color-error-ring: rgba(239, 68, 68, 0.15);
   --color-error-bg: #FEF2F2;
   --color-error-border: #FECACA;
   --color-warning: #F59E0B;
@@ -59,16 +79,34 @@
   --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
   --shadow-card-hover: 0 10px 25px -3px rgba(var(--color-primary-rgb), 0.08), 0 4px 10px -2px rgba(var(--color-primary-rgb), 0.04);
   --shadow-dropdown: 0 10px 15px -3px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 12px 32px -10px rgba(var(--color-primary-rgb), 0.55);
+  --shadow-pop: 0 18px 40px -16px rgba(15, 23, 42, 0.22);
 
   /* Radii */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-2xl: 32px;
   --radius-full: 9999px;
 
-  /* Desktop dimensions */
+  /* Motion: durations and easings for CSS transitions */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 450ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layout. Breakpoints (media queries cannot read custom properties): 768px tablet, 1024px desktop */
   --desktop-max-width: 1440px;
-  --desktop-min-width: 1100px;
-  --header-height: 72px;
+  --header-height: 64px;
+  --space-page-x: clamp(1rem, 4vw, 3rem);
+  --space-page-y: clamp(1.5rem, 3vw, 2.5rem);
+  --tap-target: 44px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 72px;
+  }
 }

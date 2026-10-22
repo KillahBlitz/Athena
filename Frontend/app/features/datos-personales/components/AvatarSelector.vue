@@ -7,13 +7,18 @@
 
     <!-- 4 Avatars Grid -->
     <div class="avatars-grid" role="radiogroup" aria-label="Selección de avatar acompañante">
-      <AvatarCard
-        v-for="avatar in avatars"
+      <div
+        v-for="(avatar, index) in avatars"
         :key="avatar.id"
-        :avatar="avatar"
-        :is-selected="avatar.id === selectedId"
-        @select="$emit('select', $event)"
-      />
+        class="selection-slot reveal"
+        :style="{ '--reveal-index': index }"
+      >
+        <AvatarCard
+          :avatar="avatar"
+          :is-selected="avatar.id === selectedId"
+          @select="$emit('select', $event)"
+        />
+      </div>
     </div>
   </div>
 </template>
