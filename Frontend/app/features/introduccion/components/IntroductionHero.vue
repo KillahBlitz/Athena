@@ -6,14 +6,14 @@
         <span>ATHENA</span>
       </span>
       <h1 id="hero-main-title" class="hero-title reveal" style="--reveal-index: 1">Sistema Inteligente de <span class="hero-highlight">Orientación Vocacional</span></h1>
-      <h2 class="hero-subtitle reveal" style="--reveal-index: 2">Instituto Politecnico Nacional</h2>
+      <h2 class="hero-subtitle reveal" style="--reveal-index: 2">Instituto Politécnico Nacional</h2>
       <p class="hero-lead reveal" style="--reveal-index: 3">
-        Descubre dónde tu perfil se alinea mejor con los programas académicos del Instituto Politécnico Nacional.
+        Explora tus intereses, habilidades y objetivos para identificar los programas académicos del Instituto Politécnico Nacional que presentan mayor afinidad con tu perfil.
       </p>
 
       <div class="hero-actions reveal" style="--reveal-index: 4">
-        <a href="#application-details" class="hero-start-btn">
-          <span>Empieza por aqui </span>
+        <a href="#application-details" class="hero-start-btn" @click="scrollToDetails">
+          <span>Conocer cómo funciona</span>
           <span aria-hidden="true">→</span>
         </a>
       </div>
@@ -54,7 +54,13 @@
 </template>
 
 <script setup lang="ts">
-// Visual Hero Component
+function scrollToDetails(event: MouseEvent) {
+  event.preventDefault()
+  document.getElementById('application-details')?.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start'
+  })
+}
 </script>
 
 <style scoped>

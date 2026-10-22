@@ -5,98 +5,129 @@
         <span>✦</span>
         <span>APOYO VOCACIONAL</span>
       </span>
-      <h2 id="details-heading">¿Cómo funciona ATHENA?</h2>
+      <h2 id="details-heading">¿Qué es ATHENA?</h2>
       <p>
-        Un modelo integral diseñado para acompañar tu vocación, uniendo rigor metodológico y comprensión de tus motivaciones individuales.
+        ATHENA es un sistema web de apoyo para la orientación vocacional. A partir de tus respuestas, analiza la afinidad entre tu perfil y características de las carreras del Instituto Politécnico Nacional.
+      </p>
+      <p class="details-note">
+        Los resultados funcionan como una referencia para explorar opciones académicas. ATHENA no sustituye tu decisión personal ni el acompañamiento de un orientador profesional.
       </p>
     </div>
 
-    <!-- 3 Pillars Grid -->
-    <div class="details-grid">
+    <div class="details-grid" aria-label="Beneficios de ATHENA">
       <article class="detail-card reveal" style="--reveal-index: 1">
         <div class="detail-icon-wrap" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="9" stroke-width="2" />
-            <path d="M12 7 L12 12 L15 15" stroke-width="2" stroke-linecap="round" />
+            <circle cx="11" cy="11" r="6.5" stroke-width="2" />
+            <path d="m16 16 4 4M11 8v6M8 11h6" stroke-width="2" stroke-linecap="round" />
           </svg>
         </div>
-        <h3>Tus intereses son el punto de partida</h3>
-        <p>
-          No buscamos encasillarte. Tus respuestas y valoraciones revelan afinidades profundas con problemáticas reales del entorno laboral y académico.
-        </p>
+        <h3>Explora tu perfil</h3>
+        <p>Reconoce los intereses, habilidades y objetivos que influyen en tu elección académica.</p>
       </article>
 
       <article class="detail-card reveal" style="--reveal-index: 2">
         <div class="detail-icon-wrap" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-            <path d="M4 19.5 A2.5 2.5 0 0 1 6.5 17 H20" stroke-width="2" />
-            <path d="M6.5 2 H20 V22 H6.5 A2.5 2.5 0 0 1 4 19.5 V4.5 A2.5 2.5 0 0 1 6.5 2 z" stroke-width="2" />
+            <path d="M4 5h6v6H4zM14 13h6v6h-6zM10 8h4v8" stroke-width="2" stroke-linejoin="round" />
           </svg>
         </div>
-        <h3>Alineado con carreras reales</h3>
-        <p>
-          Cada pregunta está vinculada directamente a los objetivos de formación de planes de estudio universitarios e instituciones oficiales como el IPN.
-        </p>
+        <h3>Compara tu afinidad</h3>
+        <p>Relaciona tus respuestas con los objetivos y características de las carreras del IPN.</p>
       </article>
 
       <article class="detail-card reveal" style="--reveal-index: 3">
         <div class="detail-icon-wrap" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-            <path d="M12 2 L15 8 L22 9 L17 14 L18 21 L12 18 L6 21 L7 14 L2 9 L9 8 Z" stroke-width="2" stroke-linejoin="round" />
+            <path d="M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z" stroke-width="2" stroke-linejoin="round" />
           </svg>
         </div>
-        <h3>Sin respuestas correctas o incorrectas</h3>
-        <p>
-          Responde con total libertad. Cada reflexión sincera permite que tu constelación vocacional represente fielmente lo que te mueve y apasiona.
-        </p>
+        <h3>Conoce tus opciones</h3>
+        <p>Obtén recomendaciones de programas académicos específicos dentro del área seleccionada.</p>
       </article>
     </div>
 
-    <!-- 5 Steps Roadmap -->
     <div class="roadmap-container reveal" style="--reveal-index: 4">
-      <h3 class="roadmap-title">Las 5 etapas de tu expedición</h3>
+      <h3 class="roadmap-title">Las 5 etapas de tu recorrido</h3>
       <div class="roadmap-steps">
         <div class="roadmap-step-card reveal" style="--reveal-index: 1">
           <div class="step-badge-number">1</div>
           <h4>Introducción</h4>
-          <p>Comprende el propósito del sistema y prepárate para la experiencia.</p>
+          <p>Conoce el propósito y el funcionamiento de ATHENA.</p>
         </div>
-
         <div class="roadmap-step-card reveal" style="--reveal-index: 2">
           <div class="step-badge-number">2</div>
           <h4>Datos personales</h4>
-          <p>Indica tu área de interés general y elige a tu avatar acompañante.</p>
+          <p>Ingresa tus datos, selecciona un avatar y elige el área académica que deseas explorar.</p>
         </div>
-
         <div class="roadmap-step-card reveal" style="--reveal-index: 3">
           <div class="step-badge-number">3</div>
           <h4>Objetivos</h4>
-          <p>Valora los objetivos formativos de cada carrera y comparte tu punto de vista.</p>
+          <p>Valora qué tanto te identificas con los objetivos de las carreras del área seleccionada y explica las razones de tus elecciones.</p>
         </div>
-
         <div class="roadmap-step-card reveal" style="--reveal-index: 4">
           <div class="step-badge-number">4</div>
-          <h4>RIASEC</h4>
-          <p>Mapeo de tus rasgos de personalidad e intereses ocupacionales.</p>
+          <h4>RISEC</h4>
+          <p>Explora tus intereses y habilidades mediante cinco dimensiones vocacionales y complementa tus respuestas.</p>
         </div>
-
         <div class="roadmap-step-card reveal" style="--reveal-index: 5">
           <div class="step-badge-number">5</div>
           <h4>Resultados</h4>
-          <p>Recomendaciones fundamentadas de carreras y programas académicos.</p>
+          <p>Consulta los programas académicos que presentan mayor afinidad con tu perfil.</p>
         </div>
       </div>
     </div>
-    <div class="details-actions">
-      <NuxtLink to="/datos-personales" class="hero-start-btn">
-        <span>Comenzar</span>
+
+    <div class="before-start section-block">
+      <div>
+        <span class="eyebrow"><span>✦</span><span>ANTES DE COMENZAR</span></span>
+        <p>Selecciona el área académica que deseas explorar y responde cada apartado con sinceridad. No existen respuestas correctas o incorrectas; lo importante es que tus elecciones representen tus intereses y preferencias.</p>
+      </div>
+      <ul class="guidance-list">
+        <li>Lee cuidadosamente cada pregunta.</li>
+        <li>Responde desde tu experiencia e intereses personales.</li>
+        <li>Explica tus respuestas cuando se solicite.</li>
+        <li>Completa todas las etapas para obtener tus resultados.</li>
+      </ul>
+    </div>
+
+    <div class="considerations section-block">
+      <div class="section-block-heading">
+        <span class="eyebrow"><span>✦</span><span>TEN EN CUENTA</span></span>
+        <h2>Tu experiencia es única</h2>
+      </div>
+      <div class="consideration-grid">
+        <article v-for="item in considerations" :key="item.title" class="consideration-item">
+          <span class="consideration-marker" aria-hidden="true">✓</span>
+          <div><h3>{{ item.title }}</h3><p>{{ item.description }}</p></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="details-actions section-block">
+      <div class="closing-copy">
+        <span class="eyebrow"><span>✦</span><span>LISTO PARA EMPEZAR</span></span>
+        <h2>Prepárate para comenzar</h2>
+        <p>Realiza la evaluación en un lugar tranquilo, lee cada pregunta con atención y responde sin apresurarte. La utilidad de los resultados depende de que tus respuestas representen lo que realmente te interesa.</p>
+      </div>
+      <NuxtLink
+        to="/datos-personales"
+        class="hero-start-btn"
+      >
+        <span>Comenzar evaluación</span>
+        <span aria-hidden="true">→</span>
       </NuxtLink>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-// Informational Details Component
+const considerations = [
+  { title: 'Tus intereses son el punto de partida', description: 'Tus respuestas permiten reconocer afinidades con los objetivos y características de diferentes programas académicos.' },
+  { title: 'Las opciones dependen del área seleccionada', description: 'La evaluación considera únicamente los programas académicos pertenecientes al área que elijas.' },
+  { title: 'No hay respuestas correctas o incorrectas', description: 'Responde con libertad y evita elegir opciones únicamente porque parezcan más convenientes.' },
+  { title: 'El resultado es una orientación', description: 'ATHENA presenta afinidades y recomendaciones para apoyar tu reflexión, no una decisión vocacional definitiva.' }
+]
 </script>
 
 <style scoped>
@@ -111,22 +142,5 @@
   font-size: clamp(1.15rem, 1rem + 1vw, 1.5rem);
   padding: 1rem 3rem;
   cursor: pointer;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .details-actions .hero-start-btn:hover {
-    transform: translateY(-4px) scale(1.04);
-  }
-
-  .details-actions .hero-start-btn:active {
-    transform: translateY(0) scale(0.98);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .details-actions .hero-start-btn {
-    transition: none;
-    transform: none;
-  }
 }
 </style>
