@@ -1,7 +1,6 @@
 <template>
   <header class="athena-header">
     <div class="header-container">
-      <!-- Brand Logo -->
       <NuxtLink to="/" class="brand-link" aria-label="ATHENA Inicio">
         <div class="brand-logo">
           <img src="/icons/athena-star.svg" alt="" width="36" height="36">
@@ -9,7 +8,6 @@
         <span class="brand-text">ATHENA</span>
       </NuxtLink>
 
-      <!-- Stepper Indicator -->
       <AthenaStepper />
     </div>
   </header>

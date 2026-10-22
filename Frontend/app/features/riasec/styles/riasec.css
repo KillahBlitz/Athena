@@ -1,11 +1,9 @@
-/* RISEC Page Layout */
 .riasec-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-/* Header: title spans the row, progress aligned with the title */
 .riasec-page .objectives-header-row {
   align-items: flex-start;
 }
@@ -18,7 +16,6 @@
   margin-bottom: 0;
 }
 
-/* Progress (top-right on desktop) */
 .riasec-progress {
   display: flex;
   flex-direction: column;
@@ -49,7 +46,6 @@
   color: var(--color-text-muted);
 }
 
-/* Dimension Tabs: horizontal scroll with snap on small screens */
 .riasec-tabs {
   display: flex;
   align-items: center;
@@ -125,14 +121,12 @@
   color: var(--color-success);
 }
 
-/* Dimension block: grid + reflection animate together */
 .riasec-dimension {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-/* Main Grid: question card + connections panel (stacked on mobile) */
 .riasec-main-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -146,7 +140,6 @@
   }
 }
 
-/* Side column: connections panel + avatar story keep their own height */
 .riasec-side {
   align-self: start;
   display: flex;
@@ -161,7 +154,6 @@
   }
 }
 
-/* Question Card */
 .riasec-card {
   display: flex;
   flex-direction: column;
@@ -218,7 +210,6 @@
   color: var(--color-text-main);
 }
 
-/* Options: adaptive grid of selectable skill tiles (1 → 2 → 4 columns) */
 .riasec-options-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -318,7 +309,6 @@
   color: var(--color-primary);
 }
 
-/* Connections Panel (right) */
 .riasec-connections {
   display: flex;
   flex-direction: column;
@@ -405,7 +395,6 @@
   color: var(--color-text-muted);
 }
 
-/* Open Reflection */
 .riasec-reflection {
   display: flex;
   flex-direction: column;
@@ -462,7 +451,6 @@
   color: var(--color-text-muted);
 }
 
-/* Bottom Navigation Bar: hint on top on mobile, three columns from tablet */
 .riasec-bottom-bar {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -501,7 +489,6 @@
   color: var(--color-text-secondary);
 }
 
-/* Submit error shown under the completion banner */
 .riasec-submit-error {
   margin-top: 1rem;
 }

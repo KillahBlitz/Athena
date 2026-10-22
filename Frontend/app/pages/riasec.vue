@@ -1,6 +1,5 @@
 <template>
   <div class="riasec-page">
-    <!-- Header Row -->
     <div class="objectives-header-row">
       <div class="objectives-title-group">
         <span class="eyebrow">

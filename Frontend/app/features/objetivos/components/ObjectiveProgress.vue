@@ -1,6 +1,5 @@
 <template>
   <div class="objectives-progress-widget" role="region" aria-label="Progreso de objetivos">
-    <!-- Constellation lines art -->
     <svg class="constellation-art" viewBox="0 0 140 48" fill="none" aria-hidden="true">
       <line class="constellation-line is-soft" x1="12" y1="36" x2="42" y2="20" stroke-width="1.5" stroke-dasharray="2 2" />
       <line class="constellation-line" x1="42" y1="20" x2="84" y2="8" stroke-width="1.8" />

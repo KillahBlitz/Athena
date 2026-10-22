@@ -1,6 +1,5 @@
 <template>
   <nav class="athena-stepper" aria-label="Progreso del recorrido">
-    <!-- Compact summary for small screens -->
     <div class="stepper-compact">
       <div class="compact-labels">
         <span class="compact-count">Paso {{ activeStepNumber }} de {{ steps.length }}</span>
@@ -29,10 +28,8 @@
           'is-future': activeStepNumber < step.number
         }"
       >
-        <!-- Step connector line -->
         <span v-if="index > 0" class="step-connector" aria-hidden="true" />
 
-        <!-- Functional navigable step -->
         <NuxtLink
           v-if="step.isFunctional && activeStepNumber > step.number"
           :to="step.path"
@@ -47,7 +44,6 @@
           <span class="step-label">{{ step.label }}</span>
         </NuxtLink>
 
-        <!-- Active or Non-clickable future step -->
         <div
           v-else
           class="step-content"
@@ -92,7 +88,6 @@ const progressPercentage = computed(() => Math.round((activeStepNumber.value / s
   min-width: 0;
 }
 
-/* Compact (mobile) */
 .stepper-compact {
   display: flex;
   flex-direction: column;

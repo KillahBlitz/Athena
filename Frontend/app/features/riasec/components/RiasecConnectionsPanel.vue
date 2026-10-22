@@ -5,7 +5,6 @@
       <span>NUEVAS CONEXIONES</span>
     </span>
 
-    <!-- Constellation: one star per option, selected stars get connected -->
     <svg class="riasec-constellation" viewBox="0 0 240 190" fill="none" aria-hidden="true">
       <ellipse cx="120" cy="95" rx="104" ry="78" class="constellation-orbit" />
       <polyline

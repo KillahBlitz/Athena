@@ -13,14 +13,12 @@
       </h2>
     </div>
 
-    <!-- Rating Scale -->
     <RatingScale
       :carrera-id="objective.carreraId"
       :model-value="answer.valoracion"
       @update:model-value="$emit('update:rating', $event)"
     />
 
-    <!-- Justification -->
     <div class="justification-section">
       <label :for="`justification-${objective.carreraId}`" class="justification-label">
         ¿Por qué seleccionaste esta valoración?

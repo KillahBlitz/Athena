@@ -1,6 +1,5 @@
 <template>
   <div class="objectives-page">
-    <!-- Header Row -->
     <div class="objectives-header-row">
       <div class="objectives-title-group">
         <span class="eyebrow">
@@ -13,11 +12,9 @@
         </p>
       </div>
 
-      <!-- Progress Tracker -->
       <ObjectiveProgress :progress="progress" />
     </div>
 
-    <!-- Active Block Grid (up to OBJECTIVES_PER_BLOCK questions) -->
     <ObjectiveGrid
       v-if="currentBlockData"
       :block="currentBlockData"
@@ -26,7 +23,6 @@
       @justification="setJustification"
     />
 
-    <!-- Informative completion banner when all blocks are finished -->
     <StageCelebration
       :show="isLastBlock && isCurrentBlockComplete"
       title="¡Has valorado todos los objetivos de esta área!"
@@ -37,9 +33,7 @@
       </BaseButton>
     </StageCelebration>
 
-    <!-- Bottom Navigation Bar matching Image 3 -->
     <div class="objectives-bottom-bar">
-      <!-- Left: Companion Avatar Guidance -->
       <div class="bottom-avatar-speech" role="note">
         <div class="bottom-avatar-img" aria-hidden="true">
           <img :src="selectedAvatar.image" alt="">
@@ -50,7 +44,6 @@
         </div>
       </div>
 
-      <!-- Right: Navigation Buttons -->
       <div class="bottom-actions-group">
         <button type="button" class="back-text-btn" @click="handleBack">
           <span aria-hidden="true">←</span>

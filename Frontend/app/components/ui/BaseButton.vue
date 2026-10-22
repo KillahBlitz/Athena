@@ -65,7 +65,6 @@ const isInteractive = computed(() => !props.disabled && !props.loading)
   }
 }
 
-/* Sizes */
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.82rem;
@@ -84,7 +83,6 @@ const isInteractive = computed(() => !props.disabled && !props.loading)
   min-height: 52px;
 }
 
-/* Variants */
 .btn-primary {
   background: var(--gradient-primary);
   color: var(--color-on-primary);

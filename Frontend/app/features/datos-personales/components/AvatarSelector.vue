@@ -5,7 +5,6 @@
       <span class="companion-active-note">{{ selectedAvatar.name }}</span>
     </div>
 
-    <!-- 4 Avatars Grid -->
     <div class="avatars-grid" role="radiogroup" aria-label="Selección de avatar acompañante">
       <div
         v-for="(avatar, index) in avatars"

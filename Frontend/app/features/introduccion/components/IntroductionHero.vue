@@ -19,7 +19,6 @@
       </div>
     </div>
 
-    <!-- Right Column: Visual card matching Image 1 -->
     <div class="hero-visual reveal" style="--reveal-index: 2" aria-label="Constelación e ilustración interactiva de Athena">
       <img
         src="/illustrations/hero-nebula.svg"
@@ -27,13 +26,11 @@
         class="nebula-illustration"
       >
 
-      <!-- Floating Top Pill -->
       <div class="floating-top-pill" aria-hidden="true">
         <span>✦</span>
         <span>Todo empieza con una pregunta</span>
       </div>
 
-      <!-- Floating Bottom Card -->
       <div class="floating-bottom-card" role="note">
         <div class="floating-avatar-icon" aria-hidden="true">
           <svg viewBox="0 0 40 40" width="28" height="28" fill="none">

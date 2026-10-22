@@ -1,11 +1,9 @@
-/* Objectives Page Layout */
 .objectives-page {
   display: flex;
   flex-direction: column;
   gap: clamp(1.25rem, 3vw, 2rem);
 }
 
-/* Page Header Row: stacked on mobile, title left / progress right from tablet */
 .objectives-header-row {
   display: flex;
   flex-direction: column;
@@ -27,7 +25,6 @@
   }
 }
 
-/* Progress widget */
 .objectives-progress-widget {
   display: flex;
   flex-direction: column;
@@ -99,7 +96,6 @@
   transition: width var(--motion-slow) var(--ease-out);
 }
 
-/* Questions grid: 1 column on mobile, 2 from tablet, 3x2 from wide desktop */
 .objectives-cards-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -118,7 +114,6 @@
   }
 }
 
-/* Objective Card */
 .objective-card {
   display: flex;
   flex-direction: column;
@@ -170,7 +165,6 @@
   text-wrap: pretty;
 }
 
-/* Rating Scale */
 .rating-section {
   display: flex;
   flex-direction: column;
@@ -233,7 +227,6 @@
   padding: 0 0.2rem;
 }
 
-/* Justification Textarea */
 .justification-section {
   display: flex;
   flex-direction: column;
@@ -279,7 +272,6 @@
   color: var(--color-text-muted);
 }
 
-/* Rating 1: disabled, grayed out */
 .justification-textarea.is-disabled {
   background-color: var(--color-border);
   color: var(--color-text-muted);
@@ -288,7 +280,6 @@
   resize: none;
 }
 
-/* Rating 5: mandatory, highlighted with primary color */
 .justification-textarea.is-required {
   border-color: var(--color-primary);
   background-color: var(--color-primary-light);
@@ -298,7 +289,6 @@
   box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.18);
 }
 
-/* Bottom Navigation Bar: sticky action bar on mobile, inline from tablet */
 .objectives-bottom-bar {
   position: sticky;
   bottom: 0;

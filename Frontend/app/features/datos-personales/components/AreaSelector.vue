@@ -5,7 +5,6 @@
       <p class="area-block-subheading">Selecciona una opción para comenzar.</p>
     </div>
 
-    <!-- Error state if areas fetch failed -->
     <ErrorMessage
       v-if="apiError"
       :message="apiError"
@@ -13,10 +12,8 @@
       @retry="$emit('retry')"
     />
 
-    <!-- Loading state -->
     <LoadingState v-else-if="loading" message="Cargando áreas de estudio..." />
 
-    <!-- 3 Area Cards Grid -->
     <div v-else class="areas-grid" role="radiogroup" aria-label="Selección de área académica">
       <div
         v-for="(area, index) in areas"

@@ -1,6 +1,5 @@
 <template>
   <div class="personal-data-layout">
-    <!-- Left Column: Companion Panel -->
     <aside class="companion-panel" aria-label="Acompañamiento vocacional">
       <div class="companion-badge-pill" role="status">
         <span class="companion-badge-avatar" aria-hidden="true">
@@ -38,14 +37,12 @@
       </div>
     </aside>
 
-    <!-- Right Column: Personal Data & Area Form -->
     <form class="personal-form-card" novalidate @submit.prevent="submit">
       <div class="form-card-header">
         <h2 class="form-card-title">Tus datos personales</h2>
         <span class="form-card-required-note">Todos los campos son obligatorios</span>
       </div>
 
-      <!-- 3 Inputs in a Row -->
       <div class="personal-inputs-row">
         <BaseInput
           id="name"
@@ -84,7 +81,6 @@
         />
       </div>
 
-      <!-- Academic Area Selector -->
       <AreaSelector
         :areas="areas"
         :selected-id="form.selectedAreaId"
@@ -95,7 +91,6 @@
         @retry="loadAreas"
       />
 
-      <!-- Terms and Conditions Checkbox -->
       <div class="terms-container">
         <label class="terms-row">
           <input
@@ -114,7 +109,6 @@
         </span>
       </div>
 
-      <!-- Navigation buttons row -->
       <div class="form-actions-row">
         <NuxtLink to="/" class="back-text-btn">
           <span aria-hidden="true">←</span>

@@ -14,7 +14,6 @@
       {{ question.texto_pregunta }}
     </h3>
 
-    <!-- Multi-select skill options -->
     <div
       class="riasec-options-grid"
       role="group"
