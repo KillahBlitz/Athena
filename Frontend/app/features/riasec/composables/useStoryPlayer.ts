@@ -27,8 +27,9 @@ export function useStoryPlayer({ sceneCount, intervalMs = 6000, canAutoplay }: S
   }
 
   const goTo = (index: number) => {
-    scene.value = Math.max(0, Math.min(index, sceneCount - 1))
-    schedule()
+    const target = Math.max(0, Math.min(index, sceneCount - 1))
+    if (target === scene.value) schedule() 
+    else scene.value = target
   }
 
   watch([scene, canAutoplay], schedule, { immediate: true, flush: 'sync' })

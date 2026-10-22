@@ -64,6 +64,47 @@ describe('AvatarStoryCard', () => {
     expect(wrapper.find('.story-indicator').text()).toContain('Escena 2 de 3')
   })
 
+  it('el avatar y el icono de la dimensión vuelven a entrar en cada escena', async () => {
+    const wrapper = mountCard()
+    const avatarBefore = wrapper.find('.story-avatar-enter').element
+    const propBefore = wrapper.find('.story-prop').element
+
+    await wrapper.find('button[aria-label="Escena siguiente"]').trigger('click')
+
+    expect(wrapper.find('.story-avatar-enter').element).not.toBe(avatarBefore)
+    expect(wrapper.find('.story-prop').element).not.toBe(propBefore)
+  })
+
+  it('la reacción desaparece a los 1500 ms', async () => {
+    const wrapper = mountCard(0)
+    await wrapper.setProps({ selectedCount: 1 })
+    expect(wrapper.find('.story-reaction').exists()).toBe(true)
+
+    vi.advanceTimersByTime(1500)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.story-reaction').exists()).toBe(false)
+  })
+
+  it('una reacción con la historia en pausa no reanuda el avance automático', async () => {
+    const wrapper = mountCard(0)
+    await wrapper.find('button[aria-label="Pausar historia"]').trigger('click')
+
+    await wrapper.setProps({ selectedCount: 1 })
+    expect(wrapper.find('.story-indicator').text()).toContain('Escena 2 de 3')
+    vi.advanceTimersByTime(12000)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.story-indicator').text()).toContain('Escena 2 de 3')
+  })
+
+  it('montar con selecciones ya guardadas no cuenta como reacción', () => {
+    const wrapper = mountCard(3)
+
+    expect(wrapper.find('.story-reaction').exists()).toBe(false)
+    expect(wrapper.find('.story-indicator').text()).toContain('Escena 1 de 3')
+  })
+
   it('tiene controles accesibles con anterior deshabilitado en la primera escena', () => {
     const wrapper = mountCard()
 

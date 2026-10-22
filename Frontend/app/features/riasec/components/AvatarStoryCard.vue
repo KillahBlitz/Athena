@@ -27,21 +27,38 @@
         :transition="presets.breathe.transition"
       >
         <Motion
-          :key="reactionKey"
+          :key="`enter-${player.scene.value}`"
           as="span"
-          class="story-avatar-face"
-          :animate="reactionKey > 0 ? presets.react.animate : {}"
-          :transition="presets.react.transition"
+          class="story-avatar-enter"
+          :initial="presets.celebrate.initial"
+          :animate="presets.celebrate.animate"
+          :transition="presets.celebrate.transition"
         >
-          <img :src="avatar.image" alt="">
+          <Motion
+            :key="reactionKey"
+            as="span"
+            class="story-avatar-face"
+            :animate="reactionKey > 0 ? presets.react.animate : {}"
+            :transition="presets.react.transition"
+          >
+            <img :src="avatar.image" alt="">
+          </Motion>
         </Motion>
       </Motion>
 
-      <span class="story-prop" aria-hidden="true">
+      <Motion
+        :key="`prop-${player.scene.value}`"
+        as="span"
+        class="story-prop"
+        aria-hidden="true"
+        :initial="presets.sparkle.initial"
+        :animate="propEntrance"
+        :transition="presets.celebrate.transition"
+      >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path v-for="d in dimension.icon" :key="d" :d="d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-      </span>
+      </Motion>
 
       <AnimatePresence mode="wait" :initial="false">
         <Motion
@@ -133,6 +150,7 @@ const canAutoplay = computed(() => !paused.value && !reduced.value && inView.val
 const player = useStoryPlayer({ sceneCount: STORY_SCENE_COUNT, canAutoplay })
 
 const dimension = computed(() => getRiasecDimension(props.riasecId))
+const propEntrance = computed(() => ({ ...presets.value.celebrate.animate, opacity: 1 }))
 const scenes = computed(() => storyFor(props.riasecId, props.avatar.name))
 const currentScene = computed(() => scenes.value[player.scene.value] ?? scenes.value[0]!)
 
@@ -229,7 +247,7 @@ onScopeDispose(() => {
   gap: 0.5rem 1rem;
   align-items: center;
   min-height: 9.5rem;
-  padding: 1rem;
+  padding: 2.5rem 1rem 1rem;
   border-radius: var(--radius-xl);
   background: var(--gradient-brand-soft);
   overflow: hidden;
@@ -244,6 +262,13 @@ onScopeDispose(() => {
   border-radius: 50%;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-glow);
+}
+
+.story-avatar-enter {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 .story-avatar-face {
@@ -308,7 +333,7 @@ onScopeDispose(() => {
 
 .story-reaction {
   position: absolute;
-  top: 0.6rem;
+  top: 0.5rem;
   right: 0.6rem;
   padding: 0.3rem 0.7rem;
   font-size: 0.78rem;

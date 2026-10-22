@@ -137,7 +137,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: clamp(1rem, 2.5vw, 1.5rem);
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (min-width: 1024px) {
@@ -148,12 +148,13 @@
 
 /* Side column: connections panel + avatar story keep their own height */
 .riasec-side {
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 2.5vw, 1.5rem);
 }
 
-@media (min-width: 1024px) and (min-height: 820px) {
+@media (min-width: 1024px) and (min-height: 900px) {
   .riasec-side {
     position: sticky;
     top: calc(var(--header-height) + 1rem);

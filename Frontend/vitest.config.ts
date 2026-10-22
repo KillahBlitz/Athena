@@ -12,6 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
-    include: ['test/unit/**/*.spec.ts']
+    include: ['test/unit/**/*.spec.ts'],
+    setupFiles: ['test/setup/waapi.ts']
   }
 })
