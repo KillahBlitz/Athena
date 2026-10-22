@@ -50,7 +50,7 @@
         <BaseInput
           id="name"
           v-model="form.name"
-          label="Nombre"
+          label="Nombre Completo"
           placeholder="Valeria Hernández"
           autocomplete="name"
           :required="true"

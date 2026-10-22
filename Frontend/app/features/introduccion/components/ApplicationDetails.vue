@@ -7,7 +7,7 @@
       </span>
       <h2 id="details-heading">¿Qué es ATHENA?</h2>
       <p>
-        ATHENA es un sistema web de apoyo para la orientación vocacional. A partir de tus respuestas, analiza la afinidad entre tu perfil y características de las carreras del Instituto Politécnico Nacional.
+        ATHENA es un sistema web de apoyo para la orientación vocacional. A partir de tus respuestas, analiza la afinidad entre tu perfil y características de los programas académicos del Instituto Politécnico Nacional.
       </p>
       <p class="details-note">
         Los resultados funcionan como una referencia para explorar opciones académicas. ATHENA no sustituye tu decisión personal ni el acompañamiento de un orientador profesional.
@@ -58,7 +58,7 @@
         <div class="roadmap-step-card reveal" style="--reveal-index: 2">
           <div class="step-badge-number">2</div>
           <h4>Datos personales</h4>
-          <p>Ingresa tus datos, selecciona un avatar y elige el área académica que deseas explorar.</p>
+          <p>Ingresa tus datos, selecciona un comañpero y elige el área académica que deseas explorar.</p>
         </div>
         <div class="roadmap-step-card reveal" style="--reveal-index: 3">
           <div class="step-badge-number">3</div>
@@ -86,7 +86,8 @@
       <ul class="guidance-list">
         <li>Lee cuidadosamente cada pregunta.</li>
         <li>Responde desde tu experiencia e intereses personales.</li>
-        <li>Explica tus respuestas cuando se solicite.</li>
+        <li>Explica detalladamente tus respuestas cuando se solicite.</li>
+        <li>Debes ser honesto con tus respuestas.</li>
         <li>Completa todas las etapas para obtener tus resultados.</li>
       </ul>
     </div>
@@ -109,6 +110,7 @@
         <span class="eyebrow"><span>✦</span><span>LISTO PARA EMPEZAR</span></span>
         <h2>Prepárate para comenzar</h2>
         <p>Realiza la evaluación en un lugar tranquilo, lee cada pregunta con atención y responde sin apresurarte. La utilidad de los resultados depende de que tus respuestas representen lo que realmente te interesa.</p>
+        <p> </p>
       </div>
       <NuxtLink
         to="/datos-personales"

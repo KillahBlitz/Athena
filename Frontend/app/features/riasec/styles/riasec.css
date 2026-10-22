@@ -500,3 +500,8 @@
   font-size: 0.85rem;
   color: var(--color-text-secondary);
 }
+
+/* Submit error shown under the completion banner */
+.riasec-submit-error {
+  margin-top: 1rem;
+}

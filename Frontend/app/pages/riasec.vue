@@ -36,12 +36,26 @@
     <StageCelebration
       :show="isCompleted"
       title="¡Has explorado todas las dimensiones!"
-      message="Tus habilidades y reflexiones han sido registradas. Puedes revisarlas antes de ver tus resultados."
+      message="Tus habilidades y reflexiones están listas. Revísalas o finaliza el test para enviar tus resultados."
     >
-      <BaseButton variant="outline" size="sm" @click="handleBack">
+      <BaseButton variant="outline" size="sm" :disabled="isSubmitting" @click="handleBack">
         Revisar respuestas
       </BaseButton>
+      <BaseButton variant="primary" size="sm" :loading="isSubmitting" @click="handleFinish">
+        <span>{{ isSubmitting ? 'Guardando...' : 'Finalizar' }}</span>
+        <template v-if="!isSubmitting" #suffix>
+          <span aria-hidden="true">→</span>
+        </template>
+      </BaseButton>
     </StageCelebration>
+
+    <ErrorMessage
+      v-if="isCompleted && submitError"
+      class="riasec-submit-error"
+      :message="submitError"
+      retryable
+      @retry="handleFinish"
+    />
 
     <template v-if="!isCompleted && currentQuestion">
       <AnimatePresence mode="wait" :initial="false">
@@ -122,6 +136,7 @@ import RiasecReflection from '../features/riasec/components/RiasecReflection.vue
 import AvatarStoryCard from '../features/riasec/components/AvatarStoryCard.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import StageCelebration from '../components/ui/StageCelebration.vue'
+import ErrorMessage from '../components/ui/ErrorMessage.vue'
 import { useMotionPresets } from '../composables/useMotionPresets'
 
 useHead({
@@ -140,10 +155,13 @@ const {
   isCurrentComplete,
   isLastQuestion,
   isCompleted,
+  isSubmitting,
+  submitError,
   toggleOption,
   setOpenAnswer,
   goToDimension,
   handleNext,
+  handleFinish,
   handleBack
 } = useRiasecForm()
 
