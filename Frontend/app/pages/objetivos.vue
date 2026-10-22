@@ -17,7 +17,7 @@
       <ObjectiveProgress :progress="progress" />
     </div>
 
-    <!-- Active Block Grid (Dynamic up to 4 questions in 2x2 layout) -->
+    <!-- Active Block Grid (up to OBJECTIVES_PER_BLOCK questions) -->
     <ObjectiveGrid
       v-if="currentBlockData"
       :block="currentBlockData"

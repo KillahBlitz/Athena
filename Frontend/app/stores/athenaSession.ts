@@ -6,6 +6,7 @@ import type { Avatar } from '../types/avatar'
 import type { RiasecAnswer, RiasecProgress } from '../types/riasec'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
+import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
 
 const STORAGE_KEY = 'athena_session_v2'
 
@@ -55,23 +56,23 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     },
 
     blocks: (state): ObjectiveBlock[] => {
-      return createObjectiveBlocks(state.objectives, 4)
+      return createObjectiveBlocks(state.objectives, OBJECTIVES_PER_BLOCK)
     },
 
     totalBlocks: (state): number => {
-      return Math.ceil(state.objectives.length / 4)
+      return Math.ceil(state.objectives.length / OBJECTIVES_PER_BLOCK)
     },
 
     currentBlockData: (state): ObjectiveBlock | null => {
-      const allBlocks = createObjectiveBlocks(state.objectives, 4)
+      const allBlocks = createObjectiveBlocks(state.objectives, OBJECTIVES_PER_BLOCK)
       if (allBlocks.length === 0) return null
       const idx = Math.max(1, Math.min(state.currentBlock, allBlocks.length))
       return allBlocks[idx - 1] || null
     },
 
-    progress: (state): ObjectivesProgress => {
+    progress(state): ObjectivesProgress {
       const total = state.objectives.length
-      const totalBlocks = Math.ceil(total / 4)
+      const totalBlocks = this.totalBlocks
       if (total === 0) {
         return {
           currentBlock: state.currentBlock,
@@ -93,7 +94,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       const percentage = Math.min(100, Math.round((answeredCount / total) * 100))
 
       return {
-        currentBlock: state.currentBlock,
+        currentBlock: Math.max(1, Math.min(state.currentBlock, totalBlocks)),
         totalBlocks,
         answeredCount,
         totalObjectives: total,
@@ -102,7 +103,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     },
 
     isCurrentBlockComplete: (state): boolean => {
-      const allBlocks = createObjectiveBlocks(state.objectives, 4)
+      const allBlocks = createObjectiveBlocks(state.objectives, OBJECTIVES_PER_BLOCK)
       if (allBlocks.length === 0) return false
       const idx = Math.max(1, Math.min(state.currentBlock, allBlocks.length))
       const currentBlockData = allBlocks[idx - 1]
@@ -232,16 +233,14 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     },
 
     goToBlock(blockNumber: number) {
-      const total = Math.ceil(this.objectives.length / 4)
-      if (blockNumber >= 1 && blockNumber <= total) {
+      if (blockNumber >= 1 && blockNumber <= this.totalBlocks) {
         this.currentBlock = blockNumber
         this.persist()
       }
     },
 
     nextBlock() {
-      const total = Math.ceil(this.objectives.length / 4)
-      if (this.currentBlock < total) {
+      if (this.currentBlock < this.totalBlocks) {
         this.currentBlock++
         this.persist()
       } else {
@@ -290,11 +289,18 @@ export const useAthenaSessionStore = defineStore('athena-session', {
           if (raw) {
             const data = JSON.parse(raw)
             this.$patch(data)
+            this.clampCurrentBlock()
           }
         } catch {
           localStorage.removeItem(STORAGE_KEY)
         }
       }
+    },
+
+    clampCurrentBlock() {
+      const block = Number(this.currentBlock)
+      const isValid = Number.isInteger(block) && block >= 1
+      this.currentBlock = isValid ? Math.min(block, Math.max(1, this.totalBlocks)) : 1
     },
 
     reset() {

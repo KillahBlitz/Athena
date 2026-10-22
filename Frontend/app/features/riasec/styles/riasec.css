@@ -137,12 +137,26 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: clamp(1rem, 2.5vw, 1.5rem);
-  align-items: stretch;
+  align-items: start;
 }
 
 @media (min-width: 1024px) {
   .riasec-main-grid {
     grid-template-columns: minmax(0, 1fr) 368px;
+  }
+}
+
+/* Side column: connections panel + avatar story keep their own height */
+.riasec-side {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+@media (min-width: 1024px) and (min-height: 820px) {
+  .riasec-side {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
   }
 }
 
@@ -326,9 +340,10 @@
 
 .riasec-constellation {
   width: 100%;
-  flex: 1;
-  min-height: 140px;
-  max-height: 220px;
+  max-width: 320px;
+  height: auto;
+  margin-inline: auto;
+  aspect-ratio: 240 / 190;
 }
 
 .constellation-orbit {

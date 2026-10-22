@@ -62,11 +62,18 @@
               @toggle="toggleOption"
             />
 
-            <RiasecConnectionsPanel
-              :options="currentOptions"
-              :selected-ids="currentAnswer.opcionIds"
-              :avatar="selectedAvatar"
-            />
+            <div class="riasec-side">
+              <RiasecConnectionsPanel
+                :options="currentOptions"
+                :selected-ids="currentAnswer.opcionIds"
+                :avatar="selectedAvatar"
+              />
+              <AvatarStoryCard
+                :avatar="selectedAvatar"
+                :riasec-id="currentQuestion.riasec_id"
+                :selected-count="currentAnswer.opcionIds.length"
+              />
+            </div>
           </div>
 
           <RiasecReflection
@@ -112,6 +119,7 @@ import RiasecDimensionTabs from '../features/riasec/components/RiasecDimensionTa
 import RiasecQuestionCard from '../features/riasec/components/RiasecQuestionCard.vue'
 import RiasecConnectionsPanel from '../features/riasec/components/RiasecConnectionsPanel.vue'
 import RiasecReflection from '../features/riasec/components/RiasecReflection.vue'
+import AvatarStoryCard from '../features/riasec/components/AvatarStoryCard.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import StageCelebration from '../components/ui/StageCelebration.vue'
 import { useMotionPresets } from '../composables/useMotionPresets'
