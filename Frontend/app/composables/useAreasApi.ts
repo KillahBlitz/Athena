@@ -3,7 +3,7 @@ import { createApiError } from '../utils/apiError'
 
 export function useAreasApi() {
   const config = useRuntimeConfig()
-  const apiBase = (config.public.apiBase as string) || 'http://localhost:8001'
+  const apiBase = config.public.apiBase as string
 
   const fetchAreas = async (): Promise<BackendAreaDTO[]> => {
     try {

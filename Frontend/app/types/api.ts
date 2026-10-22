@@ -9,3 +9,25 @@ export interface ApiResponse<T> {
   error: ApiError | null
   loading: boolean
 }
+
+// Mirrors Backend/src/models/request/save_user_request.py
+export interface SaveUserObjectiveDTO {
+  id_objetive: number
+  puntuation: number
+  description: string
+}
+
+export interface SaveUserRiasecDTO {
+  risec_id: number
+  criteria_id_list: number[]
+  open_question: string
+}
+
+export interface SaveUserRequestDTO {
+  username: string
+  email: string
+  age: number
+  area_id: number
+  objetives: SaveUserObjectiveDTO[]
+  risec_questions: SaveUserRiasecDTO[]
+}

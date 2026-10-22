@@ -1,10 +1,11 @@
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../../../stores/athenaSession'
 import type { BackendPreguntaDTO } from '../../../types/area'
 import type { Avatar } from '../../../types/avatar'
 import type { RiasecAnswer, RiasecDimension, RiasecOption, RiasecProgress } from '../../../types/riasec'
 import { getRiasecDimension } from '../config/riasecDimensions'
+import { TEST_SUBMITTED_KEY, useSaveUserApi } from '../../../composables/useSaveUserApi'
 
 export interface RiasecTab {
   index: number
@@ -17,6 +18,9 @@ export interface RiasecTab {
 export function useRiasecForm() {
   const router = useRouter()
   const session = useAthenaSessionStore()
+  const { saveUser } = useSaveUserApi()
+  const isSubmitting = ref(false)
+  const submitError = ref<string | null>(null)
 
   onMounted(() => {
     session.restore()
@@ -94,6 +98,43 @@ export function useRiasecForm() {
     scrollTop()
   }
 
+  // Catches incomplete session data before the backend answers with a 422
+  const findMissingData = (): string | null => {
+    const payload = session.saveUserPayload
+    if (!payload.username || !payload.email || !Number.isInteger(payload.age) || !payload.area_id) {
+      return 'Faltan tus datos personales (nombre, correo, edad o área). Complétalos en "Datos personales".'
+    }
+    const unrated = payload.objetives.filter(obj => obj.puntuation < 1 || obj.puntuation > 5).length
+    if (unrated > 0) {
+      return `Tienes ${unrated} objetivo${unrated === 1 ? '' : 's'} sin valorar. Complétalos en "Objetivos".`
+    }
+    if (payload.risec_questions.some(q => q.criteria_id_list.length === 0)) {
+      return 'Hay dimensiones RISEC sin ninguna habilidad seleccionada.'
+    }
+    return null
+  }
+
+  // Sends every answer of the test; only a `true` response moves on to the waiting screen
+  const handleFinish = async () => {
+    if (isSubmitting.value) return
+    submitError.value = findMissingData()
+    if (submitError.value) return
+    isSubmitting.value = true
+    try {
+      const saved = await saveUser(session.saveUserPayload)
+      if (!saved) {
+        submitError.value = 'El servidor no confirmó el guardado de tus resultados. Inténtalo de nuevo.'
+        return
+      }
+      localStorage.setItem(TEST_SUBMITTED_KEY, 'true')
+      await router.push('/espera')
+    } catch (err) {
+      submitError.value = (err as { message?: string }).message ?? 'No fue posible guardar tus resultados.'
+    } finally {
+      isSubmitting.value = false
+    }
+  }
+
   const handleBack = () => {
     if (isCompleted.value) {
       session.goToRiasecQuestion(currentIndex.value)
@@ -119,10 +160,13 @@ export function useRiasecForm() {
     isCurrentComplete,
     isLastQuestion,
     isCompleted,
+    isSubmitting,
+    submitError,
     toggleOption,
     setOpenAnswer,
     goToDimension,
     handleNext,
+    handleFinish,
     handleBack
   }
 }

@@ -4,6 +4,7 @@ import type { NormalizedObjective, ObjectiveBlock, RatingValue, ObjectivesProgre
 import type { PersonalData } from '../types/session'
 import type { Avatar } from '../types/avatar'
 import type { RiasecAnswer, RiasecProgress } from '../types/riasec'
+import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
@@ -136,7 +137,24 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         answeredCount,
         percentage: total === 0 ? 0 : Math.round((Math.min(state.currentRiasecIndex + 1, total) / total) * 100)
       }
-    }
+    },
+
+    saveUserPayload: (state): SaveUserRequestDTO => ({
+      username: state.name,
+      email: state.email,
+      age: Number(state.age),
+      area_id: state.selectedAreaId ?? 0,
+      objetives: state.objectives.map(obj => ({
+        id_objetive: obj.carreraId,
+        puntuation: state.answers[obj.carreraId]?.valoracion ?? 0,
+        description: state.answers[obj.carreraId]?.justificacion.trim() ?? ''
+      })),
+      risec_questions: (state.areaData?.preguntas ?? []).map(q => ({
+        risec_id: q.riasec_id,
+        criteria_id_list: state.riasecAnswers[q.riasec_id]?.opcionIds ?? [],
+        open_question: state.riasecAnswers[q.riasec_id]?.respuestaAbierta.trim() ?? ''
+      }))
+    })
   },
 
   actions: {
