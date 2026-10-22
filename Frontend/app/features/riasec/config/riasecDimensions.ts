@@ -1,9 +1,5 @@
 import type { RiasecDimension } from '../../../types/riasec'
 
-/**
- * Display metadata for each RIASEC dimension, keyed by backend riasec_id.
- * Icons are 24x24 stroke paths.
- */
 export const RIASEC_DIMENSIONS: Record<number, RiasecDimension> = {
   1: {
     name: 'Realista',
