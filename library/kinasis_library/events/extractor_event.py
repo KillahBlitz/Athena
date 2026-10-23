@@ -1,14 +1,14 @@
-from typing import Annotated, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import List
 
 class Objetives(BaseModel):
     id_objetive: int
+    id_carrera: int
     porc_evaluation: float
     description: str
 
 class RisecAnswer(BaseModel):
-    risec_id: int
-    criteria_list: List[int]
+    criteria_list: List[dict[int, str]]
     open_question: str
 
 class ExtractorEvent(BaseModel):
@@ -16,4 +16,4 @@ class ExtractorEvent(BaseModel):
     uuid_user: str
     area_id: int
     objetives: List[Objetives]
-    questions: List[RisecAnswer]
+    questions: dict[int, RisecAnswer]
