@@ -21,7 +21,8 @@ def get_areas():
     return ah.get_areas()
 
 @api.post("/save-user")
-def save_user(payload: SaveUserRequest) -> bool:
+def save_user(payload: SaveUserRequest) -> str:
+    ah.generate_user_event(payload)
     return True
 
 @api.get("/{area_id}", response_model=QuestionaryResponse)

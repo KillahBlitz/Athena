@@ -97,20 +97,50 @@
 }
 
 .objectives-cards-grid {
+  /* Horizontal track: the block's objectives sit side by side and are reached by scrolling */
+  --card-width: 86%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: var(--card-width);
   gap: clamp(1rem, 2.5vw, 1.75rem);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  /* Room for the card shadow and the scrollbar */
+  padding: 2px 2px 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-border) transparent;
+}
+
+.objectives-cards-grid > .objective-card {
+  scroll-snap-align: start;
+}
+
+.objectives-cards-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.objectives-cards-grid::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-border);
+  border-radius: var(--radius-full);
 }
 
 @media (min-width: 768px) {
   .objectives-cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --card-width: calc((100% - clamp(1rem, 2.5vw, 1.75rem)) / 2.15);
   }
 }
 
 @media (min-width: 1280px) {
   .objectives-cards-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    --card-width: calc((100% - 2 * clamp(1rem, 2.5vw, 1.75rem)) / 3.15);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .objectives-cards-grid {
+    scroll-behavior: smooth;
   }
 }
 

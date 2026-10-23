@@ -1,20 +1,19 @@
-from pydantic import BaseModel
-from typing import List
+from typing import Annotated, List
+from pydantic import BaseModel, Field
 
+class Objetives(BaseModel):
+    id_objetive: int
+    porc_evaluation: float
+    description: str
 
-class Hability(BaseModel):
-    id_hablity: int
-    hablity_name: str
-
-class FormData(BaseModel):
-    form_id: int
-    response_s: str
-    response_t: str
-    response_a: str
-    response_r: str
+class RisecAnswer(BaseModel):
+    risec_id: int
+    criteria_list: List[int]
+    open_question: str
 
 class ExtractorEvent(BaseModel):
-    user_uuid: str
-    id_area: int
-    hablities_list: List[Hability]
-    form_list: List[FormData]
+    user_id: int
+    uuid_user: str
+    area_id: int
+    objetives: List[Objetives]
+    questions: List[RisecAnswer]

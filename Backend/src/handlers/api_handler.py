@@ -1,7 +1,9 @@
 from collections import defaultdict
 
+from kinasis_library.events.extractor_event import ExtractorEvent
 from handlers.query_handler import QueryHandler
 from handlers.command_handler import CommandHandler
+from models.request.save_user_request import SaveUserRequest
 from models.response.questionary_response import QuestionaryResponse
 
 class ApiHandler:
@@ -23,3 +25,6 @@ class ApiHandler:
                      for pregunta in self._qh.get_questions_by_area_id(area_id)]
         objetivos = {o["carrera_id"]: o["pregunta_objetivo"] for o in self._qh.get_objetivos_by_area_id(area_id)}
         return QuestionaryResponse(**area, objetivos=objetivos, preguntas=preguntas)
+
+    def generate_user_event(self, params: SaveUserRequest):
+        pass
