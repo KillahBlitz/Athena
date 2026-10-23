@@ -18,16 +18,21 @@ ah = ApiHandler()
 
 @api.get("/get_areas")
 def get_areas():
-    return ah.get_areas()
+    result = ah.get_areas()
+    if result is None:
+        raise fastapi.HTTPException(status_code=404, detail=f"No se encontraron áreas")
+    return result
 
 @api.post("/save-user")
 def save_user(payload: SaveUserRequest) -> str:
-    ah.generate_user_event(payload)
-    return True
+    result = ah.generate_user_event(payload)
+    if result is None:
+            raise fastapi.HTTPException(status_code=404, detail=f"Error generating user event")
+    return result
 
 @api.get("/{area_id}", response_model=QuestionaryResponse)
 def get_area_data(area_id: int):
-    data = ah.get_area_data(area_id)
-    if data is None:
+    result = ah.get_area_data(area_id)
+    if result is None:
         raise fastapi.HTTPException(status_code=404, detail=f"Área {area_id} no encontrada")
-    return data
+    return result

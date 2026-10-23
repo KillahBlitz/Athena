@@ -57,7 +57,7 @@
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../stores/athenaSession'
-import { TEST_SUBMITTED_KEY } from '../composables/useSaveUserApi'
+import { EVALUATION_UUID_KEY, getEvaluationUuid } from '../utils/evaluationStorage'
 import { useMotionPresets } from '../composables/useMotionPresets'
 
 useHead({
@@ -90,12 +90,19 @@ const firstName = computed(() => session.name.split(' ')[0] ?? '')
 const activeStep = ref(1)
 let timer: ReturnType<typeof setInterval> | null = null
 
+const handleStorageChange = (event: StorageEvent) => {
+  if ((event.key === EVALUATION_UUID_KEY || event.key === null) && !getEvaluationUuid()) {
+    router.replace('/riasec')
+  }
+}
+
 onMounted(() => {
-  if (localStorage.getItem(TEST_SUBMITTED_KEY) !== 'true') {
+  if (!getEvaluationUuid()) {
     router.replace('/riasec')
     return
   }
   session.restore()
+  window.addEventListener('storage', handleStorageChange)
   timer = setInterval(() => {
     if (activeStep.value < STEPS.length - 1) activeStep.value++
     else if (timer !== null) clearInterval(timer)
@@ -103,6 +110,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('storage', handleStorageChange)
   if (timer !== null) clearInterval(timer)
 })
 </script>

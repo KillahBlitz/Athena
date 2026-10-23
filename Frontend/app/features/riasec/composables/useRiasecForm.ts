@@ -5,7 +5,8 @@ import type { BackendPreguntaDTO } from '../../../types/area'
 import type { Avatar } from '../../../types/avatar'
 import type { RiasecAnswer, RiasecDimension, RiasecOption, RiasecProgress } from '../../../types/riasec'
 import { getRiasecDimension } from '../config/riasecDimensions'
-import { TEST_SUBMITTED_KEY, useSaveUserApi } from '../../../composables/useSaveUserApi'
+import { useSaveUserApi } from '../../../composables/useSaveUserApi'
+import { saveEvaluationUuid } from '../../../utils/evaluationStorage'
 
 export interface RiasecTab {
   index: number
@@ -117,12 +118,8 @@ export function useRiasecForm() {
     if (submitError.value) return
     isSubmitting.value = true
     try {
-      const saved = await saveUser(session.saveUserPayload)
-      if (!saved) {
-        submitError.value = 'El servidor no confirmó el guardado de tus resultados. Inténtalo de nuevo.'
-        return
-      }
-      localStorage.setItem(TEST_SUBMITTED_KEY, 'true')
+      const uuid = await saveUser(session.saveUserPayload)
+      saveEvaluationUuid(uuid)
       await router.push('/espera')
     } catch (err) {
       submitError.value = (err as { message?: string }).message ?? 'No fue posible guardar tus resultados.'

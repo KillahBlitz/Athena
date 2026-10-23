@@ -11,3 +11,12 @@ def get_dict_envs_db_conection():
         "DB_NAME": cm.get_env("DB_CONECTION"),
     }
     return envs
+
+def get_dict_envs_redis_conection():
+    cm = ConfigManager()
+    envs = {
+        "REDIS_HOST": cm.get_env("REDIS_HOST"),
+        "REDIS_PORT": cm.get_env("REDIS_PORT"),
+        "REDIS_PASSWORD": cm.get_env("REDIS_PASSWORD"),
+    }
+    return envs
