@@ -1,0 +1,33 @@
+{
+  "area_id": 1,
+  "nom_area": "Ciencias Físico Matemáticas",
+  "objetivos": {
+    "101": "Diseñar sistemas que resuelvan problemas reales con tecnología.",
+    "102": "Investigar fenómenos físicos y explicarlos con modelos matemáticos.",
+    "103": "Construir infraestructura que mejore la vida en las ciudades.",
+    "104": "Crear software que use datos para tomar mejores decisiones.",
+    "105": "Proteger el medio ambiente con soluciones de ingeniería.",
+    "106": "Analizar datos financieros para tomar mejores decisiones.",
+    "107": "Diseñar redes de comunicación seguras y rápidas.",
+    "108": null
+  },
+  "preguntas": [
+    {
+      "riasec_id": 1,
+      "texto_pregunta": "¿Qué actividades prácticas disfrutas más?",
+      "pregunta_abierta": "Cuéntanos de algo que hayas construido o reparado.",
+      "opciones": {
+        "11": "Armar o reparar aparatos",
+        "12": "Trabajar con herramientas"
+      }
+    },
+    {
+      "riasec_id": 2,
+      "texto_pregunta": "¿Qué te gusta investigar?",
+      "pregunta_abierta": "Describe una pregunta que te haya dado curiosidad.",
+      "opciones": {
+        "21": "Resolver problemas matemáticos"
+      }
+    }
+  ]
+}
