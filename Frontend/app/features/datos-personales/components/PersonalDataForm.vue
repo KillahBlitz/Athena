@@ -19,22 +19,7 @@
         @select="selectAvatar"
       />
 
-      <div class="companion-speech-card" role="note">
-        <Motion
-          :key="form.selectedAvatarId"
-          class="companion-speech-avatar"
-          aria-hidden="true"
-          :animate="presets.select.animate"
-          :transition="presets.select.transition"
-        >
-          <img :src="selectedAvatar?.image || '/avatars/nova.svg'" alt="">
-        </Motion>
-        <div class="companion-speech-content">
-          <strong class="companion-speech-title">
-            {{ greetingText }}
-          </strong>
-        </div>
-      </div>
+      <AvatarCompanion :avatar="selectedAvatar" :name="form.name" stage="personal" />
     </aside>
 
     <form class="personal-form-card" novalidate @submit.prevent="submit">
@@ -133,14 +118,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { AVATARS } from '../../../config/avatars'
 import { usePersonalDataForm } from '../composables/usePersonalDataForm'
 import AvatarSelector from './AvatarSelector.vue'
 import AreaSelector from './AreaSelector.vue'
 import BaseInput from '../../../components/ui/BaseInput.vue'
 import BaseButton from '../../../components/ui/BaseButton.vue'
-import { useMotionPresets } from '../../../composables/useMotionPresets'
+import AvatarCompanion from '../../../components/avatar/AvatarCompanion.vue'
 
 const {
   form,
@@ -160,17 +144,6 @@ const {
 } = usePersonalDataForm()
 
 const avatarsList = AVATARS
-const presets = useMotionPresets()
-
-const greetingText = computed(() => {
-  const firstName = form.name.trim().split(' ')[0]
-  const greeting = selectedAvatar.value?.greeting || '¡Qué gusto conocerte'
-  if (firstName) {
-    return `${greeting}, ${firstName}!`
-  }
-  return `${greeting}!`
-})
-
 const openTermsModal = () => {
   alert('Términos y condiciones de ATHENA: La información recopilada se utiliza exclusivamente con fines de orientación vocacional académica y está protegida conforme a las leyes de privacidad aplicables.')
 }

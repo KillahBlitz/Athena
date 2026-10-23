@@ -16,7 +16,7 @@
           {{ locked ? 'Selecciona al menos una habilidad para continuar' : `Reflexión · ${dimensionName}` }}
         </span>
         <label :for="`riasec-open-${riasecId}`" class="riasec-reflection-question">
-          {{ question }}
+          {{ question }} (obligatoria)
         </label>
       </div>
       <span v-if="locked" class="riasec-reflection-status">Aún no disponible</span>
@@ -29,6 +29,7 @@
       class="justification-textarea"
       placeholder="Cuéntanos con tus propias palabras..."
       rows="3"
+      required
       @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
     />
   </section>

@@ -6,7 +6,7 @@ import type { Avatar } from '../../../types/avatar'
 import type { RiasecAnswer, RiasecDimension, RiasecOption, RiasecProgress } from '../../../types/riasec'
 import { getRiasecDimension } from '../config/riasecDimensions'
 import { useSaveUserApi } from '../../../composables/useSaveUserApi'
-import { saveEvaluationUuid } from '../../../utils/evaluationStorage'
+import { getEvaluationUuid, saveEvaluationUuid } from '../../../utils/evaluationStorage'
 
 export interface RiasecTab {
   index: number
@@ -55,7 +55,8 @@ export function useRiasecForm() {
   const tabs = computed<RiasecTab[]>(() => {
     let reachable = true
     return questions.value.map((q, index) => {
-      const isAnswered = getAnswerFor(q.riasec_id).opcionIds.length > 0
+      const answer = getAnswerFor(q.riasec_id)
+      const isAnswered = answer.opcionIds.length > 0 && answer.respuestaAbierta.trim().length > 0
       const tab = {
         index,
         dimension: getRiasecDimension(q.riasec_id),
@@ -70,7 +71,9 @@ export function useRiasecForm() {
 
   const selectedAvatar = computed<Avatar>(() => session.selectedAvatar)
   const progress = computed<RiasecProgress>(() => session.riasecProgress)
-  const isCurrentComplete = computed<boolean>(() => currentAnswer.value.opcionIds.length > 0)
+  const isCurrentComplete = computed<boolean>(() =>
+    currentAnswer.value.opcionIds.length > 0 && currentAnswer.value.respuestaAbierta.trim().length > 0
+  )
   const isLastQuestion = computed<boolean>(() => currentIndex.value === questions.value.length - 1)
   const isCompleted = computed<boolean>(() => session.status === 'riasec-completed')
 
@@ -109,11 +112,18 @@ export function useRiasecForm() {
     if (payload.risec_questions.some(q => q.criteria_id_list.length === 0)) {
       return 'Hay dimensiones RISEC sin ninguna habilidad seleccionada.'
     }
+    if (payload.risec_questions.some(q => !q.open_question.trim())) {
+      return 'Responde la pregunta abierta de cada dimensión RISEC antes de finalizar.'
+    }
     return null
   }
 
   const handleFinish = async () => {
     if (isSubmitting.value) return
+    if (getEvaluationUuid()) {
+      await router.replace('/espera')
+      return
+    }
     submitError.value = findMissingData()
     if (submitError.value) return
     isSubmitting.value = true

@@ -51,7 +51,58 @@ function mountCompletedForm() {
   return { form, wrapper }
 }
 
+describe('respuestas abiertas RISEC obligatorias', () => {
+  it.each(['', '   ', '\n\t'])('bloquea avance y envío con una respuesta vacía: %j', async (answer) => {
+    const { form, wrapper } = mountCompletedForm()
+    const session = useAthenaSessionStore()
+    form.setOpenAnswer(answer)
+
+    expect(form.isCurrentComplete.value).toBe(false)
+    expect(form.tabs.value[0]?.isAnswered).toBe(false)
+    expect(form.progress.value.answeredCount).toBe(0)
+    form.handleNext()
+    expect(session.status).not.toBe('riasec-completed')
+
+    await form.handleFinish()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(form.submitError.value).toContain('pregunta abierta')
+
+    form.setOpenAnswer(' Reparo aparatos ')
+    expect(form.isCurrentComplete.value).toBe(true)
+    expect(form.tabs.value[0]?.isAnswered).toBe(true)
+    expect(form.progress.value.answeredCount).toBe(1)
+    wrapper.unmount()
+  })
+})
+
 describe('envío del cuestionario con UUID', () => {
+  it('conserva la evaluación enviada al intentar reiniciar desde el logo', () => {
+    const { wrapper } = mountCompletedForm()
+    const session = useAthenaSessionStore()
+    localStorage.setItem(EVALUATION_UUID_KEY, UUID)
+    const snapshot = JSON.stringify(session.$state)
+    localStorage.setItem('athena_session_v2', snapshot)
+
+    session.reset()
+
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
+    expect(localStorage.getItem('athena_session_v2')).toBe(snapshot)
+    expect(JSON.stringify(session.$state)).toBe(snapshot)
+    wrapper.unmount()
+  })
+
+  it('evita un segundo envío si el navegador ya tiene un UUID', async () => {
+    const { form, wrapper } = mountCompletedForm()
+    localStorage.setItem(EVALUATION_UUID_KEY, UUID)
+
+    await form.handleFinish()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(router.replace).toHaveBeenCalledWith('/espera')
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
+    wrapper.unmount()
+  })
+
   it('guarda el UUID devuelto antes de abrir la pantalla de espera', async () => {
     fetchMock.mockResolvedValueOnce(UUID)
     const { form, wrapper } = mountCompletedForm()
@@ -88,7 +139,7 @@ describe('navegación con evaluación pendiente', () => {
     return middleware({ path } as RouteLocationNormalized, {} as RouteLocationNormalized)
   }
 
-  it.each(['/', '/datos-personales', '/objetivos', '/riasec'])('recupera el UUID persistido al entrar a %s', async (path) => {
+  it.each(['/datos-personales', '/objetivos', '/riasec', '/resultados', '/otra-ruta'])('bloquea el acceso a %s después del envío', async (path) => {
     localStorage.setItem(EVALUATION_UUID_KEY, UUID)
 
     await visit(path)
@@ -97,10 +148,10 @@ describe('navegación con evaluación pendiente', () => {
     expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
   })
 
-  it('permite permanecer en espera sin un ciclo de redirecciones', async () => {
+  it.each(['/', '/espera'])('permite acceder a %s después del envío', async (path) => {
     localStorage.setItem(EVALUATION_UUID_KEY, UUID)
 
-    await visit('/espera')
+    await visit(path)
 
     expect(navigate).not.toHaveBeenCalled()
   })

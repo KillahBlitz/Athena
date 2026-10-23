@@ -8,6 +8,7 @@ import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
+import { getEvaluationUuid } from '../utils/evaluationStorage'
 
 const STORAGE_KEY = 'athena_session_v2'
 
@@ -129,7 +130,10 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     riasecProgress: (state): RiasecProgress => {
       const preguntas = state.areaData?.preguntas ?? []
       const total = preguntas.length
-      const answeredCount = preguntas.filter(p => (state.riasecAnswers[p.riasec_id]?.opcionIds?.length ?? 0) > 0).length
+      const answeredCount = preguntas.filter(p => {
+        const answer = state.riasecAnswers[p.riasec_id]
+        return (answer?.opcionIds?.length ?? 0) > 0 && (answer?.respuestaAbierta?.trim().length ?? 0) > 0
+      }).length
       return {
         currentQuestion: Math.min(state.currentRiasecIndex + 1, total),
         totalQuestions: total,
@@ -319,8 +323,10 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     },
 
     reset() {
+      if (getEvaluationUuid()) return
       if (import.meta.client) {
         localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem('athena_test_submitted')
       }
       this.$reset()
     }

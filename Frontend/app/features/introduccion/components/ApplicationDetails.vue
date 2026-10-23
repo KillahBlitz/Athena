@@ -106,17 +106,17 @@
     </div>
 
     <div class="details-actions section-block">
-      <div class="closing-copy">
+      <div v-if="!hasSubmitted" class="closing-copy">
         <span class="eyebrow"><span>✦</span><span>LISTO PARA EMPEZAR</span></span>
         <h2>Prepárate para comenzar</h2>
         <p>Realiza la evaluación en un lugar tranquilo, lee cada pregunta con atención y responde sin apresurarte. La utilidad de los resultados depende de que tus respuestas representen lo que realmente te interesa.</p>
         <p> </p>
       </div>
       <NuxtLink
-        to="/datos-personales"
+        :to="hasSubmitted ? '/espera' : '/datos-personales'"
         class="hero-start-btn"
       >
-        <span>Comenzar evaluación</span>
+        <span>{{ hasSubmitted ? 'Consultar mi evaluación' : 'Comenzar evaluación' }}</span>
         <span aria-hidden="true">→</span>
       </NuxtLink>
     </div>
@@ -124,6 +124,14 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { getEvaluationUuid } from '../../../utils/evaluationStorage'
+
+const hasSubmitted = ref(false)
+onMounted(() => {
+  hasSubmitted.value = Boolean(getEvaluationUuid())
+})
+
 const considerations = [
   { title: 'Tus intereses son el punto de partida', description: 'Tus respuestas permiten reconocer afinidades con los objetivos y características de diferentes programas académicos.' },
   { title: 'Las opciones dependen del área seleccionada', description: 'La evaluación considera únicamente los programas académicos pertenecientes al área que elijas.' },

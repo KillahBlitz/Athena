@@ -1,7 +1,7 @@
 <template>
   <header class="athena-header">
     <div class="header-container">
-      <NuxtLink to="/" class="brand-link" aria-label="ATHENA Inicio">
+      <NuxtLink to="/" class="brand-link" aria-label="ATHENA Inicio" @click.capture="session.reset()">
         <div class="brand-logo">
           <img src="/icons/athena-star.svg" alt="" width="36" height="36">
         </div>
@@ -15,6 +15,9 @@
 
 <script setup lang="ts">
 import AthenaStepper from './AthenaStepper.vue'
+import { useAthenaSessionStore } from '../../stores/athenaSession'
+
+const session = useAthenaSessionStore()
 </script>
 
 <style scoped>

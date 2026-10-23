@@ -94,9 +94,10 @@
             :dimension-name="currentDimension.name"
             :question="currentQuestion.pregunta_abierta"
             :model-value="currentAnswer.respuestaAbierta"
-            :locked="!isCurrentComplete"
+            :locked="currentAnswer.opcionIds.length === 0"
             @update:model-value="setOpenAnswer"
           />
+          <AvatarCompanion :avatar="selectedAvatar" stage="riasec" :complete="isCurrentComplete" />
         </Motion>
       </AnimatePresence>
     </template>
@@ -127,6 +128,7 @@
 </template>
 
 <script setup lang="ts">
+import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useRiasecForm } from '../features/riasec/composables/useRiasecForm'
 import RiasecDimensionTabs from '../features/riasec/components/RiasecDimensionTabs.vue'
 import RiasecQuestionCard from '../features/riasec/components/RiasecQuestionCard.vue'

@@ -33,17 +33,14 @@
       </BaseButton>
     </StageCelebration>
 
-    <div class="objectives-bottom-bar">
-      <div class="bottom-avatar-speech" role="note">
-        <div class="bottom-avatar-img" aria-hidden="true">
-          <img :src="selectedAvatar.image" alt="">
-        </div>
-        <div class="bottom-avatar-text">
-          <span class="bottom-avatar-name">{{ selectedAvatar.name }} · </span>
-          <span>{{ selectedAvatar.encouragement }}</span>
-        </div>
-      </div>
+    <AvatarCompanion
+      :key="currentBlockData?.blockIndex"
+      :avatar="selectedAvatar"
+      stage="objectives"
+      :complete="isCurrentBlockComplete"
+    />
 
+    <div class="objectives-bottom-bar">
       <div class="bottom-actions-group">
         <button type="button" class="back-text-btn" @click="handleBack">
           <span aria-hidden="true">←</span>
@@ -67,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
@@ -93,4 +91,8 @@ const {
 
 <style scoped>
 @import '../features/objetivos/styles/objectives.css';
+
+.bottom-actions-group {
+  width: 100%;
+}
 </style>
