@@ -4,6 +4,10 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    'import.meta.client': true,
+    'import.meta.server': false
+  },
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./app', import.meta.url))

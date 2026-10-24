@@ -109,10 +109,11 @@ export function useRiasecForm() {
     if (unrated > 0) {
       return `Tienes ${unrated} objetivo${unrated === 1 ? '' : 's'} sin valorar. Complétalos en "Objetivos".`
     }
-    if (payload.risec_questions.some(q => q.criteria_id_list.length === 0)) {
+    const riasecQuestions = Object.values(payload.risec_questions)
+    if (riasecQuestions.some(q => q.criteria_list.length === 0)) {
       return 'Hay dimensiones RISEC sin ninguna habilidad seleccionada.'
     }
-    if (payload.risec_questions.some(q => !q.open_question.trim())) {
+    if (riasecQuestions.some(q => !q.open_question.trim())) {
       return 'Responde la pregunta abierta de cada dimensión RISEC antes de finalizar.'
     }
     return null

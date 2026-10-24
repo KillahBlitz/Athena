@@ -121,7 +121,7 @@ export function usePersonalDataForm() {
 
       const areaData = await fetchAreaData(form.selectedAreaId)
 
-      if (!areaData || !areaData.objetivos || Object.keys(areaData.objetivos).length === 0) {
+      if (!areaData || !Array.isArray(areaData.objetivos) || areaData.objetivos.length === 0) {
         throw new Error('La respuesta del servidor no contiene objetivos válidos para esta área.')
       }
 

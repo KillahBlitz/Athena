@@ -1,8 +1,12 @@
 import type { NormalizedObjective, ObjectiveBlock } from '../../../types/objective'
+import type { BackendObjetivoDTO } from '../../../types/area'
 import { OBJECTIVES_PER_BLOCK } from '../../../config/objectives'
 
+type LegacyObjectives = Record<string, { id_carrera: number; pregunta_objetivo: string | null } | string | null>
 
-export function normalizeObjectives(rawObjetivos: Record<string, string | null>): NormalizedObjective[] {
+export function normalizeObjectives(
+  rawObjetivos: BackendObjetivoDTO[] | LegacyObjectives
+): NormalizedObjective[] {
   if (!rawObjetivos || typeof rawObjetivos !== 'object') {
     return []
   }
@@ -16,18 +20,31 @@ export function normalizeObjectives(rawObjetivos: Record<string, string | null>)
     'Compromiso y Sociedad'
   ]
 
-  return Object.entries(rawObjetivos)
-    .filter(([_, pregunta]) => Boolean(pregunta && pregunta.trim()))
-    .map(([carreraIdStr, pregunta], index) => {
-      const carreraId = Number(carreraIdStr)
+  // Conserva las sesiones guardadas antes de que objetivos fuera una lista.
+  const objetivos: BackendObjetivoDTO[] = Array.isArray(rawObjetivos)
+    ? rawObjetivos
+    : Object.entries(rawObjetivos).map(([id, objetivo]) => ({
+      id_objetivo: Number(id),
+      id_carrera: typeof objetivo === 'string' ? Number(id) : objetivo?.id_carrera ?? Number.NaN,
+      pregunta: typeof objetivo === 'string' ? objetivo : objetivo?.pregunta_objetivo ?? null
+    }))
+
+  return objetivos
+    .flatMap((objetivo, index) => {
+      const { id_objetivo: objectiveId, id_carrera: carreraId, pregunta } = objetivo
+      if (!pregunta?.trim() || !Number.isInteger(objectiveId)
+        || typeof carreraId !== 'number' || !Number.isInteger(carreraId)) {
+        return []
+      }
       const categoryName = CATEGORIES[index % CATEGORIES.length] ?? 'General'
-      return {
-        carreraId: Number.isNaN(carreraId) ? index + 1 : carreraId,
-        pregunta: (pregunta as string).trim(),
+      return [{
+        objectiveId,
+        carreraId,
+        pregunta: pregunta.trim(),
         category: categoryName,
         valoracion: null,
         justificacion: ''
-      }
+      }]
     })
 }
 

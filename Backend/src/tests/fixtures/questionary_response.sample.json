@@ -1,16 +1,16 @@
 {
   "area_id": 1,
   "nom_area": "Ciencias Físico Matemáticas",
-  "objetivos": {
-    "101": "Diseñar sistemas que resuelvan problemas reales con tecnología.",
-    "102": "Investigar fenómenos físicos y explicarlos con modelos matemáticos.",
-    "103": "Construir infraestructura que mejore la vida en las ciudades.",
-    "104": "Crear software que use datos para tomar mejores decisiones.",
-    "105": "Proteger el medio ambiente con soluciones de ingeniería.",
-    "106": "Analizar datos financieros para tomar mejores decisiones.",
-    "107": "Diseñar redes de comunicación seguras y rápidas.",
-    "108": null
-  },
+  "objetivos": [
+    {"id_carrera": 101, "id_objetivo": 101, "pregunta": "Diseñar sistemas que resuelvan problemas reales con tecnología."},
+    {"id_carrera": 102, "id_objetivo": 102, "pregunta": "Investigar fenómenos físicos y explicarlos con modelos matemáticos."},
+    {"id_carrera": 103, "id_objetivo": 103, "pregunta": "Construir infraestructura que mejore la vida en las ciudades."},
+    {"id_carrera": 104, "id_objetivo": 104, "pregunta": "Crear software que use datos para tomar mejores decisiones."},
+    {"id_carrera": 105, "id_objetivo": 105, "pregunta": "Proteger el medio ambiente con soluciones de ingeniería."},
+    {"id_carrera": 106, "id_objetivo": 106, "pregunta": "Analizar datos financieros para tomar mejores decisiones."},
+    {"id_carrera": 107, "id_objetivo": 107, "pregunta": "Diseñar redes de comunicación seguras y rápidas."},
+    {"id_carrera": 108, "id_objetivo": 108, "pregunta": null}
+  ],
   "preguntas": [
     {
       "riasec_id": 1,

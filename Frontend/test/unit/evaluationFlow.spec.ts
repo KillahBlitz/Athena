@@ -5,6 +5,7 @@ import type { RouteLocationNormalized } from 'vue-router'
 import { useRiasecForm } from '../../app/features/riasec/composables/useRiasecForm'
 import { useAthenaSessionStore } from '../../app/stores/athenaSession'
 import { EVALUATION_UUID_KEY } from '../../app/utils/evaluationStorage'
+import ObjectivesPage from '../../app/pages/objetivos.vue'
 
 const { router } = vi.hoisted(() => ({ router: { push: vi.fn(), replace: vi.fn() } }))
 vi.mock('vue-router', () => ({ useRouter: () => router }))
@@ -33,7 +34,7 @@ function mountCompletedForm() {
   session.setAreaData({
     area_id: 1,
     nom_area: 'Área de prueba',
-    objetivos: { '101': 'Construir soluciones' },
+    objetivos: [{ id_objetivo: 101, id_carrera: 101, pregunta: 'Construir soluciones' }],
     preguntas: [{ riasec_id: 1, texto_pregunta: '¿Qué disfrutas?', pregunta_abierta: 'Cuéntanos', opciones: { '11': 'Reparar' } }]
   })
   session.$patch({
@@ -41,6 +42,7 @@ function mountCompletedForm() {
     answers: { 101: { valoracion: 4, justificacion: 'Me interesa' } },
     riasecAnswers: { 1: { opcionIds: [11], respuestaAbierta: 'Reparo aparatos' } }
   })
+  session.persist()
   let form!: ReturnType<typeof useRiasecForm>
   const wrapper = mount({
     setup() {
@@ -52,6 +54,17 @@ function mountCompletedForm() {
 }
 
 describe('respuestas abiertas RISEC obligatorias', () => {
+  it('bloquea el envío cuando una dimensión del diccionario no tiene criterios seleccionados', async () => {
+    const { form, wrapper } = mountCompletedForm()
+    form.toggleOption(11)
+
+    await form.handleFinish()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(form.submitError.value).toContain('habilidad seleccionada')
+    wrapper.unmount()
+  })
+
   it.each(['', '   ', '\n\t'])('bloquea avance y envío con una respuesta vacía: %j', async (answer) => {
     const { form, wrapper } = mountCompletedForm()
     const session = useAthenaSessionStore()
@@ -76,6 +89,62 @@ describe('respuestas abiertas RISEC obligatorias', () => {
 })
 
 describe('envío del cuestionario con UUID', () => {
+  it('envía cada justificación escrita en objetivos como description después de restaurar la sesión', async () => {
+    vi.stubGlobal('useHead', vi.fn())
+    fetchMock.mockResolvedValueOnce(UUID)
+    const session = useAthenaSessionStore()
+    session.setAreaData({
+      area_id: 1,
+      nom_area: 'Área de prueba',
+      objetivos: [
+        { id_objetivo: 7, id_carrera: 42, pregunta: 'Construir soluciones' },
+        { id_objetivo: 8, id_carrera: 43, pregunta: 'Ayudar a las personas' }
+      ],
+      preguntas: [{ riasec_id: 1, texto_pregunta: '¿Qué disfrutas?', pregunta_abierta: 'Cuéntanos', opciones: { '11': 'Reparar' } }]
+    })
+    session.$patch({ name: 'Prueba', email: 'test@example.com', age: 20, selectedAreaId: 1 })
+    session.persist()
+    const page = mount(ObjectivesPage, {
+      global: {
+        stubs: {
+          Motion: { props: ['as'], template: '<component :is="as || \'div\'"><slot /></component>' },
+          AnimatePresence: { template: '<div><slot /></div>' },
+          AvatarCompanion: true,
+          StageCelebration: true,
+          ObjectiveProgress: true
+        }
+      }
+    })
+    const cards = page.findAll('article')
+    const justifications = ['Me interesa construir robots', 'Quiero ayudar a mi comunidad']
+    for (const [index, card] of cards.entries()) {
+      await card.get('[aria-label="Valoración 4 de 5"]').trigger('click')
+      await card.get('textarea').setValue(justifications[index])
+    }
+    expect(cards).toHaveLength(2)
+    await page.get('.objectives-bottom-bar .base-button').trigger('click')
+    expect(router.push).toHaveBeenCalledWith('/riasec')
+    page.unmount()
+
+    // Recreate the store to exercise localStorage restoration between stages.
+    setActivePinia(createPinia())
+    let form!: ReturnType<typeof useRiasecForm>
+    const wrapper = mount({ setup() { form = useRiasecForm(); return () => null } })
+    form.toggleOption(11)
+    form.setOpenAnswer('Reparo aparatos')
+    await form.handleFinish()
+
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/save-user', expect.objectContaining({
+      body: expect.objectContaining({
+        objetives: [
+          { id_objetive: 7, id_carrera: 42, puntuation: 4, description: justifications[0] },
+          { id_objetive: 8, id_carrera: 43, puntuation: 4, description: justifications[1] }
+        ]
+      })
+    }))
+    wrapper.unmount()
+  })
+
   it('conserva la evaluación enviada al intentar reiniciar desde el logo', () => {
     const { wrapper } = mountCompletedForm()
     const session = useAthenaSessionStore()
@@ -112,7 +181,13 @@ describe('envío del cuestionario con UUID', () => {
 
     await form.handleFinish()
 
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/save-user', expect.objectContaining({ method: 'POST' }))
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/save-user', expect.objectContaining({
+      method: 'POST',
+      body: expect.objectContaining({
+        objetives: [{ id_objetive: 101, id_carrera: 101, puntuation: 4, description: 'Me interesa' }],
+        risec_questions: { 1: { risec_id: 1, criteria_list: [{ 11: 'Reparar' }], open_question: 'Reparo aparatos' } }
+      })
+    }))
     expect(router.push).toHaveBeenCalledWith('/espera')
     expect(form.submitError.value).toBeNull()
     expect(form.isSubmitting.value).toBe(false)

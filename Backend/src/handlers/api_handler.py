@@ -8,6 +8,7 @@ from kinasis_library.events.extractor_event import ExtractorEvent, Objetives, Ri
 from utils.set_envs import get_dict_envs_redis_conection
 from handlers.query_handler import QueryHandler
 from handlers.command_handler import CommandHandler
+from models.tables.usuario import Usuario
 from models.request.save_user_request import SaveUserRequest
 from models.response.questionary_response import QuestionaryResponse
 
@@ -23,6 +24,19 @@ class ApiHandler:
             redis_port=redis_credentials["REDIS_PORT"],
             redis_password=redis_credentials["REDIS_PASSWORD"])
 
+    def _submit_user_in_db(self, data: SaveUserRequest) -> str:
+        user_uuid = generate_uuid()
+        user = Usuario(
+            uuid_usuario=user_uuid,
+            area_id=data.area_id,
+            nombre_usuario=data.username,
+            correo_usuario=data.email,
+            estatus_id=1,
+            type_user=4
+        )
+        #self._ch.insert_user(user)
+        return user_uuid
+
     def get_areas(self):
         return self._qh.get_areas()
 
@@ -35,30 +49,40 @@ class ApiHandler:
             opciones[criterio["riasec_id"]][criterio["criterio_id"]] = criterio["resumen_criterio"]
         preguntas = [{**pregunta, "opciones": opciones[pregunta["riasec_id"]]}
                      for pregunta in self._qh.get_questions_by_area_id(area_id)]
-        objetivos = {o["carrera_id"]: o["pregunta_objetivo"] for o in self._qh.get_objetivos_by_area_id(area_id)}
+        objetivos = [
+            {
+                "id_carrera": o["carrera_id"],
+                "id_objetivo": o["carrera_id"],
+                "pregunta": o["pregunta_objetivo"],
+            }
+            for o in self._qh.get_objetivos_by_area_id(area_id)
+        ]
         return QuestionaryResponse(**area, objetivos=objetivos, preguntas=preguntas)
 
     def generate_user_event(self, params: SaveUserRequest) -> str:
-        user_uuid = generate_uuid()
+        user_uuid = self._submit_user_in_db(params)
         mock_user_id = random.randint(1, 1000)
+        
         objetives = [
             Objetives(
                 id_objetive=o.id_objetive,
+                id_carrera=o.id_carrera,
                 porc_evaluation=o.puntuation / 5,
-                description=o.description,
-            )
-            for o in params.objetives
-        ]
+                description=o.description)
+            for o in params.objetives]
+
+        anwsers = {
+            a.risec_id: RisecAnswer(
+                criteria_list=a.criteria_list,
+                open_question=a.open_question)
+            for a in params.risec_questions.values()}
+
         event = ExtractorEvent(
             user_id=mock_user_id,
             uuid_user=user_uuid,
             area_id=params.area_id,
             objetives=objetives,
-            questions=[RisecAnswer(
-                risec_id=q.risec_id,
-                criteria_list=q.criteria_id_list,
-                open_question=q.open_question
-            ) for q in params.risec_questions]
+            questions=anwsers
         )
         self._rc.event_producer("extractor_stream", event)
         return user_uuid

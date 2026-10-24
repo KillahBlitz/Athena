@@ -12,13 +12,14 @@ export interface ApiResponse<T> {
 
 export interface SaveUserObjectiveDTO {
   id_objetive: number
+  id_carrera: number
   puntuation: number
   description: string
 }
 
 export interface SaveUserRiasecDTO {
   risec_id: number
-  criteria_id_list: number[]
+  criteria_list: Record<number, string>[]
   open_question: string
 }
 
@@ -28,5 +29,5 @@ export interface SaveUserRequestDTO {
   age: number
   area_id: number
   objetives: SaveUserObjectiveDTO[]
-  risec_questions: SaveUserRiasecDTO[]
+  risec_questions: Record<number, SaveUserRiasecDTO>
 }

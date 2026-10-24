@@ -30,7 +30,7 @@ export function useAreasApi() {
           'Accept': 'application/json'
         }
       })
-      if (!response || !response.objetivos || Object.keys(response.objetivos).length === 0) {
+      if (!response || !Array.isArray(response.objetivos) || response.objetivos.length === 0) {
         throw new Error(`El área ${areaId} no contiene datos válidos.`)
       }
       return response

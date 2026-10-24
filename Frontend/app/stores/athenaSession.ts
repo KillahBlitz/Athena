@@ -148,15 +148,21 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       age: Number(state.age),
       area_id: state.selectedAreaId ?? 0,
       objetives: state.objectives.map(obj => ({
-        id_objetive: obj.carreraId,
+        id_objetive: obj.objectiveId,
+        id_carrera: obj.carreraId,
         puntuation: state.answers[obj.carreraId]?.valoracion ?? 0,
         description: state.answers[obj.carreraId]?.justificacion.trim() ?? ''
       })),
-      risec_questions: (state.areaData?.preguntas ?? []).map(q => ({
-        risec_id: q.riasec_id,
-        criteria_id_list: state.riasecAnswers[q.riasec_id]?.opcionIds ?? [],
-        open_question: state.riasecAnswers[q.riasec_id]?.respuestaAbierta.trim() ?? ''
-      }))
+      risec_questions: Object.fromEntries((state.areaData?.preguntas ?? []).map(q => [
+        q.riasec_id,
+        {
+          risec_id: q.riasec_id,
+          criteria_list: (state.riasecAnswers[q.riasec_id]?.opcionIds ?? [])
+            .filter(id => Object.hasOwn(q.opciones, id))
+            .map(id => ({ [id]: q.opciones[id]! })),
+          open_question: state.riasecAnswers[q.riasec_id]?.respuestaAbierta.trim() ?? ''
+        }
+      ]))
     })
   },
 
@@ -308,6 +314,9 @@ export const useAthenaSessionStore = defineStore('athena-session', {
           if (raw) {
             const data = JSON.parse(raw)
             this.$patch(data)
+            if (this.areaData) {
+              this.objectives = normalizeObjectives(this.areaData.objetivos)
+            }
             this.clampCurrentBlock()
           }
         } catch {

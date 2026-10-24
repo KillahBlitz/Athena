@@ -1,1 +1,1 @@
-kinasis-library==1.0.8
+kinasis-library==1.0.9

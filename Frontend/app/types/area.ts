@@ -10,10 +10,16 @@ export interface BackendPreguntaDTO {
   opciones: Record<string, string>
 }
 
+export interface BackendObjetivoDTO {
+  id_carrera: number
+  id_objetivo: number
+  pregunta: string | null
+}
+
 export interface BackendQuestionaryResponseDTO {
   area_id: number
   nom_area: string
-  objetivos: Record<string, string | null>
+  objetivos: BackendObjetivoDTO[]
   preguntas: BackendPreguntaDTO[]
 }
 

@@ -53,3 +53,6 @@ class QueryHandler:
 
     def get_criterios_by_area_id(self, area_id: int):
         return self._areas_table_repository.get_criterios_by_area_id(area_id)
+
+    def get_criteria_order_by_id_riasec(self, area_id: int):
+        return self._areas_table_repository.get_criteria_order_by_id_riasec(area_id)

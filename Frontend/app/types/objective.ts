@@ -1,6 +1,7 @@
 export type RatingValue = 1 | 2 | 3 | 4 | 5
 
 export interface NormalizedObjective {
+  objectiveId: number
   carreraId: number
   pregunta: string
   category: string

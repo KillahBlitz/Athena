@@ -49,7 +49,7 @@ class AreasTableRepository:
 
     def get_criterios_by_area_id(self, area_id: int) -> list[dict]:
         query = (
-            select(Criterio.criterio_id, Criterio.riasec_id, Criterio.resumen_criterio)
+            select(Criterio.criterio_id, Criterio.carrera_id, Criterio.riasec_id, Criterio.resumen_criterio)
             .join(Carrera, Carrera.carrera_id == Criterio.carrera_id)
             .where(Carrera.area_id == area_id, Criterio.type_id == TYPE_PERFIL)
             .order_by(Criterio.riasec_id, Criterio.criterio_id)
@@ -57,4 +57,14 @@ class AreasTableRepository:
         with self.engine.connect() as conn:
             filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
-        
+
+    def get_criteria_order_by_id_riasec(self, area_id: int) -> list[dict]:
+        query = (
+            select(Criterio.criterio_id, Criterio.riasec_id, Criterio.carrera_id, Criterio.resumen_criterio)
+            .join(Carrera, Carrera.carrera_id == Criterio.carrera_id)
+            .where(Carrera.area_id == area_id)
+            .order_by(Criterio.riasec_id, Criterio.criterio_id)
+        )
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
+        return [dict(fila) for fila in filas]

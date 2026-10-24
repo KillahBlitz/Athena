@@ -31,8 +31,8 @@ class FakeQueryHandler:
             for criterio_id, texto in pregunta["opciones"].items()
         ]
         self._objetivos = [
-            {"carrera_id": int(carrera_id), "pregunta_objetivo": texto}
-            for carrera_id, texto in sample["objetivos"].items()
+            {"carrera_id": objetivo["id_carrera"], "pregunta_objetivo": objetivo["pregunta"]}
+            for objetivo in sample["objetivos"]
         ]
 
     def get_areas(self):
@@ -77,14 +77,14 @@ def save_user_payload():
         age=20,
         area_id=1,
         objetives=[
-            {"id_objetive": 101, "puntuation": 1, "description": "Poco interés"},
-            {"id_objetive": 102, "puntuation": 3, "description": "Interés moderado"},
-            {"id_objetive": 103, "puntuation": 5, "description": "Mucho interés"},
+            {"id_objetive": 101, "id_carrera": 201, "puntuation": 1, "description": "Poco interés"},
+            {"id_objetive": 102, "id_carrera": 202, "puntuation": 3, "description": "Interés moderado"},
+            {"id_objetive": 103, "id_carrera": 203, "puntuation": 5, "description": "Mucho interés"},
         ],
-        risec_questions=[
-            {"risec_id": 1, "criteria_id_list": [11, 12], "open_question": "Reparo aparatos"},
-            {"risec_id": 2, "criteria_id_list": [21], "open_question": "Investigo problemas"},
-        ],
+        risec_questions={
+            1: {"risec_id": 1, "criteria_list": [{11: "Reparar"}, {12: "Herramientas"}], "open_question": "Reparo aparatos"},
+            2: {"risec_id": 2, "criteria_list": [{21: "Investigar"}], "open_question": "Investigo problemas"},
+        },
     )
 
 
@@ -129,14 +129,14 @@ def test_generate_user_event_maps_answers_without_mutating_request(fake_api_hand
     assert event.uuid_user == user_uuid
     assert event.area_id == 1
     assert [objective.model_dump() for objective in event.objetives] == [
-        {"id_objetive": 101, "porc_evaluation": 0.2, "description": "Poco interés"},
-        {"id_objetive": 102, "porc_evaluation": 0.6, "description": "Interés moderado"},
-        {"id_objetive": 103, "porc_evaluation": 1.0, "description": "Mucho interés"},
+        {"id_objetive": 101, "id_carrera": 201, "porc_evaluation": 0.2, "description": "Poco interés"},
+        {"id_objetive": 102, "id_carrera": 202, "porc_evaluation": 0.6, "description": "Interés moderado"},
+        {"id_objetive": 103, "id_carrera": 203, "porc_evaluation": 1.0, "description": "Mucho interés"},
     ]
-    assert [question.model_dump() for question in event.questions] == [
-        {"risec_id": 1, "criteria_list": [11, 12], "open_question": "Reparo aparatos"},
-        {"risec_id": 2, "criteria_list": [21], "open_question": "Investigo problemas"},
-    ]
+    assert {key: question.model_dump() for key, question in event.questions.items()} == {
+        1: {"criteria_list": [{11: "Reparar"}, {12: "Herramientas"}], "open_question": "Reparo aparatos"},
+        2: {"criteria_list": [{21: "Investigar"}], "open_question": "Investigo problemas"},
+    }
 
 
 def test_save_user_returns_http_200_with_user_uuid(fake_api_handler, save_user_payload):
@@ -171,3 +171,4 @@ def test_save_user_returns_http_200_with_user_uuid(fake_api_handler, save_user_p
     assert response["status"] == 200
     assert len(fake_api_handler._rc.events) == 1
     assert json.loads(response_body) == fake_api_handler._rc.events[0][1].uuid_user
+    assert [objective.id_carrera for objective in fake_api_handler._rc.events[0][1].objetives] == [201, 202, 203]

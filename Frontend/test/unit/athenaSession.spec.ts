@@ -4,8 +4,10 @@ import { useAthenaSessionStore } from '../../app/stores/athenaSession'
 import type { BackendQuestionaryResponseDTO } from '../../app/types/area'
 
 function areaWithObjectives(count: number): BackendQuestionaryResponseDTO {
-  const objetivos: Record<string, string> = {}
-  for (let i = 1; i <= count; i++) objetivos[String(100 + i)] = `Objetivo ${i}`
+  const objetivos: BackendQuestionaryResponseDTO['objetivos'] = []
+  for (let i = 1; i <= count; i++) {
+    objetivos.push({ id_objetivo: 100 + i, id_carrera: 100 + i, pregunta: `Objetivo ${i}` })
+  }
   return { area_id: 1, nom_area: 'Área de prueba', objetivos, preguntas: [] }
 }
 
@@ -22,6 +24,7 @@ function answerCurrentBlock(store: ReturnType<typeof useAthenaSessionStore>, rat
 describe('athenaSession · bloques de objetivos', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    localStorage.clear()
   })
 
   it.each([
@@ -76,6 +79,7 @@ describe('athenaSession · bloques de objetivos', () => {
 describe('athenaSession · sesión restaurada', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    localStorage.clear()
   })
 
   it('acota un bloque guardado mayor que el nuevo total sin perder respuestas', () => {
@@ -105,5 +109,60 @@ describe('athenaSession · sesión restaurada', () => {
     store.clampCurrentBlock()
 
     expect(store.currentBlock).toBe(1)
+  })
+
+  it('guarda y restaura la carrera del objetivo para enviarla a save-user', () => {
+    const store = useAthenaSessionStore()
+    store.setAreaData({
+      area_id: 1,
+      nom_area: 'Área de prueba',
+      objetivos: [{ id_objetivo: 7, id_carrera: 42, pregunta: 'Diseñar soluciones' }],
+      preguntas: [
+        { riasec_id: 1, texto_pregunta: 'Actividades', pregunta_abierta: 'Explica', opciones: { '11': 'Reparar' } },
+        { riasec_id: 6, texto_pregunta: 'Organización', pregunta_abierta: 'Explica', opciones: { '61': 'Organizar' } }
+      ]
+    })
+    store.setAnswer(42, 4, ' Me interesa ')
+    store.toggleRiasecOption(1, 11)
+    store.setRiasecOpenAnswer(1, ' Reparo aparatos ')
+    store.toggleRiasecOption(6, 61)
+    store.setRiasecOpenAnswer(6, ' Organizo tareas ')
+
+    const saved = JSON.parse(localStorage.getItem('athena_session_v2')!)
+    expect(saved.areaData.objetivos[0]).toMatchObject({ id_objetivo: 7, id_carrera: 42, pregunta: 'Diseñar soluciones' })
+    expect(saved.objectives[0]).toMatchObject({ objectiveId: 7, carreraId: 42 })
+
+    setActivePinia(createPinia())
+    const restored = useAthenaSessionStore()
+    restored.restore()
+
+    expect(restored.objectives[0]?.pregunta).toBe('Diseñar soluciones')
+    expect(restored.progress.answeredCount).toBe(1)
+    expect(restored.saveUserPayload.objetives).toEqual([
+      { id_objetive: 7, id_carrera: 42, puntuation: 4, description: 'Me interesa' }
+    ])
+    expect(restored.saveUserPayload.risec_questions).toEqual({
+      1: { risec_id: 1, criteria_list: [{ 11: 'Reparar' }], open_question: 'Reparo aparatos' },
+      6: { risec_id: 6, criteria_list: [{ 61: 'Organizar' }], open_question: 'Organizo tareas' }
+    })
+  })
+
+  it.each([
+    'Diseñar soluciones',
+    { id_carrera: 101, pregunta_objetivo: 'Diseñar soluciones' }
+  ])('restaura el formato anterior %j sin perder respuestas', (objetivo) => {
+    localStorage.setItem('athena_session_v2', JSON.stringify({
+      areaData: { area_id: 1, nom_area: 'Área', objetivos: { '101': objetivo }, preguntas: [] },
+      objectives: [{ carreraId: 101, pregunta: 'Diseñar soluciones' }],
+      answers: { 101: { valoracion: 4, justificacion: 'Me interesa' } }
+    }))
+    const store = useAthenaSessionStore()
+
+    store.restore()
+
+    expect(store.objectives[0]).toMatchObject({ objectiveId: 101, carreraId: 101 })
+    expect(store.saveUserPayload.objetives).toEqual([
+      { id_objetive: 101, id_carrera: 101, puntuation: 4, description: 'Me interesa' }
+    ])
   })
 })
