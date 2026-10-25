@@ -36,6 +36,57 @@ export function useObjectivesForm() {
     return block.objectives.some((objective) => getAnswer(objective.carreraId).valoracion !== null)
   })
 
+  type PendingReason = 'rating' | 'justification'
+
+  const getPendingReason = (carreraId: number): PendingReason | null => {
+    const answer = getAnswer(carreraId)
+    if (answer.valoracion === null) return 'rating'
+    if (answer.valoracion === 5 && answer.justificacion.trim().length === 0) return 'justification'
+    return null
+  }
+
+  const joinNumbers = (numbers: number[]) =>
+    numbers.length > 1 ? `${numbers.slice(0, -1).join(', ')} y ${numbers[numbers.length - 1]}` : String(numbers[0])
+
+  const pendingNumbers = (ids?: number[]) => {
+    const objectives = currentBlockData.value?.objectives ?? []
+    const result: Record<PendingReason, number[]> = { rating: [], justification: [] }
+    objectives.forEach((objective, index) => {
+      if (ids && !ids.includes(objective.carreraId)) return
+      const reason = getPendingReason(objective.carreraId)
+      if (reason) result[reason].push(index + 1)
+    })
+    return result
+  }
+
+  const buildMessage = (
+    pending: Record<PendingReason, number[]>,
+    rating: (numbers: string, plural: boolean) => string,
+    justification: (numbers: string, plural: boolean) => string
+  ) => {
+    const parts: string[] = []
+    if (pending.rating.length) parts.push(rating(joinNumbers(pending.rating), pending.rating.length > 1))
+    if (pending.justification.length) parts.push(justification(joinNumbers(pending.justification), pending.justification.length > 1))
+    return parts.join(' ')
+  }
+
+  const pendingMessage = computed(() => buildMessage(
+    pendingNumbers(),
+    (numbers, plural) => plural ? `Te faltan las preguntas ${numbers}.` : `Te falta la pregunta ${numbers}.`,
+    (numbers, plural) => plural
+      ? `Las preguntas ${numbers} son de explicación y falta tu justificación.`
+      : `La pregunta ${numbers} es de explicación y falta tu justificación.`
+  ))
+
+  const describeSkipped = (ids: number[]) => buildMessage(
+    pendingNumbers(ids),
+    (numbers, plural) => plural ? `Pasaste las preguntas ${numbers}.` : `Pasaste la pregunta ${numbers}.`,
+    (numbers, plural) => plural
+      ? `Pasaste las preguntas ${numbers}, que son de explicación.`
+      : `Pasaste la pregunta ${numbers}, que es de explicación.`
+  )
+
+  const isPending = (carreraId: number) => getPendingReason(carreraId) !== null
   const setRating = (carreraId: number, rating: RatingValue) => {
     session.setAnswer(carreraId, rating)
   }
@@ -74,6 +125,9 @@ export function useObjectivesForm() {
     progress,
     isCurrentBlockComplete,
     hasStartedCurrentBlock,
+    pendingMessage,
+    describeSkipped,
+    isPending,
     isLastBlock,
     isAllCompleted,
     getAnswer,

@@ -74,7 +74,8 @@ const props = defineProps<{
   getAnswer: (carreraId: number) => { valoracion: RatingValue | null; justificacion: string }
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
+  leave: [carreraId: number]
   rating: [carreraId: number, value: RatingValue]
   justification: [carreraId: number, text: string]
 }>()
@@ -124,6 +125,8 @@ function goPrev() {
 
 function goNext() {
   if (activeIndex.value >= cardCount.value - 1) return
+  const leaving = props.block.objectives[activeIndex.value]
+  if (leaving) emit('leave', leaving.carreraId)
   direction.value = 1
   activeIndex.value += 1
 }

@@ -85,11 +85,15 @@ const props = withDefaults(defineProps<{
   /** Shows the one-time "how this section works" intro as an overlay, dismissed with the "Comenzar" button. */
   onboarding?: boolean
   /** Label for the "next block" action. When set, shows block navigation inside the companion box. */
+  notice?: string
+  reminder?: string
   nextLabel?: string
   nextDisabled?: boolean
   /** On the last block, "Finalizar etapa" stacks below "Atrás" and spans the full width. */
   isLastBlock?: boolean
-}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, nextLabel: '', nextDisabled: false, isLastBlock: false })
+  block?: number
+  totalBlocks?: number
+}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, notice: '', reminder: '', nextLabel: '', nextDisabled: false, isLastBlock: false, block: 0, totalBlocks: 0 })
 
 const emit = defineEmits<{
   'dismiss-onboarding': []
@@ -98,7 +102,11 @@ const emit = defineEmits<{
 }>()
 
 const presets = useMotionPresets()
-const dockTransition = { type: 'spring', stiffness: 260, damping: 26 }
+const dockTransition = computed(() =>
+  props.onboarding
+    ? { duration: 0 }
+    : { type: 'spring', stiffness: 190, damping: 30, mass: 0.9 }
+)
 
 // Scoring rules reminder: shown inside the onboarding overlay as one message,
 // and afterwards split into two separate tips (rating, then justification)
@@ -152,7 +160,22 @@ const blockReminder = 'Aún te faltan objetivos por valorar en este bloque. Usa 
 
 // Once onboarding is done, the default dialogue shows a motivational phrase
 // for this avatar instead of any explanation.
-const defaultMotivation = computed(() => (cheers[props.avatar.id] ?? [props.avatar.encouragement])[0]!)
+const blockPhrases: Record<string, string[]> = {
+  atlas: ['Empecemos con calma. Cada valoración dice algo de ti.', 'Vas con buen ritmo. Sigue reflexionando con tranquilidad.', 'La constancia también es sabiduría. Continúa a tu paso.', 'Ya recorriste buen camino. Piensa en lo que de verdad te mueve.', 'Estás por cerrar esta etapa. Confía en lo que has pensado.'],
+  nova: ['¡A explorar! Cada objetivo es una pista sobre ti.', '¡Qué buen avance! Sigamos descubriendo qué te interesa.', 'Tu curiosidad te trajo hasta aquí. Vamos por más.', 'Cada bloque dibuja mejor tu perfil. ¡Sigue así!', 'Casi terminas. Tus respuestas ya cuentan una historia.'],
+  pixel: ['¡Nuevo bloque, nuevas ideas! Responde a tu manera.', '¡Buen ritmo! Deja que tu creatividad guíe tus respuestas.', 'Cada respuesta suma color a tu camino. ¡Sigue!', '¡Qué energía! Ya falta poco para completar el panorama.', 'Último tramo. Cierra con todo tu estilo.'],
+  orion: ['Un nuevo horizonte se abre. Mira hacia lo que quieres lograr.', 'Avanzas con rumbo. Cada objetivo te acerca a tu visión.', 'Sigue explorando. Tu futuro se arma paso a paso.', 'Ya se ve más claro el camino. No pierdas el rumbo.', 'Estás llegando. Termina esta etapa con la mirada en el futuro.']
+}
+
+const defaultMotivation = computed(() => {
+  const options = blockPhrases[props.avatar.id]
+  if (props.stage === 'objectives' && props.block > 0 && options) {
+    const phrase = options[(props.block - 1) % options.length]!
+    const label = props.totalBlocks > 0 ? `Bloque ${props.block} de ${props.totalBlocks}. ` : `Bloque ${props.block}. `
+    return `${label}${phrase}`
+  }
+  return (cheers[props.avatar.id] ?? [props.avatar.encouragement])[0]!
+})
 
 const greeting = computed(() => {
   const firstName = props.name.trim().split(/\s+/)[0]
@@ -163,12 +186,14 @@ const greeting = computed(() => {
     if (props.onboarding) {
       return `${base} ${objectivesRules} Toca «Comenzar» cuando quieras empezar.`
     }
-    // Every other time: only a motivational phrase, no explanation.
-    return `${base} ${defaultMotivation.value}`
+    return defaultMotivation.value
   }
-  if (props.stage === 'riasec' && props.onboarding) {
+  if (props.stage === 'riasec') {
     // First time ever on /riasec: explain how selecting works here.
-    return `${base} ${riasecRules} Toca «Comenzar» cuando quieras empezar.`
+    if (props.onboarding) {
+      return `${base} ${riasecRules} Toca «Comenzar» cuando quieras empezar.`
+    }
+    return defaultMotivation.value
   }
   return base
 })
@@ -202,13 +227,28 @@ function handleNextClick() {
   }
   // Block isn't finished yet: remind the user with a "breathing" pulse
   // around the companion box instead of silently doing nothing.
-  customMessage.value = blockReminder
+  customMessage.value = props.reminder || blockReminder
   reaction.value++
   isReminding.value = false
   if (remindTimer) clearTimeout(remindTimer)
   requestAnimationFrame(() => { isReminding.value = true })
   remindTimer = setTimeout(() => { isReminding.value = false }, 1600)
 }
+
+watch(() => props.notice, (text, previous) => {
+  if (text) {
+    customMessage.value = text
+    reaction.value++
+  } else if (customMessage.value === previous) {
+    customMessage.value = ''
+  }
+})
+
+watch(() => props.block, () => {
+  customMessage.value = props.notice
+  tipIndex.value = 0
+  cheerIndex.value = 0
+})
 
 watch(() => [props.avatar.id, props.stage], () => {
   customMessage.value = ''
@@ -251,16 +291,39 @@ watch(() => props.complete, (complete, previous) => {
   position: fixed;
   inset: 0;
   margin: auto;
-  width: min(420px, calc(100% - 2.5rem));
+  width: min(760px, calc(100% - 2.5rem));
   height: fit-content;
   z-index: 60;
   flex-direction: column;
   align-items: stretch;
+  padding: 1.5rem 1.75rem;
   background: var(--color-surface);
   box-shadow: var(--shadow-card-hover), 0 32px 64px -24px rgba(0, 0, 0, 0.35);
+  animation: companion-onboarding-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes companion-onboarding-in {
+  from { opacity: 0; translate: 0 18px; scale: 0.96; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
 }
 .avatar-companion.is-onboarding .companion-touch {
   align-self: center;
+}
+.avatar-companion.is-onboarding .companion-dialogue p {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+@media (min-width: 640px) {
+  .avatar-companion.is-onboarding {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.75rem;
+  }
+  .avatar-companion.is-onboarding .companion-touch {
+    flex-basis: 130px;
+  }
+  .avatar-companion.is-onboarding .companion-tracking {
+    width: 120px;
+  }
 }
 
 .companion-start-btn {
@@ -405,5 +468,6 @@ button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 
   .companion-touch:hover img, .companion-touch:active img { transform: none; }
   .is-reacting { animation: none; }
   .avatar-companion.is-reminding { animation: none; }
+  .avatar-companion.is-onboarding { animation: none; }
 }
 </style>

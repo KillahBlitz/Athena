@@ -213,8 +213,6 @@ function dismissOnboarding() {
   inset: 0;
   z-index: 55;
   background: rgba(15, 15, 25, 0.45);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 
 .onboarding-backdrop-fade-enter-active,

@@ -36,6 +36,7 @@
         :get-answer="getAnswer"
         @rating="setRating"
         @justification="setJustification"
+        @leave="handleLeave"
       />
 
       <AvatarCompanion
@@ -44,8 +45,12 @@
         stage="objectives"
         :complete="isCurrentBlockComplete"
         :onboarding="showOnboarding"
+        :notice="notice"
+        :reminder="pendingMessage"
         :next-label="isLastBlock ? 'Finalizar etapa' : 'Adelante'"
         :is-last-block="isLastBlock"
+        :block="currentBlock"
+        :total-blocks="totalBlocks"
         :next-disabled="!isCurrentBlockComplete"
         @dismiss-onboarding="dismissOnboarding"
         @go-back="handleBack"
@@ -56,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
@@ -70,6 +75,8 @@ useHead({
 })
 
 const {
+  currentBlock,
+  totalBlocks,
   currentBlockData,
   selectedAvatar,
   progress,
@@ -78,9 +85,21 @@ const {
   getAnswer,
   setRating,
   setJustification,
+  pendingMessage,
+  describeSkipped,
+  isPending,
   handleNext,
   handleBack
 } = useObjectivesForm()
+
+const skippedIds = ref<number[]>([])
+const notice = computed(() => describeSkipped(skippedIds.value))
+
+function handleLeave(carreraId: number) {
+  if (isPending(carreraId) && !skippedIds.value.includes(carreraId)) {
+    skippedIds.value = [...skippedIds.value, carreraId]
+  }
+}
 
 // First time ever on /objetivos: show the avatar's "how to answer" card as
 // an overlay above the questions. The user swipes it (or taps "Comenzar")
@@ -105,8 +124,6 @@ function dismissOnboarding() {
   inset: 0;
   z-index: 55;
   background: rgba(15, 15, 25, 0.45);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 
 .onboarding-backdrop-fade-enter-active,

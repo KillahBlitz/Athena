@@ -10,6 +10,7 @@ import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivo
 import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
 import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
 import { getEvaluationUuid } from '../utils/evaluationStorage'
+import { applyStepperAccent } from '../utils/avatarTheme'
 
 const STORAGE_KEY = 'athena_session_v2'
 
@@ -20,6 +21,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     age: null as number | null,
     termsAccepted: false,
     selectedAvatarId: DEFAULT_AVATAR.id,
+    avatarChosen: false,
     selectedAreaId: null as number | null,
     selectedAreaName: null as string | null,
     areaData: null as BackendQuestionaryResponseDTO | null,
@@ -178,6 +180,10 @@ export const useAthenaSessionStore = defineStore('athena-session', {
 
     selectAvatar(avatarId: string) {
       this.selectedAvatarId = avatarId
+      this.avatarChosen = true
+      if (import.meta.client) {
+        applyStepperAccent(this.selectedAvatar.color)
+      }
       this.persist()
     },
 
@@ -298,6 +304,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             age: this.age,
             termsAccepted: this.termsAccepted,
             selectedAvatarId: this.selectedAvatarId,
+            avatarChosen: this.avatarChosen,
             selectedAreaId: this.selectedAreaId,
             selectedAreaName: this.selectedAreaName,
             areaData: this.areaData,

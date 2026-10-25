@@ -91,6 +91,22 @@ export function buildPrimaryScale(baseColor: string): PrimaryScale {
   }
 }
 
+export function applyStepperAccent(baseColor: string | null): void {
+  if (typeof document === 'undefined') return
+  const root = document.documentElement.style
+  const names = ['--avatar-line', '--avatar-primary', '--avatar-primary-active', '--avatar-primary-light', '--avatar-primary-border']
+  if (!baseColor) {
+    names.forEach(name => root.removeProperty(name))
+    return
+  }
+  const scale = buildPrimaryScale(baseColor)
+  root.setProperty('--avatar-line', scale.accent)
+  root.setProperty('--avatar-primary', scale.primary)
+  root.setProperty('--avatar-primary-active', scale.active)
+  root.setProperty('--avatar-primary-light', scale.light)
+  root.setProperty('--avatar-primary-border', scale.border)
+}
+
 export function applyAvatarTheme(baseColor: string): void {
   if (typeof document === 'undefined') return
   const scale = buildPrimaryScale(baseColor)
