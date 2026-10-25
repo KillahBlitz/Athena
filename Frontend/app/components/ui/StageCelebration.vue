@@ -59,10 +59,13 @@ const presets = useMotionPresets()
   position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 1rem 1.25rem;
+  gap: 0.6rem 1.25rem;
   align-items: center;
-  padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1.25rem, 4vw, 2.25rem);
-  margin-top: 1.5rem;
+  width: 100%;
+  /* Shorter top-to-bottom so it doesn't push the cards/avatar row further
+     down, while still spanning the page's full width. */
+  padding: 0.85rem clamp(1.25rem, 4vw, 2.25rem);
+  margin-top: 0.5rem;
   background: var(--gradient-brand-soft);
   border: 1.5px solid var(--color-primary-border);
   border-radius: var(--radius-2xl);
@@ -85,12 +88,13 @@ const presets = useMotionPresets()
 .celebration-badge {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--gradient-primary);
   color: var(--color-on-primary);
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   box-shadow: var(--shadow-glow);
 }
 

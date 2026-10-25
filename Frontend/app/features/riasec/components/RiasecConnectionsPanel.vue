@@ -25,7 +25,7 @@
 
     <div class="riasec-connections-message">
       <span class="riasec-connections-avatar" aria-hidden="true">
-        <img :src="avatar.image" alt="">
+        <TrackingAvatar class="selected-avatar-tracking" :avatar-id="avatar.id" :name="avatar.name" />
       </span>
       <strong>Cada habilidad revela algo único de ti.</strong>
     </div>
@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import TrackingAvatar from '../../../components/avatar/TrackingAvatar.vue'
 import { computed } from 'vue'
 import type { Avatar } from '../../../types/avatar'
 import type { RiasecOption } from '../../../types/riasec'

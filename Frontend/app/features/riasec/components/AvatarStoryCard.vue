@@ -41,7 +41,7 @@
             :animate="reactionKey > 0 ? presets.react.animate : {}"
             :transition="presets.react.transition"
           >
-            <img :src="avatar.image" alt="">
+            <TrackingAvatar class="selected-avatar-tracking" :avatar-id="avatar.id" :name="avatar.name" />
           </Motion>
         </Motion>
       </Motion>
@@ -123,6 +123,7 @@
 </template>
 
 <script setup lang="ts">
+import TrackingAvatar from '../../../components/avatar/TrackingAvatar.vue'
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useInView, usePageInView, useReducedMotion } from 'motion-v'
 import type { Avatar } from '../../../types/avatar'
@@ -278,7 +279,7 @@ onScopeDispose(() => {
   height: 80%;
 }
 
-.story-avatar-face img {
+.story-avatar-face .selected-avatar-tracking {
   width: 100%;
   height: 100%;
   object-fit: contain;

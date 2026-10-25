@@ -5,6 +5,7 @@ import type { BackendPreguntaDTO } from '../../../types/area'
 import type { Avatar } from '../../../types/avatar'
 import type { RiasecAnswer, RiasecDimension, RiasecOption, RiasecProgress } from '../../../types/riasec'
 import { getRiasecDimension } from '../config/riasecDimensions'
+import { MAX_CRITERIOS_POR_DIMENSION } from '../../../config/riasec'
 import { useSaveUserApi } from '../../../composables/useSaveUserApi'
 import { getEvaluationUuid, saveEvaluationUuid } from '../../../utils/evaluationStorage'
 
@@ -51,6 +52,9 @@ export function useRiasecForm() {
     }))
   })
   const currentAnswer = computed<RiasecAnswer>(() => getAnswerFor(currentQuestion.value?.riasec_id ?? -1))
+  const isSelectionLimitReached = computed<boolean>(
+    () => currentAnswer.value.opcionIds.length >= MAX_CRITERIOS_POR_DIMENSION
+  )
 
   const tabs = computed<RiasecTab[]>(() => {
     let reachable = true
@@ -159,6 +163,8 @@ export function useRiasecForm() {
     nextDimension,
     currentOptions,
     currentAnswer,
+    selectionLimit: MAX_CRITERIOS_POR_DIMENSION,
+    isSelectionLimitReached,
     selectedAvatar,
     progress,
     isCurrentComplete,

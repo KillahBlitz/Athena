@@ -28,6 +28,14 @@ export function useObjectivesForm() {
     return session.answers[carreraId] || { valoracion: null, justificacion: '' }
   }
 
+  // Whether the user has already rated at least one objective in the current
+  // block. Used only to decide which message the avatar companion shows.
+  const hasStartedCurrentBlock = computed<boolean>(() => {
+    const block = currentBlockData.value
+    if (!block) return false
+    return block.objectives.some((objective) => getAnswer(objective.carreraId).valoracion !== null)
+  })
+
   const setRating = (carreraId: number, rating: RatingValue) => {
     session.setAnswer(carreraId, rating)
   }
@@ -65,6 +73,7 @@ export function useObjectivesForm() {
     selectedAvatar,
     progress,
     isCurrentBlockComplete,
+    hasStartedCurrentBlock,
     isLastBlock,
     isAllCompleted,
     getAnswer,

@@ -8,6 +8,7 @@ import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
+import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
 import { getEvaluationUuid } from '../utils/evaluationStorage'
 
 const STORAGE_KEY = 'athena_session_v2'
@@ -217,9 +218,15 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     toggleRiasecOption(riasecId: number, opcionId: number) {
       const existing = this.riasecAnswers[riasecId] || { opcionIds: [], respuestaAbierta: '' }
       const opcionIds = existing.opcionIds ?? []
+      const yaSeleccionado = opcionIds.includes(opcionId)
+      // Tope de selección por dimensión: evita que el backend construya una
+      // llamada a Jev que exceda su límite de contexto (ver config/riasec.ts).
+      if (!yaSeleccionado && opcionIds.length >= MAX_CRITERIOS_POR_DIMENSION) {
+        return
+      }
       this.riasecAnswers[riasecId] = {
         ...existing,
-        opcionIds: opcionIds.includes(opcionId)
+        opcionIds: yaSeleccionado
           ? opcionIds.filter(id => id !== opcionId)
           : [...opcionIds, opcionId]
       }

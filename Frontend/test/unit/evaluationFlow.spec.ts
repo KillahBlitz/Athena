@@ -6,6 +6,7 @@ import { useRiasecForm } from '../../app/features/riasec/composables/useRiasecFo
 import { useAthenaSessionStore } from '../../app/stores/athenaSession'
 import { EVALUATION_UUID_KEY } from '../../app/utils/evaluationStorage'
 import ObjectivesPage from '../../app/pages/objetivos.vue'
+import AvatarCompanion from '../../app/components/avatar/AvatarCompanion.vue'
 
 const { router } = vi.hoisted(() => ({ router: { push: vi.fn(), replace: vi.fn() } }))
 vi.mock('vue-router', () => ({ useRouter: () => router }))
@@ -122,7 +123,8 @@ describe('envío del cuestionario con UUID', () => {
       await card.get('textarea').setValue(justifications[index])
     }
     expect(cards).toHaveLength(2)
-    await page.get('.objectives-bottom-bar .base-button').trigger('click')
+    // Block navigation now lives inside the (stubbed) AvatarCompanion box.
+    await page.findComponent(AvatarCompanion).vm.$emit('go-next')
     expect(router.push).toHaveBeenCalledWith('/riasec')
     page.unmount()
 
