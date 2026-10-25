@@ -3,7 +3,6 @@ import json
 import httpx2
 import pytest
 from kinasis_library.events.extractor_event import ExtractorEvent
-from openai import OpenAI
 from sqlalchemy import create_engine
 
 import handlers.extraction_handler as extraction_module
@@ -80,8 +79,9 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
     )
     handler = worker_module.ExtractorEventHandler(qh=Query(), ch=object())
     handler._eh._prompt = {
-        "prompt_objetives": "Reglas de objetivos del diccionario\n\nSALIDA: ejemplo de JSON",
-        "prompt_criterias": "Reglas de dimensiones del diccionario\n\nSALIDA: ejemplo de JSON",
+        "prompt_objetivo_coincidence": "Reglas de objetivos del diccionario (idx {idx})",
+        "prompt_dimension_coincidence": "Reglas de dimensiones del diccionario ({part_key}, {criterio_id})",
+        "prompt_dimension_repeat": "Reglas de repetición ({part_key}, {criterio_id})",
     }
     requests = []
 
@@ -100,26 +100,30 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
             "part_0:101:coincidence", "part_1:201:coincidence", "part_1:202:coincidence",
             "part_1:203:coincidence", "part_1:201:repeat", "part_1:202:repeat",
         }
-        assert "Reglas de objetivos del diccionario" in questions["part_0:101:coincidence"]["instructions"]
-        assert "Reglas de dimensiones del diccionario" in questions["part_1:201:coincidence"]["instructions"]
-        assert all("SALIDA:" not in q["instructions"] for q in questions.values())
+        assert "Reglas de objetivos del diccionario (idx 0)" in questions["part_0:101:coincidence"]["instructions"]
+        assert "Reglas de dimensiones del diccionario (part_1, 201)" in questions["part_1:201:coincidence"]["instructions"]
+        assert "Reglas de repetición (part_1, 201)" in questions["part_1:201:repeat"]["instructions"]
         assert [level["label"] for level in questions["part_1:201:coincidence"]["levels"]] == ["0", "20", "40", "60", "80", "100"]
+        assert questions["part_1:201:repeat"]["choices"] == [{"value": "true", "label": "true"},
+                                                              {"value": "false", "label": "false"}]
         scores = {"part_0:101:coincidence": 2.5, "part_1:201:coincidence": 4,
                   "part_1:202:coincidence": 0, "part_1:203:coincidence": 3}
         answers = [
             {"name": name, "type": "score", "score": score, "confidence": 1, "probabilities": []}
             for name, score in scores.items()
         ] + [
-            {"name": f"part_1:{key}:repeat", "type": "choice", "choice": True,
+            {"name": f"part_1:{key}:repeat", "type": "choice", "choice": "true",
              "confidence": 1, "probabilities": []} for key in (201, 202)
         ]
         return httpx2.Response(200, json={"model": "typesafe-ai/jev", "answers": answers,
                                         "usage": {"input_tokens": 100, "output_tokens": 0, "total_tokens": 100}})
 
-    def client(**kwargs):
-        return OpenAI(**kwargs, http_client=httpx2.Client(transport=httpx2.MockTransport(respond)))
+    real_client_cls = httpx2.Client
 
-    monkeypatch.setattr(worker_module, "OpenAI", client)
+    def client(**kwargs):
+        return real_client_cls(**{**kwargs, "transport": httpx2.MockTransport(respond)})
+
+    monkeypatch.setattr(worker_module.httpx2, "Client", client)
     result = handler.classifier_task(event, {"VERCEL_API_KEY": "test-key",
                                            "VERCEL_API_URL": "https://ai-gateway.vercel.sh/v1",
                                            "VERCEL_MODEL": "typesafe-ai/jev"})
