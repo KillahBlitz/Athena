@@ -1,4 +1,5 @@
 import json
+from unittest.mock import Mock
 
 import httpx2
 import pytest
@@ -6,10 +7,12 @@ from kinasis_library.events.extractor_event import ExtractorEvent
 from sqlalchemy import create_engine
 
 import handlers.extraction_handler as extraction_module
+from handlers.command_handler import CommandHandler
 from handlers.query_handler import QueryHandler
 from models.repository.areas_table_repository import AreasTableRepository
 from models.tables.carreras import Carrera
 from models.tables.criterios import Criterio
+import service.jev as jev_module
 import tasks.extractor_event_handler as worker_module
 
 
@@ -77,7 +80,8 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
         questions={key: {"criteria_list": [{202: "Criterio 202"}, {201: "Criterio 201"}] if key == 1 else [],
                          "open_question": f"Respuesta dimensión {key}"} for key in (1, 2, 4, 5, 6)},
     )
-    handler = worker_module.ExtractorEventHandler(qh=Query(), ch=object())
+    commands = Mock(spec=CommandHandler)
+    handler = worker_module.ExtractorEventHandler(qh=Query(), ch=commands)
     handler._eh._prompt = {
         "prompt_objetivo_coincidence": "Reglas de objetivos del diccionario (idx {idx})",
         "prompt_dimension_coincidence": "Reglas de dimensiones del diccionario ({part_key}, {criterio_id})",
@@ -123,8 +127,8 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
     def client(**kwargs):
         return real_client_cls(**{**kwargs, "transport": httpx2.MockTransport(respond)})
 
-    monkeypatch.setattr(worker_module.httpx2, "Client", client)
-    result = handler.classifier_task(event, {"VERCEL_API_KEY": "test-key",
+    monkeypatch.setattr(jev_module.httpx2, "Client", client)
+    result = handler.extractor_task(event, {"VERCEL_API_KEY": "test-key",
                                            "VERCEL_API_URL": "https://ai-gateway.vercel.sh/v1",
                                            "VERCEL_MODEL": "typesafe-ai/jev"})
     assert len(requests) == 1
@@ -136,6 +140,10 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
         ],
         "criterias": [{"criteria_id": 201, "coincidence": 80}, {"criteria_id": 203, "coincidence": 60}],
     }
+    commands.save_objetive_user.assert_called_once_with(score=0.8, user_id=1, career_id=42)
+    commands.save_objetive_criteria.assert_called_once_with(user_id=1, criteria_id=101, coincidence=0.5)
+    assert commands.save_user_criteria.call_count == 3
+    commands.update_user_status.assert_called_once_with(event.uuid_user, 2)
 
 
 @pytest.mark.parametrize("answer", [

@@ -1,10 +1,10 @@
 from kinasis_library.services.redis_interface import RedisConsumer
 from kinasis_library.utils.config_manager import ConfigManager
 from kinasis_library.events.extractor_event import ExtractorEvent
+from kinasis_library.events.classifier_event import ClassifierEvent
 from handlers.extraction_handler import ExtractorHandler
 from handlers.command_handler import CommandHandler
 from handlers.query_handler import QueryHandler
-from models.user import UserInfo
 from service.jev import JEVClient
 
 from pathlib import Path
@@ -53,7 +53,6 @@ class ExtractorEventHandler:
 
     def extractor_task(self, event: ExtractorEvent, api_envs: dict) -> dict:
         print(f"Processing event for user {event.uuid_user} in area {event.area_id}")
-        user = UserInfo(uuid=event.uuid_user, area_id=event.area_id, estatus_id=2)
         prompt_info = self._eh.get_info_prompt(event)
         prompt = self._eh.generate_prompt_for_jev(prompt_info)
 
@@ -61,17 +60,9 @@ class ExtractorEventHandler:
         print(f"Jev usage user={event.uuid_user} area={event.area_id} "
               f"preguntas={len(prompt['questions'])} usage={response.get('usage')}", flush=True)
         result = self._eh.format_jev_response(prompt_info, response)
-
-        output_file = Path(__file__).resolve().parents[2] / f"logs/prompts/prompt_{event.uuid_user}.json"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(json.dumps(prompt, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Prompt saved to {output_file}")
-
-        output_file = Path(__file__).resolve().parents[2] / f"logs/events/result_{event.uuid_user}.json"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Result saved to {output_file}")
-        return result
+        self._eh.save_result_to_db(result, event)
+        event = ClassifierEvent(user_uuid=event.uuid_user, id_area=event.area_id)
+        return event
 
 if __name__ == "__main__":
     handler = ExtractorEventHandler()
@@ -84,5 +75,5 @@ if __name__ == "__main__":
                     stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
                     consumer_name=envs["CONSUMER_NAME"],count=1,block=2000)
         if event:
-            result = handler.extractor_task(ExtractorEvent(**event), api_envs)
-            #redis_consumer.event_producer(stream_name=envs["SEND_STREAM_NAME"], data=result)
+            event_result = handler.extractor_task(ExtractorEvent(**event), api_envs)
+            redis_consumer.event_producer("classifier_stream", event_result)

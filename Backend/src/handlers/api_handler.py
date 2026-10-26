@@ -1,5 +1,4 @@
 from collections import defaultdict
-import random
 
 from kinasis_library.utils.utils import generate_uuid
 from kinasis_library.services.redis_interface import RedisConsumer
@@ -24,7 +23,7 @@ class ApiHandler:
             redis_port=redis_credentials["REDIS_PORT"],
             redis_password=redis_credentials["REDIS_PASSWORD"])
 
-    def _submit_user_in_db(self, data: SaveUserRequest) -> str:
+    def _submit_user_in_db(self, data: SaveUserRequest) -> tuple[int, str]:
         user_uuid = generate_uuid()
         user = Usuario(
             uuid_usuario=user_uuid,
@@ -34,8 +33,8 @@ class ApiHandler:
             estatus_id=1,
             type_user=4
         )
-        #self._ch.insert_user(user)
-        return user_uuid
+        user_id = self._ch.insert_user(user)
+        return user_id, user_uuid
 
     def get_areas(self):
         return self._qh.get_areas()
@@ -60,8 +59,7 @@ class ApiHandler:
         return QuestionaryResponse(**area, objetivos=objetivos, preguntas=preguntas)
 
     def generate_user_event(self, params: SaveUserRequest) -> str:
-        user_uuid = self._submit_user_in_db(params)
-        mock_user_id = random.randint(1, 1000)
+        user_id, user_uuid = self._submit_user_in_db(params)
         
         objetives = [
             Objetives(
@@ -78,7 +76,7 @@ class ApiHandler:
             for a in params.risec_questions.values()}
 
         event = ExtractorEvent(
-            user_id=mock_user_id,
+            user_id=user_id,
             uuid_user=user_uuid,
             area_id=params.area_id,
             objetives=objetives,
