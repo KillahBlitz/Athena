@@ -20,6 +20,29 @@ class ExtractorHandler:
         self._ch = ch or CommandHandler()
         self._prompt = json.loads(PROMPT_PATH.read_text(encoding="utf-8"))
 
+    @staticmethod
+    def _score_to_pct(answer: dict) -> int:
+        if answer.get("type") != "score":
+            raise ValueError(f"Respuesta inválida para {answer.get('name')!r}: se esperaba 'score', "
+                              f"se obtuvo {answer.get('type')!r}")
+        score = answer.get("score")
+        if score is None or not isinstance(score, (int, float)) or math.isnan(score):
+            raise ValueError(f"Score inválido para {answer.get('name')!r}: {score!r}")
+        if not (0 <= score <= MAX_SCORE_INDEX):
+            raise ValueError(f"Score fuera de rango para {answer.get('name')!r}: {score!r} "
+                              f"(rango válido 0-{MAX_SCORE_INDEX})")
+        return round(score / MAX_SCORE_INDEX * 100)
+
+    @staticmethod
+    def _choice_to_bool(answer: dict) -> bool:
+        if answer.get("type") != "choice":
+            raise ValueError(f"Respuesta inválida para {answer.get('name')!r}: se esperaba 'choice', "
+                              f"se obtuvo {answer.get('type')!r}")
+        choice = answer.get("choice")
+        if choice not in ("true", "false"):
+            raise ValueError(f"Choice inválido para {answer.get('name')!r}: {choice!r}")
+        return choice == "true"
+
     def _merge_criteria_objectives(self, criteria: list[CriteriaRag], objectives: list[Objetives]) -> list[dict]:
         objetives_prompt_list = []
         for o in objectives:
@@ -87,10 +110,6 @@ class ExtractorHandler:
         return prompt_parameters
 
     def generate_prompt_for_jev(self, prompt_info: dict) -> dict:
-        """Construye el `state` y las preguntas tipadas (Score/Choice) para una sola
-        llamada a Jev. Cada pregunta es atómica y corta, y referencia por path el
-        dato exacto del state que debe juzgar (en vez de repetir un reglamento
-        largo en cada una de las N preguntas, lo que agota el límite de tokens)."""
         objetivo_template = self._prompt["prompt_objetivo_coincidence"]
         dimension_coincidence_template = self._prompt["prompt_dimension_coincidence"]
         dimension_repeat_template = self._prompt["prompt_dimension_repeat"]
@@ -130,32 +149,7 @@ class ExtractorHandler:
             "questions": questions,
         }
 
-    @staticmethod
-    def _score_to_pct(answer: dict) -> int:
-        if answer.get("type") != "score":
-            raise ValueError(f"Respuesta inválida para {answer.get('name')!r}: se esperaba 'score', "
-                              f"se obtuvo {answer.get('type')!r}")
-        score = answer.get("score")
-        if score is None or not isinstance(score, (int, float)) or math.isnan(score):
-            raise ValueError(f"Score inválido para {answer.get('name')!r}: {score!r}")
-        if not (0 <= score <= MAX_SCORE_INDEX):
-            raise ValueError(f"Score fuera de rango para {answer.get('name')!r}: {score!r} "
-                              f"(rango válido 0-{MAX_SCORE_INDEX})")
-        return round(score / MAX_SCORE_INDEX * 100)
-
-    @staticmethod
-    def _choice_to_bool(answer: dict) -> bool:
-        if answer.get("type") != "choice":
-            raise ValueError(f"Respuesta inválida para {answer.get('name')!r}: se esperaba 'choice', "
-                              f"se obtuvo {answer.get('type')!r}")
-        choice = answer.get("choice")
-        if choice not in ("true", "false"):
-            raise ValueError(f"Choice inválido para {answer.get('name')!r}: {choice!r}")
-        return choice == "true"
-
     def format_jev_response(self, prompt_info: dict, response: dict) -> dict:
-        """Convierte las respuestas tipadas de Jev (score 0-5, choice) en los
-        porcentajes 0-100 y listas que consume el resto del pipeline."""
         answers = {answer["name"]: answer for answer in response["answers"]}
 
         objetives_criteria = []
@@ -190,3 +184,39 @@ class ExtractorHandler:
             "priority_criteria": priority_criteria,
             "criterias": criterias,
         }
+
+    def save_result_to_db(self, result: dict, event: ExtractorEvent) -> None:
+        priority_ids = {crit["criteria_id"] for crit in result["priority_criteria"]}
+        for obj in event.objetives:
+            self._ch.save_objetive_user(
+                score=obj.porc_evaluation,
+                user_id=event.user_id,
+                career_id=obj.id_carrera)
+
+        for crit in result["objetives_criteria"]:
+            self._ch.save_objetive_criteria(
+                user_id=event.user_id,
+                criteria_id=crit["criteria_id"],
+                coincidence=crit["coincidence"] / 100)
+
+        for crit in result["priority_criteria"]:
+            count = 1
+            coincidence = crit["coincidence"] / 100
+            if crit["repeat"]:
+                count = count + 1
+            self._ch.save_user_criteria(
+                user_id=event.user_id,
+                criteria_id=crit["criteria_id"],
+                coincidence=coincidence,
+                repeat_count=count)
+
+        for crit in result["criterias"]:
+            if crit["criteria_id"] in priority_ids:
+                continue
+            self._ch.save_user_criteria(
+                user_id=event.user_id,
+                criteria_id=crit["criteria_id"],
+                coincidence=crit["coincidence"] / 100,
+                repeat_count=1)
+
+        self._ch.update_user_status(event.uuid_user, 2)

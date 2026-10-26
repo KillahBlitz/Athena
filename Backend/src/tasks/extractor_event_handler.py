@@ -1,23 +1,18 @@
 from kinasis_library.services.redis_interface import RedisConsumer
 from kinasis_library.utils.config_manager import ConfigManager
 from kinasis_library.events.extractor_event import ExtractorEvent
+from kinasis_library.events.classifier_event import ClassifierEvent
 from handlers.extraction_handler import ExtractorHandler
 from handlers.command_handler import CommandHandler
 from handlers.query_handler import QueryHandler
-from models.user import UserInfo
+from service.jev import JEVClient
 
-import httpx2
 from pathlib import Path
 import json
 import traceback
 
 DEFAULT_JEV_MODEL = "typesafe-ai/jev"
 LOGS_DIR = Path(__file__).resolve().parents[2] / "logs"
-REQUIRED_ENVS = (
-    "REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD",
-    "STREAM_NAME", "GROUP_NAME", "CONSUMER_NAME",
-    "VERCEL_API_URL", "VERCEL_API_KEY",
-)
 
 def get_dict_envs():
     cm = ConfigManager()
@@ -50,114 +45,35 @@ class ExtractorEventHandler:
 
     def execute_jev_task(self, prompt: dict, api_envs: dict) -> dict:
         questions = prompt["questions"]
-        if not questions:
-            raise ValueError("El prompt no contiene preguntas para Jev.")
-        # Jev ingiere el state (input) una sola vez y evalúa todas las preguntas en
-        # paralelo dentro de la misma request: agruparlas en una sola llamada es
-        # más barato y más rápido que partirlas en varias, y no hay límite en el
-        # número de preguntas (solo en el tamaño total del contexto).
-        with httpx2.Client(
-            base_url=api_envs["VERCEL_API_URL"],
-            headers={"Authorization": f"Bearer {api_envs['VERCEL_API_KEY']}"},
-            timeout=30,
-        ) as client:
-            http_response = client.post("/decisions", json={
-                # `or` y no el default de .get(): la clave siempre existe (get_jev_dict_envs)
-                # y vale None cuando VERCEL_MODEL no está definida.
-                "model": api_envs.get("VERCEL_MODEL") or DEFAULT_JEV_MODEL,
-                "input": prompt["input"],
-                "questions": questions,
-            })
-            http_response.raise_for_status()
-            return http_response.json()
+        jev = JEVClient(api_envs)
+        with jev.api_service():
+            response = jev.get_response(prompt, questions)
+            response.raise_for_status()
+        return response.json()
 
-
-    def classifier_task(self, event: ExtractorEvent, api_envs: dict) -> dict:
+    def extractor_task(self, event: ExtractorEvent, api_envs: dict) -> dict:
         print(f"Processing event for user {event.uuid_user} in area {event.area_id}")
-        user = UserInfo(uuid=event.uuid_user, area_id=event.area_id, estatus_id=2)
         prompt_info = self._eh.get_info_prompt(event)
         prompt = self._eh.generate_prompt_for_jev(prompt_info)
 
-        output_file = Path(__file__).resolve().parents[2] / f"logs/criteria/user_{event.uuid_user}_area_{event.area_id}.json"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(json.dumps(prompt, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Prompt saved to {output_file}")
-
-        jev_response = self.execute_jev_task(prompt, api_envs)
-        # Tokens reales por evaluación: base para estimar el costo en producción (consumo_jev.md).
+        response = self.execute_jev_task(prompt, api_envs)
         print(f"Jev usage user={event.uuid_user} area={event.area_id} "
-              f"preguntas={len(prompt['questions'])} usage={jev_response.get('usage')}", flush=True)
-        result = self._eh.format_jev_response(prompt_info, jev_response)
-
-        output_file = Path(__file__).resolve().parents[2] / f"logs/events/user_{event.uuid_user}_area_{event.area_id}.json"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Result saved to {output_file}")
-        return result
-
-    def process_event(self, raw_event: dict, api_envs: dict) -> dict | None:
-        """Procesa un evento sin dejar que un fallo tumbe al worker.
-
-        RedisConsumer confirma (ack) el mensaje al leerlo, antes de procesarlo; si algo
-        falla después, Redis ya no lo reentrega. Por eso, ante un error se guarda el evento
-        crudo y el motivo en logs/errors/ para poder inspeccionarlo o reprocesarlo."""
-        try:
-            event = ExtractorEvent(**raw_event)
-        except Exception as error:
-            self._save_failed_event(raw_event, "invalid_event", error)
-            return None
-        try:
-            return self.classifier_task(event, api_envs)
-        except Exception as error:
-            self._save_failed_event(raw_event, "processing_failed", error)
-            return None
-
-    @staticmethod
-    def _save_failed_event(raw_event: dict, reason: str, error: Exception) -> None:
-        uuid_user = raw_event.get("uuid_user", "unknown") if isinstance(raw_event, dict) else "unknown"
-        area_id = raw_event.get("area_id", "unknown") if isinstance(raw_event, dict) else "unknown"
-        output_file = LOGS_DIR / "errors" / f"user_{uuid_user}_area_{area_id}.json"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(json.dumps({
-            "reason": reason,
-            "error": f"{type(error).__name__}: {error}",
-            "traceback": traceback.format_exc(),
-            "event": raw_event,
-        }, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-        print(f"[ERROR] {reason} para user={uuid_user} area={area_id}: "
-              f"{type(error).__name__}: {error}. Evento guardado en {output_file}", flush=True)
-
-
-def check_envs(envs: dict, api_envs: dict) -> None:
-    """Falla al arrancar, con un mensaje claro, si falta alguna variable obligatoria.
-    Solo imprime los nombres que faltan, nunca los valores."""
-    missing = [name for name in REQUIRED_ENVS if not (envs.get(name) or api_envs.get(name))]
-    if missing:
-        raise SystemExit(f"Faltan variables de entorno obligatorias: {', '.join(missing)}")
-
-
-def main() -> None:
-    envs = get_dict_envs()
-    api_envs = get_jev_dict_envs()
-    check_envs(envs, api_envs)
-    handler = ExtractorEventHandler()
-    redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
-    print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']} "
-          f"and consumer: {envs['CONSUMER_NAME']}", flush=True)
-    try:
-        while True:
-            raw_event = redis_consumer.start_redis_consumer(
-                stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
-                consumer_name=envs["CONSUMER_NAME"], count=1, block=2000)
-            if raw_event:
-                handler.process_event(raw_event, api_envs)
-                # TODO(handoff): publicar en envs["SEND_STREAM_NAME"] un ClassifierEvent una vez
-                # decidida la vectorización y la persistencia (ver Backend/consumo_jev.md).
-                # Publicar hoy el resultado crudo rompería al clasificador: su modelo de evento
-                # (ClassifierEvent) tiene otra forma.
-    except KeyboardInterrupt:
-        print("Worker detenido.", flush=True)
-
+              f"preguntas={len(prompt['questions'])} usage={response.get('usage')}", flush=True)
+        result = self._eh.format_jev_response(prompt_info, response)
+        self._eh.save_result_to_db(result, event)
+        event = ClassifierEvent(user_uuid=event.uuid_user, id_area=event.area_id)
+        return event
 
 if __name__ == "__main__":
-    main()
+    handler = ExtractorEventHandler()
+    envs = get_dict_envs()
+    api_envs = get_jev_dict_envs()
+    redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
+    print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']} and consumer: {envs['CONSUMER_NAME']}")
+    while True:
+        event = redis_consumer.start_redis_consumer(
+                    stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
+                    consumer_name=envs["CONSUMER_NAME"],count=1,block=2000)
+        if event:
+            event_result = handler.extractor_task(ExtractorEvent(**event), api_envs)
+            redis_consumer.event_producer("classifier_stream", event_result)

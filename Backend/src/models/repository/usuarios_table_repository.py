@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, select, update
 from sqlalchemy.orm import sessionmaker
 
 from models.tables.usuario import Usuario
@@ -8,6 +8,18 @@ class UsuariosTableRepository:
     def __init__(self, engine: Engine):
         self.engine = engine
         self.session_factory = sessionmaker(bind=engine)
+
+    def insert_user(self, user: Usuario) -> int:
+        with self.session_factory.begin() as session:
+            session.add(user)
+            session.flush()
+            user_id = user.usuario_id
+        return user_id
+
+    def update_user_status(self, user_uuid: str, status_id: int) -> None:
+        query = update(Usuario).where(Usuario.uuid_usuario == user_uuid).values(estatus_id=status_id)
+        with self.session_factory.begin() as session:
+            return session.execute(query)
 
     def get_users_by_area_id(self, area_id: int) -> list[Usuario]:
         query = select(Usuario).where(Usuario.area_id == area_id)

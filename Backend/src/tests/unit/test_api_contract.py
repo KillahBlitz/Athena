@@ -4,11 +4,16 @@ from pathlib import Path
 
 import fastapi
 import pytest
+from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 import handlers.api_handler as api_handler_module
+import handlers.command_handler as command_handler_module
 import main.endpoints as endpoints
 from models.request.save_user_request import SaveUserRequest
 from models.response.questionary_response import QuestionaryResponse
+from models.tables.usuario import Usuario
 
 SAMPLE_PATH = Path(__file__).resolve().parent.parent / "fixtures" / "questionary_response.sample.json"
 
@@ -60,13 +65,18 @@ class FakeRedisConsumer:
 
 
 @pytest.fixture
-def fake_api_handler(monkeypatch):
+def fake_api_handler(monkeypatch, tmp_path):
+    engine = create_engine(f"sqlite:///{tmp_path / 'usuarios.db'}")
+    Usuario.__table__.create(engine)
     monkeypatch.setattr(api_handler_module, "QueryHandler", FakeQueryHandler)
-    monkeypatch.setattr(api_handler_module, "CommandHandler", lambda: None)
+    monkeypatch.setattr(command_handler_module, "create_postgres_engine", lambda *args: engine)
     monkeypatch.setattr(api_handler_module, "RedisConsumer", FakeRedisConsumer)
     handler = api_handler_module.ApiHandler()
     monkeypatch.setattr(endpoints, "ah", handler)
-    return handler
+    try:
+        yield handler
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture
@@ -128,6 +138,15 @@ def test_generate_user_event_maps_answers_without_mutating_request(fake_api_hand
     assert stream_name == "extractor_stream"
     assert event.uuid_user == user_uuid
     assert event.area_id == 1
+    with Session(fake_api_handler._ch.engine) as session:
+        user = session.scalars(select(Usuario)).one()
+        assert user.usuario_id == event.user_id
+        assert user.uuid_usuario == user_uuid
+        assert user.area_id == save_user_payload.area_id
+        assert user.nombre_usuario == save_user_payload.username
+        assert user.correo_usuario == save_user_payload.email
+        assert user.estatus_id == 1
+        assert user.type_user == 4
     assert [objective.model_dump() for objective in event.objetives] == [
         {"id_objetive": 101, "id_carrera": 201, "porc_evaluation": 0.2, "description": "Poco interés"},
         {"id_objetive": 102, "id_carrera": 202, "porc_evaluation": 0.6, "description": "Interés moderado"},
@@ -137,6 +156,25 @@ def test_generate_user_event_maps_answers_without_mutating_request(fake_api_hand
         1: {"criteria_list": [{11: "Reparar"}, {12: "Herramientas"}], "open_question": "Reparo aparatos"},
         2: {"criteria_list": [{21: "Investigar"}], "open_question": "Investigo problemas"},
     }
+
+
+def test_generate_user_event_does_not_publish_when_insert_fails(
+    fake_api_handler, save_user_payload, monkeypatch
+):
+    monkeypatch.setattr(api_handler_module, "generate_uuid", lambda: "USER-duplicate")
+    fake_api_handler.generate_user_event(save_user_payload)
+
+    with pytest.raises(IntegrityError):
+        fake_api_handler.generate_user_event(save_user_payload)
+
+    assert len(fake_api_handler._rc.events) == 1
+    with Session(fake_api_handler._ch.engine) as session:
+        assert list(session.scalars(select(Usuario.uuid_usuario))) == ["USER-duplicate"]
+
+    monkeypatch.setattr(api_handler_module, "generate_uuid", lambda: "USER-after-failure")
+    assert fake_api_handler.generate_user_event(save_user_payload) == "USER-after-failure"
+    assert len(fake_api_handler._rc.events) == 2
+    assert fake_api_handler._rc.events[0][1].user_id != fake_api_handler._rc.events[1][1].user_id
 
 
 def test_save_user_returns_http_200_with_user_uuid(fake_api_handler, save_user_payload):
