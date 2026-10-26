@@ -110,24 +110,16 @@ class ExtractorEventHandler:
         print(f"[ERROR] {reason} para user={uuid_user} area={area_id}: "
               f"{type(error).__name__}: {error}. Evento guardado en {output_file}", flush=True)
 
-
-def main() -> None:
+if __name__ == "__main__":
     envs = get_dict_envs()
     api_envs = get_jev_dict_envs()
     handler = ExtractorEventHandler()
     redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
     print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']} "
           f"and consumer: {envs['CONSUMER_NAME']}", flush=True)
-    try:
-        while True:
-            event = redis_consumer.start_redis_consumer(
-                stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
-                consumer_name=envs["CONSUMER_NAME"], count=1, block=2000)
-            if event:
-                handler.process_event(event, api_envs)
-    except KeyboardInterrupt:
-        print("Worker detenido.", flush=True)
-
-
-if __name__ == "__main__":
-    main()
+    while True:
+        event = redis_consumer.start_redis_consumer(
+            stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
+            consumer_name=envs["CONSUMER_NAME"], count=1, block=2000)
+        if event:
+            handler.process_event(event, api_envs)
