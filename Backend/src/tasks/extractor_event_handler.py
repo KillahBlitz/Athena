@@ -5,19 +5,14 @@ from handlers.extraction_handler import ExtractorHandler
 from handlers.command_handler import CommandHandler
 from handlers.query_handler import QueryHandler
 from models.user import UserInfo
+from service.jev import jev_api_service
 
-import httpx2
 from pathlib import Path
 import json
 import traceback
 
 DEFAULT_JEV_MODEL = "typesafe-ai/jev"
 LOGS_DIR = Path(__file__).resolve().parents[2] / "logs"
-REQUIRED_ENVS = (
-    "REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD",
-    "STREAM_NAME", "GROUP_NAME", "CONSUMER_NAME",
-    "VERCEL_API_URL", "VERCEL_API_KEY",
-)
 
 def get_dict_envs():
     cm = ConfigManager()
@@ -50,20 +45,8 @@ class ExtractorEventHandler:
 
     def execute_jev_task(self, prompt: dict, api_envs: dict) -> dict:
         questions = prompt["questions"]
-        if not questions:
-            raise ValueError("El prompt no contiene preguntas para Jev.")
-        # Jev ingiere el state (input) una sola vez y evalúa todas las preguntas en
-        # paralelo dentro de la misma request: agruparlas en una sola llamada es
-        # más barato y más rápido que partirlas en varias, y no hay límite en el
-        # número de preguntas (solo en el tamaño total del contexto).
-        with httpx2.Client(
-            base_url=api_envs["VERCEL_API_URL"],
-            headers={"Authorization": f"Bearer {api_envs['VERCEL_API_KEY']}"},
-            timeout=30,
-        ) as client:
+        with jev_api_service(api_envs) as client:
             http_response = client.post("/decisions", json={
-                # `or` y no el default de .get(): la clave siempre existe (get_jev_dict_envs)
-                # y vale None cuando VERCEL_MODEL no está definida.
                 "model": api_envs.get("VERCEL_MODEL") or DEFAULT_JEV_MODEL,
                 "input": prompt["input"],
                 "questions": questions,
@@ -128,33 +111,20 @@ class ExtractorEventHandler:
               f"{type(error).__name__}: {error}. Evento guardado en {output_file}", flush=True)
 
 
-def check_envs(envs: dict, api_envs: dict) -> None:
-    """Falla al arrancar, con un mensaje claro, si falta alguna variable obligatoria.
-    Solo imprime los nombres que faltan, nunca los valores."""
-    missing = [name for name in REQUIRED_ENVS if not (envs.get(name) or api_envs.get(name))]
-    if missing:
-        raise SystemExit(f"Faltan variables de entorno obligatorias: {', '.join(missing)}")
-
-
 def main() -> None:
     envs = get_dict_envs()
     api_envs = get_jev_dict_envs()
-    check_envs(envs, api_envs)
     handler = ExtractorEventHandler()
     redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
     print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']} "
           f"and consumer: {envs['CONSUMER_NAME']}", flush=True)
     try:
         while True:
-            raw_event = redis_consumer.start_redis_consumer(
+            event = redis_consumer.start_redis_consumer(
                 stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
                 consumer_name=envs["CONSUMER_NAME"], count=1, block=2000)
-            if raw_event:
-                handler.process_event(raw_event, api_envs)
-                # TODO(handoff): publicar en envs["SEND_STREAM_NAME"] un ClassifierEvent una vez
-                # decidida la vectorización y la persistencia (ver Backend/consumo_jev.md).
-                # Publicar hoy el resultado crudo rompería al clasificador: su modelo de evento
-                # (ClassifierEvent) tiene otra forma.
+            if event:
+                handler.process_event(event, api_envs)
     except KeyboardInterrupt:
         print("Worker detenido.", flush=True)
 
