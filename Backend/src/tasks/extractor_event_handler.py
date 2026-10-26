@@ -111,12 +111,11 @@ class ExtractorEventHandler:
               f"{type(error).__name__}: {error}. Evento guardado en {output_file}", flush=True)
 
 if __name__ == "__main__":
+    handler = ExtractorEventHandler()
     envs = get_dict_envs()
     api_envs = get_jev_dict_envs()
-    handler = ExtractorEventHandler()
     redis_consumer = RedisConsumer(envs["REDIS_HOST"], int(envs["REDIS_PORT"]), envs["REDIS_PASSWORD"])
-    print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']} "
-          f"and consumer: {envs['CONSUMER_NAME']}", flush=True)
+    print(f"Listening to Redis stream: {envs['STREAM_NAME']} with group: {envs['GROUP_NAME']}")
     while True:
         event = redis_consumer.start_redis_consumer(
             stream_name=envs["STREAM_NAME"], group_name=envs["GROUP_NAME"],
