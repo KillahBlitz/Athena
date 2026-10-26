@@ -15,14 +15,6 @@
       <ObjectiveProgress :progress="progress" />
     </div>
 
-    <ObjectiveGrid
-      v-if="currentBlockData"
-      :block="currentBlockData"
-      :get-answer="getAnswer"
-      @rating="setRating"
-      @justification="setJustification"
-    />
-
     <StageCelebration
       :show="isLastBlock && isCurrentBlockComplete"
       title="¡Has valorado todos los objetivos de esta área!"
@@ -33,49 +25,58 @@
       </BaseButton>
     </StageCelebration>
 
-    <AvatarCompanion
-      :key="currentBlockData?.blockIndex"
-      :avatar="selectedAvatar"
-      stage="objectives"
-      :complete="isCurrentBlockComplete"
-    />
+    <Transition name="onboarding-backdrop-fade">
+      <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
+    </Transition>
 
-    <div class="objectives-bottom-bar">
-      <div class="bottom-actions-group">
-        <button type="button" class="back-text-btn" @click="handleBack">
-          <span aria-hidden="true">←</span>
-          <span>Atrás</span>
-        </button>
+    <div class="objectives-main-row">
+      <ObjectiveGrid
+        v-if="currentBlockData"
+        :block="currentBlockData"
+        :get-answer="getAnswer"
+        @rating="setRating"
+        @justification="setJustification"
+        @leave="handleLeave"
+      />
 
-        <BaseButton
-          variant="primary"
-          size="md"
-          :disabled="!isCurrentBlockComplete"
-          @click="handleNext"
-        >
-          <span>{{ isLastBlock ? 'Finalizar etapa' : 'Siguiente' }}</span>
-          <template #suffix>
-            <span aria-hidden="true">→</span>
-          </template>
-        </BaseButton>
-      </div>
+      <AvatarCompanion
+        class="objectives-companion"
+        :avatar="selectedAvatar"
+        stage="objectives"
+        :complete="isCurrentBlockComplete"
+        :onboarding="showOnboarding"
+        :notice="notice"
+        :reminder="pendingMessage"
+        :next-label="isLastBlock ? 'Finalizar etapa' : 'Adelante'"
+        :is-last-block="isLastBlock"
+        :block="currentBlock"
+        :total-blocks="totalBlocks"
+        :next-disabled="!isCurrentBlockComplete"
+        @dismiss-onboarding="dismissOnboarding"
+        @go-back="handleBack"
+        @go-next="handleNext"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
 import BaseButton from '../components/ui/BaseButton.vue'
 import StageCelebration from '../components/ui/StageCelebration.vue'
+import { hasSeenObjectivesOnboarding, markObjectivesOnboardingSeen } from '../utils/objectivesOnboardingStorage'
 
 useHead({
   title: 'ATHENA | Valoración de objetivos vocacionales'
 })
 
 const {
+  currentBlock,
+  totalBlocks,
   currentBlockData,
   selectedAvatar,
   progress,
@@ -84,15 +85,53 @@ const {
   getAnswer,
   setRating,
   setJustification,
+  pendingMessage,
+  describeSkipped,
+  isPending,
   handleNext,
   handleBack
 } = useObjectivesForm()
+
+const skippedIds = ref<number[]>([])
+const notice = computed(() => describeSkipped(skippedIds.value))
+
+function handleLeave(carreraId: number) {
+  if (isPending(carreraId) && !skippedIds.value.includes(carreraId)) {
+    skippedIds.value = [...skippedIds.value, carreraId]
+  }
+}
+
+// First time ever on /objetivos: show the avatar's "how to answer" card as
+// an overlay above the questions. The user swipes it (or taps "Comenzar")
+// to dock it into place; from then on it's remembered for this browser.
+const showOnboarding = ref(false)
+
+onMounted(() => {
+  showOnboarding.value = !hasSeenObjectivesOnboarding()
+})
+
+function dismissOnboarding() {
+  showOnboarding.value = false
+  markObjectivesOnboardingSeen()
+}
 </script>
 
 <style scoped>
 @import '../features/objetivos/styles/objectives.css';
 
-.bottom-actions-group {
-  width: 100%;
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(15, 15, 25, 0.45);
+}
+
+.onboarding-backdrop-fade-enter-active,
+.onboarding-backdrop-fade-leave-active {
+  transition: opacity 220ms ease;
+}
+.onboarding-backdrop-fade-enter-from,
+.onboarding-backdrop-fade-leave-to {
+  opacity: 0;
 }
 </style>

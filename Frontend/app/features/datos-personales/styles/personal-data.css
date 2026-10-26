@@ -136,8 +136,8 @@
 }
 
 .avatar-card-image {
-  width: 44px;
-  height: 44px;
+  width: min(84px, 100%);
+  aspect-ratio: 3 / 4;
   display: grid;
   place-items: center;
 }
@@ -305,6 +305,9 @@
 }
 
 .area-card {
+  --area-background: var(--color-surface);
+  --area-border: var(--color-border);
+  --area-hover-border: var(--color-border-hover);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -313,12 +316,30 @@
   min-height: var(--tap-target);
   padding: 1.25rem;
   text-align: left;
-  background-color: var(--color-surface);
-  border: 2px solid var(--color-border);
+  background-color: var(--area-background);
+  border: 2px solid var(--area-border);
   border-radius: var(--radius-xl);
   cursor: pointer;
   transition: border-color var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out), background-color var(--motion-base) var(--ease-out);
   user-select: none;
+}
+
+.area-card[data-area-id="1"] {
+  --area-background: #EDF4FB;
+  --area-border: #C4D6E8;
+  --area-hover-border: #8BAAC8;
+}
+
+.area-card[data-area-id="2"] {
+  --area-background: #EFF6F0;
+  --area-border: #C8DDCC;
+  --area-hover-border: #8EB398;
+}
+
+.area-card[data-area-id="3"] {
+  --area-background: #FFF5E5;
+  --area-border: #EAD4AC;
+  --area-hover-border: #C5A16A;
 }
 
 @media (min-width: 768px) {
@@ -328,7 +349,7 @@
 }
 
 .area-card:hover {
-  border-color: var(--color-border-hover);
+  border-color: var(--area-hover-border);
   box-shadow: var(--shadow-pop);
 }
 

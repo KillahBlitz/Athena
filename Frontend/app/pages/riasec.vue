@@ -30,6 +30,10 @@
       </div>
     </div>
 
+    <Transition name="onboarding-backdrop-fade">
+      <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
+    </Transition>
+
     <RiasecDimensionTabs :tabs="tabs" @select="goToDimension" />
 
     <StageCelebration
@@ -72,6 +76,8 @@
               :dimension="currentDimension"
               :options="currentOptions"
               :answer="currentAnswer"
+              :selection-limit="selectionLimit"
+              :is-selection-limit-reached="isSelectionLimitReached"
               @toggle="toggleOption"
             />
 
@@ -97,9 +103,20 @@
             :locked="currentAnswer.opcionIds.length === 0"
             @update:model-value="setOpenAnswer"
           />
-          <AvatarCompanion :avatar="selectedAvatar" stage="riasec" :complete="isCurrentComplete" />
         </Motion>
       </AnimatePresence>
+
+      <!-- Kept outside the swap transition above: that wrapper animates via
+           transform, which would turn the onboarding overlay's
+           `position: fixed` into something scoped to it instead of the
+           viewport. -->
+      <AvatarCompanion
+        :avatar="selectedAvatar"
+        stage="riasec"
+        :complete="isCurrentComplete"
+        :onboarding="showOnboarding"
+        @dismiss-onboarding="dismissOnboarding"
+      />
     </template>
 
     <div v-if="!isCompleted" class="riasec-bottom-bar">
@@ -128,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useRiasecForm } from '../features/riasec/composables/useRiasecForm'
 import RiasecDimensionTabs from '../features/riasec/components/RiasecDimensionTabs.vue'
@@ -139,6 +157,7 @@ import BaseButton from '../components/ui/BaseButton.vue'
 import StageCelebration from '../components/ui/StageCelebration.vue'
 import ErrorMessage from '../components/ui/ErrorMessage.vue'
 import { useMotionPresets } from '../composables/useMotionPresets'
+import { hasSeenRiasecOnboarding, markRiasecOnboardingSeen } from '../utils/riasecOnboardingStorage'
 
 useHead({
   title: 'ATHENA | Perfil RISEC'
@@ -151,6 +170,8 @@ const {
   nextDimension,
   currentOptions,
   currentAnswer,
+  selectionLimit,
+  isSelectionLimitReached,
   selectedAvatar,
   progress,
   isCurrentComplete,
@@ -167,9 +188,39 @@ const {
 } = useRiasecForm()
 
 const presets = useMotionPresets()
+
+// First time ever on /riasec: show the avatar's "how this section works"
+// card as an overlay. Dismissed with its "Comenzar" button; remembered
+// afterwards for this browser.
+const showOnboarding = ref(false)
+
+onMounted(() => {
+  showOnboarding.value = !hasSeenRiasecOnboarding()
+})
+
+function dismissOnboarding() {
+  showOnboarding.value = false
+  markRiasecOnboardingSeen()
+}
 </script>
 
 <style scoped>
 @import '../features/objetivos/styles/objectives.css';
 @import '../features/riasec/styles/riasec.css';
+
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(15, 15, 25, 0.45);
+}
+
+.onboarding-backdrop-fade-enter-active,
+.onboarding-backdrop-fade-leave-active {
+  transition: opacity 220ms ease;
+}
+.onboarding-backdrop-fade-enter-from,
+.onboarding-backdrop-fade-leave-to {
+  opacity: 0;
+}
 </style>

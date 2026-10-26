@@ -11,6 +11,10 @@ export interface MotionPresets {
   sparkle: { initial: Target, animate: Target, transition: object }
   breathe: { animate: Target, transition: object }
   react: { animate: Target, transition: object }
+  /** Spring used to animate the objective card stack (position/scale/rotation). */
+  cardStack: { transition: object }
+  /** Fade used when the companion's dialogue text changes. */
+  dialogue: { initial: Target, animate: Target, exit: Target, transition: object }
 }
 
 export function motionPresets(reduced: boolean): MotionPresets {
@@ -22,7 +26,9 @@ export function motionPresets(reduced: boolean): MotionPresets {
       celebrate: { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.2 } },
       sparkle: { initial: { opacity: 0 }, animate: { opacity: [0, 1] }, transition: { duration: 0.2 } },
       breathe: { animate: {}, transition: { duration: 0 } },
-      react: { animate: { opacity: [0.6, 1] }, transition: { duration: 0.2 } }
+      react: { animate: { opacity: [0.6, 1] }, transition: { duration: 0.2 } },
+      cardStack: { transition: { duration: 0.15 } },
+      dialogue: { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 }, transition: { duration: 0 } }
     }
   }
 
@@ -48,6 +54,16 @@ export function motionPresets(reduced: boolean): MotionPresets {
     react: {
       animate: { rotate: [0, -10, 10, 0], scale: [1, 1.15, 1] },
       transition: { duration: 0.6, ease: 'easeOut' }
+    },
+    cardStack: {
+      // Softer, slightly slower spring so the deck feels fluid rather than snappy.
+      transition: { type: 'spring', stiffness: 150, damping: 22, mass: 1.1 }
+    },
+    dialogue: {
+      initial: { opacity: 0, y: 6 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -6 },
+      transition: { duration: 0.22, ease: 'easeOut' }
     }
   }
 }

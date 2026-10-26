@@ -8,7 +8,9 @@ import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
+import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
 import { getEvaluationUuid } from '../utils/evaluationStorage'
+import { applyStepperAccent } from '../utils/avatarTheme'
 
 const STORAGE_KEY = 'athena_session_v2'
 
@@ -19,6 +21,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     age: null as number | null,
     termsAccepted: false,
     selectedAvatarId: DEFAULT_AVATAR.id,
+    avatarChosen: false,
     selectedAreaId: null as number | null,
     selectedAreaName: null as string | null,
     areaData: null as BackendQuestionaryResponseDTO | null,
@@ -177,6 +180,10 @@ export const useAthenaSessionStore = defineStore('athena-session', {
 
     selectAvatar(avatarId: string) {
       this.selectedAvatarId = avatarId
+      this.avatarChosen = true
+      if (import.meta.client) {
+        applyStepperAccent(this.selectedAvatar.color)
+      }
       this.persist()
     },
 
@@ -217,9 +224,15 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     toggleRiasecOption(riasecId: number, opcionId: number) {
       const existing = this.riasecAnswers[riasecId] || { opcionIds: [], respuestaAbierta: '' }
       const opcionIds = existing.opcionIds ?? []
+      const yaSeleccionado = opcionIds.includes(opcionId)
+      // Tope de selección por dimensión: evita que el backend construya una
+      // llamada a Jev que exceda su límite de contexto (ver config/riasec.ts).
+      if (!yaSeleccionado && opcionIds.length >= MAX_CRITERIOS_POR_DIMENSION) {
+        return
+      }
       this.riasecAnswers[riasecId] = {
         ...existing,
-        opcionIds: opcionIds.includes(opcionId)
+        opcionIds: yaSeleccionado
           ? opcionIds.filter(id => id !== opcionId)
           : [...opcionIds, opcionId]
       }
@@ -291,6 +304,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             age: this.age,
             termsAccepted: this.termsAccepted,
             selectedAvatarId: this.selectedAvatarId,
+            avatarChosen: this.avatarChosen,
             selectedAreaId: this.selectedAreaId,
             selectedAreaName: this.selectedAreaName,
             areaData: this.areaData,

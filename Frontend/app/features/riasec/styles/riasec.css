@@ -261,6 +261,16 @@
   box-shadow: 0 0 0 1px var(--color-primary), var(--shadow-card-hover);
 }
 
+.riasec-option.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.riasec-option.is-disabled:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
 .riasec-option-top {
   display: flex;
   justify-content: space-between;
@@ -376,7 +386,7 @@
   box-shadow: var(--shadow-glow);
 }
 
-.riasec-connections-avatar img {
+.riasec-connections-avatar .selected-avatar-tracking {
   width: 80%;
   height: 80%;
   object-fit: contain;

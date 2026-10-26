@@ -15,7 +15,7 @@
           :animate="presets.breathe.animate"
           :transition="presets.breathe.transition"
         >
-          <img :src="selectedAvatar.image" alt="">
+          <TrackingAvatar class="waiting-avatar-tracking" :avatar-id="selectedAvatar.id" :name="selectedAvatar.name" />
         </Motion>
       </div>
 
@@ -55,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import TrackingAvatar from '../components/avatar/TrackingAvatar.vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -181,7 +182,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.waiting-avatar img {
+.waiting-avatar .waiting-avatar-tracking {
   width: 82%;
   height: 82%;
   object-fit: contain;

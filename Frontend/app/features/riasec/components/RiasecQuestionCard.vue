@@ -25,13 +25,15 @@
         as="button"
         type="button"
         class="riasec-option reveal"
-        :class="{ 'is-selected': isSelected(option.opcionId) }"
+        :class="{ 'is-selected': isSelected(option.opcionId), 'is-disabled': isDisabled(option.opcionId) }"
         :style="{ '--reveal-index': index }"
+        :disabled="isDisabled(option.opcionId)"
         :aria-pressed="isSelected(option.opcionId)"
+        :aria-disabled="isDisabled(option.opcionId)"
         :animate="isSelected(option.opcionId) ? presets.select.animate : {}"
         :transition="presets.select.transition"
         :while-press="presets.press.whilePress"
-        @click="$emit('toggle', option.opcionId)"
+        @click="!isDisabled(option.opcionId) && $emit('toggle', option.opcionId)"
       >
         <span class="riasec-option-top">
           <svg class="riasec-option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
@@ -59,7 +61,8 @@
         <path d="M9 13 L10 14 L17 7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
       <strong>{{ selectionLabel }}</strong>
-      <span>· Puedes elegir varias opciones.</span>
+      <span v-if="isSelectionLimitReached">· Alcanzaste el máximo de {{ selectionLimit }} habilidades.</span>
+      <span v-else>· Puedes elegir varias opciones (máx. {{ selectionLimit }}).</span>
     </p>
   </article>
 </template>
@@ -75,6 +78,8 @@ const props = defineProps<{
   dimension: RiasecDimension
   options: RiasecOption[]
   answer: RiasecAnswer
+  selectionLimit: number
+  isSelectionLimitReached: boolean
 }>()
 
 defineEmits<{
@@ -84,11 +89,14 @@ defineEmits<{
 const presets = useMotionPresets()
 
 const isSelected = (opcionId: number) => props.answer.opcionIds.includes(opcionId)
+const isDisabled = (opcionId: number) => props.isSelectionLimitReached && !isSelected(opcionId)
 
 const selectionLabel = computed(() => {
   const count = props.answer.opcionIds.length
   if (count === 0) return 'Ninguna habilidad seleccionada'
-  return count === 1 ? '1 habilidad seleccionada' : `${count} habilidades seleccionadas`
+  return count === 1
+    ? `1/${props.selectionLimit} habilidad seleccionada`
+    : `${count}/${props.selectionLimit} habilidades seleccionadas`
 })
 </script>
 

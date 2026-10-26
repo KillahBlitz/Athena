@@ -14,7 +14,7 @@
   >
     <span v-if="isSelected" class="avatar-check-badge" aria-hidden="true">✓</span>
     <div class="avatar-card-image">
-      <img :src="avatar.image" :alt="avatar.name" width="44" height="44">
+      <img :src="avatar.image" :alt="avatar.name" width="84" height="84">
     </div>
     <span class="avatar-card-name">{{ avatar.name }}</span>
   </Motion>

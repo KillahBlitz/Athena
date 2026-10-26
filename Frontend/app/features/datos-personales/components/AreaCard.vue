@@ -3,6 +3,7 @@
     as="button"
     type="button"
     class="area-card"
+    :data-area-id="area.id"
     :class="{ 'is-selected': isSelected }"
     :aria-pressed="isSelected"
     :aria-label="`Seleccionar área: ${area.name}`"

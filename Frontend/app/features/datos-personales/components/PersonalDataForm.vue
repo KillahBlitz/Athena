@@ -3,7 +3,8 @@
     <aside class="companion-panel" aria-label="Acompañamiento vocacional">
       <div class="companion-badge-pill" role="status">
         <span class="companion-badge-avatar" aria-hidden="true">
-          <img :src="selectedAvatar?.image || '/avatars/nova.svg'" alt="">
+          <TrackingAvatar v-if="hasChosenAvatar" class="badge-tracking" :avatar-id="selectedAvatar.id" :name="selectedAvatar.name" />
+          <img v-else :src="selectedAvatar.image" alt="">
         </span>
         <span>Estoy aquí para acompañarte</span>
       </div>
@@ -16,10 +17,10 @@
         :avatars="avatarsList"
         :selected-id="form.selectedAvatarId"
         :selected-avatar="selectedAvatar"
-        @select="selectAvatar"
+        @select="chooseAvatar"
       />
 
-      <AvatarCompanion :avatar="selectedAvatar" :name="form.name" stage="personal" />
+      <AvatarCompanion :avatar="selectedAvatar" :name="form.name" stage="personal" :tracking-enabled="hasChosenAvatar" />
     </aside>
 
     <form class="personal-form-card" novalidate @submit.prevent="submit">
@@ -118,6 +119,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import TrackingAvatar from '../../../components/avatar/TrackingAvatar.vue'
 import { AVATARS } from '../../../config/avatars'
 import { usePersonalDataForm } from '../composables/usePersonalDataForm'
 import AvatarSelector from './AvatarSelector.vue'
@@ -143,6 +146,12 @@ const {
   loadAreas
 } = usePersonalDataForm()
 
+const hasChosenAvatar = ref(false)
+function chooseAvatar(id: string) {
+  selectAvatar(id)
+  hasChosenAvatar.value = true
+}
+
 const avatarsList = AVATARS
 const openTermsModal = () => {
   alert('Términos y condiciones de ATHENA: La información recopilada se utiliza exclusivamente con fines de orientación vocacional académica y está protegida conforme a las leyes de privacidad aplicables.')
@@ -151,4 +160,5 @@ const openTermsModal = () => {
 
 <style scoped>
 @import '../styles/personal-data.css';
+.badge-tracking { width: 16px; }
 </style>

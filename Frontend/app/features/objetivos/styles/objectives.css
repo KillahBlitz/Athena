@@ -51,23 +51,63 @@
 }
 
 .constellation-line {
+  stroke: var(--color-primary-border);
+  transition: stroke var(--motion-base) ease;
+}
+
+.constellation-line.is-lit {
   stroke: var(--color-primary);
 }
 
-.constellation-line.is-soft {
-  stroke: var(--color-primary-border);
+.constellation-star {
+  fill: var(--color-primary-border);
+  transition: fill var(--motion-base) ease;
+  transform-origin: center;
 }
 
-.constellation-star {
+.constellation-star.is-done {
   fill: var(--color-accent);
 }
 
-.constellation-star.is-soft {
-  fill: var(--color-primary-border);
+.constellation-star.is-current {
+  fill: var(--color-primary);
+  animation: constellation-pulse 2.2s ease-in-out infinite;
 }
 
-.constellation-star.is-bright {
+@keyframes constellation-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .constellation-star.is-current {
+    animation: none;
+  }
+}
+
+/* Exact per-block markers, placed along the same fixed path as the stars. */
+.constellation-block-marker {
+  fill: var(--color-surface);
+  stroke: var(--color-primary-border);
+  stroke-width: 1;
+  transition: fill var(--motion-base) ease, stroke var(--motion-base) ease;
+}
+
+.constellation-block-marker.is-done {
+  fill: var(--color-accent);
+  stroke: var(--color-accent);
+}
+
+.constellation-block-marker.is-current {
   fill: var(--color-primary);
+  stroke: var(--color-primary);
 }
 
 .progress-labels-row {
@@ -92,75 +132,181 @@
 .progress-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  background: var(--gradient-brand);
+  /* Avatar-themed gradient (re-colored at runtime), matching the companion box. */
+  background: var(--gradient-primary, var(--color-primary));
   transition: width var(--motion-slow) var(--ease-out);
 }
 
+.objectives-main-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Stacked (mobile/tablet) layout: the avatar's block comes first, the
+   question cards sit below it. */
+.objectives-companion {
+  order: -1;
+}
+
+@media (min-width: 1024px) {
+  .objectives-main-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.75rem;
+  }
+
+  .objectives-main-row>.objectives-cards-grid {
+    order: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .objectives-companion {
+    order: 0;
+    flex: 0 0 300px;
+    position: sticky;
+    top: 1rem;
+  }
+}
+
 .objectives-cards-grid {
-  /* Horizontal track: the block's objectives sit side by side and are reached by scrolling */
-  --card-width: 86%;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: var(--card-width);
-  gap: clamp(1rem, 2.5vw, 1.75rem);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: 2px;
-  /* Room for the card shadow and the scrollbar */
-  padding: 2px 2px 1rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-border) transparent;
+  /* Card stack: objectives are piled 2D, one active card at a time */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2px 2px 0.5rem;
 }
 
-.objectives-cards-grid > .objective-card {
-  scroll-snap-align: start;
+.objectives-stack-deck {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  min-height: clamp(460px, 58vh, 600px);
 }
 
-.objectives-cards-grid::-webkit-scrollbar {
-  height: 8px;
+.objective-card-stacked {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform-origin: center bottom;
+  /* Position/scale/rotation are animated by motion-v (spring transition);
+     only box-shadow keeps a plain CSS transition since it's set instantly. */
+  transition: box-shadow 280ms ease;
+  will-change: transform, opacity, box-shadow;
 }
 
-.objectives-cards-grid::-webkit-scrollbar-thumb {
-  background-color: var(--color-primary-border);
+/* Prev/next controls, anchored directly on top of the active card instead of
+   a separate row below the deck. */
+.objective-card-nav {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
 }
 
-@media (min-width: 768px) {
-  .objectives-cards-grid {
-    --card-width: calc((100% - clamp(1rem, 2.5vw, 1.75rem)) / 2.15);
-  }
+.stack-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--motion-base) ease, border-color var(--motion-base) ease, color var(--motion-base) ease, transform var(--motion-base) ease;
 }
 
-@media (min-width: 1280px) {
-  .objectives-cards-grid {
-    --card-width: calc((100% - 2 * clamp(1rem, 2.5vw, 1.75rem)) / 3.15);
-  }
+.stack-nav-btn:hover:not(:disabled) {
+  border-color: var(--color-primary-border);
+  color: var(--color-primary);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .objectives-cards-grid {
-    scroll-behavior: smooth;
-  }
+.stack-nav-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.stack-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stack-nav-counter {
+  min-width: 44px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
 }
 
 .objective-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 1.25rem;
   padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1.1rem, 3vw, 2rem);
-  background-color: var(--color-surface);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--color-primary-light) 0%, transparent 55%),
+    var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
   transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.objective-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  /* Same color as the currently selected avatar (--color-primary is
+     re-themed at runtime based on the chosen avatar). */
+  background: var(--color-primary);
+  opacity: 0.9;
 }
 
 .objective-card:hover,
 .objective-card:focus-within {
   border-color: var(--color-primary-border);
   box-shadow: var(--shadow-card-hover);
+}
+
+/* Shared "Atrás" text-link button, used by this page's own back control and
+   by /riasec, which imports this stylesheet for it. */
+.back-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--tap-target);
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: color var(--motion-base) ease, background-color var(--motion-base) ease;
+}
+
+.back-text-btn:hover {
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
 }
 
 .objective-card-header {
@@ -317,104 +463,4 @@
 
 .justification-textarea.is-required:focus {
   box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.18);
-}
-
-.objectives-bottom-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  margin: 1rem calc(var(--space-page-x) * -1) 0;
-  padding: 0.85rem var(--space-page-x) calc(0.85rem + env(safe-area-inset-bottom));
-  background-color: var(--surface-glass);
-  backdrop-filter: saturate(1.6) blur(14px);
-  -webkit-backdrop-filter: saturate(1.6) blur(14px);
-  border-top: 1px solid var(--color-border);
-}
-
-@media (min-width: 768px) {
-  .objectives-bottom-bar {
-    position: static;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1.5rem 0 0;
-    padding: 1.75rem 0 0;
-    background: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
-
-.bottom-avatar-speech {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.bottom-avatar-img {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background-color: var(--color-primary-light);
-}
-
-.bottom-avatar-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.bottom-avatar-text {
-  position: relative;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
-}
-
-.bottom-avatar-name {
-  font-weight: 800;
-  color: var(--color-primary);
-  text-transform: uppercase;
-}
-
-.bottom-actions-group {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .bottom-actions-group {
-    justify-content: flex-end;
-    gap: 1.25rem;
-  }
-}
-
-.back-text-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: var(--tap-target);
-  padding: 0 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  border-radius: var(--radius-full);
-  transition: color var(--motion-base) ease, background-color var(--motion-base) ease;
-}
-
-.back-text-btn:hover {
-  color: var(--color-primary);
-  background-color: var(--color-primary-light);
 }

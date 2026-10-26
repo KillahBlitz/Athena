@@ -83,6 +83,13 @@ const progressPercentage = computed(() => Math.round((activeStepNumber.value / s
 
 <style scoped>
 .athena-stepper {
+  --color-primary: var(--avatar-primary, #6125C0);
+  --color-primary-active: var(--avatar-primary-active, #4A1B94);
+  --color-primary-light: var(--avatar-primary-light, #EFE8FA);
+  --color-primary-border: var(--avatar-primary-border, #C4A9EB);
+  --color-on-primary: #FFFFFF;
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
+  --stepper-line: var(--avatar-line, #6125C0);
   display: flex;
   align-items: center;
   min-width: 0;
@@ -123,7 +130,7 @@ const progressPercentage = computed(() => Math.round((activeStepNumber.value / s
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--gradient-brand);
+  background: var(--stepper-line);
   transition: width var(--motion-slow) var(--ease-out);
 }
 
@@ -160,7 +167,7 @@ const progressPercentage = computed(() => Math.round((activeStepNumber.value / s
 
 .step-item.is-completed .step-connector,
 .step-item.is-active .step-connector {
-  background: var(--gradient-brand);
+  background: var(--stepper-line);
 }
 
 .step-link,
