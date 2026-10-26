@@ -87,10 +87,6 @@ class ExtractorHandler:
         return prompt_parameters
 
     def generate_prompt_for_jev(self, prompt_info: dict) -> dict:
-        """Construye el `state` y las preguntas tipadas (Score/Choice) para una sola
-        llamada a Jev. Cada pregunta es atómica y corta, y referencia por path el
-        dato exacto del state que debe juzgar (en vez de repetir un reglamento
-        largo en cada una de las N preguntas, lo que agota el límite de tokens)."""
         objetivo_template = self._prompt["prompt_objetivo_coincidence"]
         dimension_coincidence_template = self._prompt["prompt_dimension_coincidence"]
         dimension_repeat_template = self._prompt["prompt_dimension_repeat"]
@@ -154,8 +150,6 @@ class ExtractorHandler:
         return choice == "true"
 
     def format_jev_response(self, prompt_info: dict, response: dict) -> dict:
-        """Convierte las respuestas tipadas de Jev (score 0-5, choice) en los
-        porcentajes 0-100 y listas que consume el resto del pipeline."""
         answers = {answer["name"]: answer for answer in response["answers"]}
 
         objetives_criteria = []
