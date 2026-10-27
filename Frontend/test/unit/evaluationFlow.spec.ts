@@ -123,12 +123,10 @@ describe('envío del cuestionario con UUID', () => {
       await card.get('textarea').setValue(justifications[index])
     }
     expect(cards).toHaveLength(2)
-    // Block navigation now lives inside the (stubbed) AvatarCompanion box.
     await page.findComponent(AvatarCompanion).vm.$emit('go-next')
     expect(router.push).toHaveBeenCalledWith('/riasec')
     page.unmount()
 
-    // Recreate the store to exercise localStorage restoration between stages.
     setActivePinia(createPinia())
     let form!: ReturnType<typeof useRiasecForm>
     const wrapper = mount({ setup() { form = useRiasecForm(); return () => null } })

@@ -36,7 +36,6 @@ function relativeLuminance([r, g, b]: RGB): number {
   return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb
 }
 
-/** Contraste WCAG 2.x entre dos colores hex. */
 export function contrastRatio(foreground: string, background: string): number {
   const a = relativeLuminance(hexToRgb(foreground))
   const b = relativeLuminance(hexToRgb(background))

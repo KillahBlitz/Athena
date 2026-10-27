@@ -29,35 +29,46 @@
             @update:rating="$emit('rating', objective.carreraId, $event)"
             @update:justification="$emit('justification', objective.carreraId, $event)"
           />
-
-          <!-- Prev/next controls live on the active card itself, not in a
-               separate row below the deck. -->
-          <div v-if="index === activeIndex && block.objectives.length > 1" class="objective-card-nav">
-            <button
-              type="button"
-              class="stack-nav-btn"
-              :disabled="activeIndex === 0"
-              aria-label="Pregunta anterior"
-              @click.stop="goPrev"
-            >
-              <span aria-hidden="true">‹</span>
-            </button>
-
-            <span class="stack-nav-counter" aria-live="polite">
-              {{ activeIndex + 1 }} / {{ block.objectives.length }}
-            </span>
-
-            <button
-              type="button"
-              class="stack-nav-btn"
-              :disabled="activeIndex === block.objectives.length - 1"
-              aria-label="Siguiente pregunta"
-              @click.stop="goNext"
-            >
-              <span aria-hidden="true">›</span>
-            </button>
-          </div>
         </Motion>
+      </div>
+
+      <div v-if="block.objectives.length > 1" class="objective-card-nav" role="group" aria-label="Cambiar de pregunta">
+        <button
+          type="button"
+          class="stack-nav-btn is-prev"
+          :disabled="activeIndex === 0"
+          aria-label="Pregunta anterior"
+          @click="goPrev"
+        >
+          <span aria-hidden="true">‹</span>
+          <span class="stack-nav-text">Anterior</span>
+        </button>
+
+        <span class="stack-nav-progress">
+          <span class="stack-nav-counter" aria-live="polite">
+            Pregunta {{ activeIndex + 1 }} de {{ block.objectives.length }}
+          </span>
+          <span class="stack-nav-dots" aria-hidden="true">
+            <span
+              v-for="(objective, i) in block.objectives"
+              :key="objective.carreraId"
+              class="stack-nav-dot"
+              :class="{ 'is-active': i === activeIndex, 'is-past': i < activeIndex }"
+            />
+          </span>
+        </span>
+
+        <button
+          type="button"
+          class="stack-nav-btn is-next"
+          :class="{ 'is-ready': isActiveAnswered }"
+          :disabled="activeIndex === block.objectives.length - 1"
+          aria-label="Siguiente pregunta"
+          @click="goNext"
+        >
+          <span class="stack-nav-text">Siguiente</span>
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </Motion>
   </AnimatePresence>
@@ -76,15 +87,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   leave: [carreraId: number]
+  revisit: [carreraId: number]
   rating: [carreraId: number, value: RatingValue]
   justification: [carreraId: number, text: string]
 }>()
 
 const presets = useMotionPresets()
 
-// --- Visual-only "card stack" navigation state ---
-// This index only controls which card sits at the front of the deck. It never
-// touches answers, validation or the block-level progress used by the form.
 const activeIndex = ref(0)
 
 watch(
@@ -98,21 +107,23 @@ watch(
 
 const cardCount = computed(() => props.block.objectives.length)
 
-// Direction of the last navigation. Advancing and going back are two
-// genuinely different animations, not mirror images of each other: an
-// answered card that's left behind exits to the right, while going back
-// always reveals the previous card coming in from the left.
+const isActiveAnswered = computed(() => {
+  const objective = props.block.objectives[activeIndex.value]
+  if (!objective) return false
+  const answer = props.getAnswer(objective.carreraId)
+  if (answer.valoracion === null) return false
+  return answer.valoracion !== 5 || answer.justificacion.trim().length > 0
+})
+
 const direction = ref<1 | -1>(1)
 
-// Index of the card that's about to be revealed by "Atrás". While set, that
-// card is snapped instantly (no animation) to its "parked on the left"
-// position, so the *next* render can animate it smoothly from there into
-// place — instead of animating from wherever it happened to exit to.
 const forcedEntryIndex = ref<number | null>(null)
 
 function goPrev() {
   if (activeIndex.value === 0) return
   const revealIndex = activeIndex.value - 1
+  const revealed = props.block.objectives[revealIndex]
+  if (revealed) emit('revisit', revealed.carreraId)
   direction.value = -1
   forcedEntryIndex.value = revealIndex
   nextTick(() => {
@@ -142,25 +153,17 @@ interface CardTransform {
   [key: string]: number | string
 }
 
-// Motion-driven position/scale/rotation for each card in the stack. Using
-// motion-v's spring transition (instead of a plain CSS transition) keeps the
-// deck feeling fluid and physical rather than a flat, linear slide.
 function cardTransform(index: number): CardTransform {
-  // Still waiting to be revealed by "Atrás": hold it parked on the left,
-  // instantly (see cardTransitionFor), until activeIndex catches up.
   if (forcedEntryIndex.value === index && index !== activeIndex.value) {
     return { x: '-140%', y: 6, scale: 0.9, rotate: -6, opacity: 0 }
   }
 
   const relativeIndex = index - activeIndex.value
 
-  // Active card: front of the deck, full scale.
   if (relativeIndex === 0) {
     return { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 }
   }
 
-  // Cards still ahead in the deck: stacked behind, shrinking and tilting with depth
-  // so the pile reads as a physical stack instead of flat, parallel copies.
   if (relativeIndex > 0) {
     const depth = Math.min(relativeIndex, MAX_STACK_DEPTH)
     const scale = 1 - depth * 0.05
@@ -177,9 +180,6 @@ function cardTransform(index: number): CardTransform {
     }
   }
 
-  // Cards already answered and left behind: parked off to whichever side
-  // matches the last navigation, so advancing exits right and the next
-  // "Atrás" has a real left-parked starting point to animate in from.
   const toRight = direction.value > 0
   return {
     x: toRight ? '140%' : '-140%',
@@ -190,9 +190,6 @@ function cardTransform(index: number): CardTransform {
   }
 }
 
-// Transitions are instant (no tween) only while a card is being force-parked
-// ahead of a "reveal from the left" animation; everything else uses the
-// normal fluid spring.
 function cardTransitionFor(index: number) {
   if (forcedEntryIndex.value === index && index !== activeIndex.value) {
     return { duration: 0 }
@@ -200,19 +197,18 @@ function cardTransitionFor(index: number) {
   return presets.value.cardStack.transition
 }
 
-// Non-animatable visuals (z-index, shadow, pointer handling) switch instantly
-// rather than tweening, since interpolating them doesn't read as "fluid".
 function cardVisual(index: number): CSSProperties {
   const relativeIndex = index - activeIndex.value
 
   if (relativeIndex === 0) {
-    return { zIndex: 40, boxShadow: 'var(--shadow-card-hover)', pointerEvents: 'auto' }
+    return { zIndex: 40, boxShadow: 'none', pointerEvents: 'auto' }
   }
   if (relativeIndex > 0) {
     const depth = Math.min(relativeIndex, MAX_STACK_DEPTH)
     return {
       zIndex: 40 - depth,
-      boxShadow: depth === 1 ? 'var(--shadow-sm)' : 'none',
+      boxShadow: 'none',
+      filter: `brightness(${1 - depth * 0.014})`,
       pointerEvents: 'none'
     }
   }

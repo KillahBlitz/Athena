@@ -4,6 +4,7 @@
     <Motion
       v-if="show"
       class="stage-celebration"
+      :class="{ 'is-compact': compact }"
       :initial="presets.celebrate.initial"
       :animate="presets.celebrate.animate"
       :transition="presets.celebrate.transition"
@@ -40,6 +41,7 @@ defineProps<{
   show: boolean
   title: string
   message: string
+  compact?: boolean
 }>()
 
 const SPARKLES = [
@@ -62,8 +64,6 @@ const presets = useMotionPresets()
   gap: 0.6rem 1.25rem;
   align-items: center;
   width: 100%;
-  /* Shorter top-to-bottom so it doesn't push the cards/avatar row further
-     down, while still spanning the page's full width. */
   padding: 0.85rem clamp(1.25rem, 4vw, 2.25rem);
   margin-top: 0.5rem;
   background: var(--gradient-brand-soft);
@@ -120,12 +120,26 @@ const presets = useMotionPresets()
 }
 
 @media (min-width: 768px) {
-  .stage-celebration {
+  .stage-celebration:not(.is-compact) {
     grid-template-columns: auto 1fr auto;
   }
 
-  .celebration-actions {
+  .stage-celebration:not(.is-compact) .celebration-actions {
     grid-column: auto;
   }
+}
+
+.stage-celebration.is-compact {
+  padding: 0.85rem 1rem;
+  margin-top: 0.75rem;
+  box-shadow: none;
+}
+
+.stage-celebration.is-compact .celebration-title {
+  font-size: 1rem;
+}
+
+.stage-celebration.is-compact .celebration-message {
+  font-size: 0.85rem;
 }
 </style>

@@ -11,9 +11,7 @@ export interface MotionPresets {
   sparkle: { initial: Target, animate: Target, transition: object }
   breathe: { animate: Target, transition: object }
   react: { animate: Target, transition: object }
-  /** Spring used to animate the objective card stack (position/scale/rotation). */
   cardStack: { transition: object }
-  /** Fade used when the companion's dialogue text changes. */
   dialogue: { initial: Target, animate: Target, exit: Target, transition: object }
 }
 
@@ -56,7 +54,6 @@ export function motionPresets(reduced: boolean): MotionPresets {
       transition: { duration: 0.6, ease: 'easeOut' }
     },
     cardStack: {
-      // Softer, slightly slower spring so the deck feels fluid rather than snappy.
       transition: { type: 'spring', stiffness: 150, damping: 22, mass: 1.1 }
     },
     dialogue: {

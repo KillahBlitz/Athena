@@ -15,31 +15,49 @@
       <ObjectiveProgress :progress="progress" />
     </div>
 
-    <StageCelebration
-      :show="isLastBlock && isCurrentBlockComplete"
-      title="¡Has valorado todos los objetivos de esta área!"
-      message="Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RISEC)."
-    >
-      <BaseButton variant="outline" size="sm" @click="handleBack">
-        Revisar bloques anteriores
-      </BaseButton>
-    </StageCelebration>
-
     <Transition name="onboarding-backdrop-fade">
       <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
     </Transition>
 
     <div class="objectives-main-row">
-      <ObjectiveGrid
-        v-if="currentBlockData"
-        :block="currentBlockData"
-        :get-answer="getAnswer"
-        @rating="setRating"
-        @justification="setJustification"
-        @leave="handleLeave"
-      />
+      <div class="objectives-cards-column">
+        <ObjectiveGrid
+          v-if="currentBlockData"
+          :block="currentBlockData"
+          :get-answer="getAnswer"
+          @rating="setRating"
+          @justification="setJustification"
+          @leave="handleLeave"
+          @revisit="handleRevisit"
+        />
+
+        <div class="objectives-block-nav">
+          <button v-if="currentBlock > 1" type="button" class="block-nav-btn is-back" @click="handleBack">
+            <span aria-hidden="true">←</span>
+            <span>Bloque anterior</span>
+          </button>
+          <span class="objectives-block-nav-hint">
+            Bloque {{ currentBlock }} de {{ totalBlocks }}
+          </span>
+          <button
+            type="button"
+            class="block-nav-btn is-next"
+            :class="{ 'is-soft-disabled': !isCurrentBlockComplete, 'is-celebrating': isCurrentBlockComplete, 'is-finish': isLastBlock }"
+            :aria-disabled="!isCurrentBlockComplete"
+            @click="onNextBlock"
+          >
+            <span v-if="isCurrentBlockComplete" class="block-nav-sparkles" aria-hidden="true">
+              <span v-for="n in 5" :key="n" class="block-nav-sparkle" :style="{ '--i': n }">✦</span>
+            </span>
+            <span>{{ isLastBlock ? 'Finalizar etapa' : 'Siguiente bloque' }}</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+
+      </div>
 
       <AvatarCompanion
+        ref="companion"
         class="objectives-companion"
         :avatar="selectedAvatar"
         stage="objectives"
@@ -47,14 +65,12 @@
         :onboarding="showOnboarding"
         :notice="notice"
         :reminder="pendingMessage"
-        :next-label="isLastBlock ? 'Finalizar etapa' : 'Adelante'"
+        :answer-event="answerEvent"
+        :revisit-event="revisitEvent"
         :is-last-block="isLastBlock"
         :block="currentBlock"
         :total-blocks="totalBlocks"
-        :next-disabled="!isCurrentBlockComplete"
         @dismiss-onboarding="dismissOnboarding"
-        @go-back="handleBack"
-        @go-next="handleNext"
       />
     </div>
   </div>
@@ -66,8 +82,6 @@ import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
-import BaseButton from '../components/ui/BaseButton.vue'
-import StageCelebration from '../components/ui/StageCelebration.vue'
 import { hasSeenObjectivesOnboarding, markObjectivesOnboardingSeen } from '../utils/objectivesOnboardingStorage'
 
 useHead({
@@ -92,18 +106,43 @@ const {
   handleBack
 } = useObjectivesForm()
 
+const companion = ref<InstanceType<typeof AvatarCompanion> | null>(null)
+
+const answerEvent = ref<{ rating: number, id: number } | null>(null)
+let answerCount = 0
+
+function onNextBlock() {
+  if (isCurrentBlockComplete.value) {
+    handleNext()
+    return
+  }
+  companion.value?.remind()
+}
+
 const skippedIds = ref<number[]>([])
 const notice = computed(() => describeSkipped(skippedIds.value))
 
-function handleLeave(carreraId: number) {
-  if (isPending(carreraId) && !skippedIds.value.includes(carreraId)) {
-    skippedIds.value = [...skippedIds.value, carreraId]
-  }
+const revisitEvent = ref<{ kind: 'answered' | 'rating' | 'justification', id: number } | null>(null)
+
+function handleRevisit(carreraId: number) {
+  const answer = getAnswer(carreraId)
+  const kind = answer.valoracion === null
+    ? 'rating'
+    : isPending(carreraId) ? 'justification' : 'answered'
+  revisitEvent.value = { kind, id: ++answerCount }
 }
 
-// First time ever on /objetivos: show the avatar's "how to answer" card as
-// an overlay above the questions. The user swipes it (or taps "Comenzar")
-// to dock it into place; from then on it's remembered for this browser.
+function handleLeave(carreraId: number) {
+  if (isPending(carreraId)) {
+    if (!skippedIds.value.includes(carreraId)) {
+      skippedIds.value = [...skippedIds.value, carreraId]
+    }
+    return
+  }
+  const rating = getAnswer(carreraId).valoracion
+  if (rating !== null) answerEvent.value = { rating, id: ++answerCount }
+}
+
 const showOnboarding = ref(false)
 
 onMounted(() => {

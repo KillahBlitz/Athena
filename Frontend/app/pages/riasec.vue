@@ -106,10 +106,6 @@
         </Motion>
       </AnimatePresence>
 
-      <!-- Kept outside the swap transition above: that wrapper animates via
-           transform, which would turn the onboarding overlay's
-           `position: fixed` into something scoped to it instead of the
-           viewport. -->
       <AvatarCompanion
         :avatar="selectedAvatar"
         stage="riasec"
@@ -189,9 +185,6 @@ const {
 
 const presets = useMotionPresets()
 
-// First time ever on /riasec: show the avatar's "how this section works"
-// card as an overlay. Dismissed with its "Comenzar" button; remembered
-// afterwards for this browser.
 const showOnboarding = ref(false)
 
 onMounted(() => {

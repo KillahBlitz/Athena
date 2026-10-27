@@ -1,8 +1,5 @@
 <template>
   <div class="objectives-progress-widget" role="region" aria-label="Progreso de objetivos">
-    <!-- Original fixed constellation artwork. Which stars/segments are lit
-         is driven by progress (currentBlock/totalBlocks), not the shape
-         itself, which stays exactly as it was. No text on the graphic. -->
     <svg class="constellation-art" viewBox="0 0 140 48" fill="none" aria-hidden="true">
       <line class="constellation-line" :class="lineClass(0)" x1="12" y1="36" x2="42" y2="20" stroke-width="1.5" :stroke-dasharray="lineDash(0)" />
       <line class="constellation-line" :class="lineClass(1)" x1="42" y1="20" x2="84" y2="8" stroke-width="1.8" />
@@ -16,8 +13,6 @@
       <circle class="constellation-star" :class="starClass(3)" cx="128" cy="16" r="4" />
       <circle class="constellation-star" :class="starClass(4)" cx="110" cy="38" r="3.5" />
 
-      <!-- Exact marker for every real block, placed along the same fixed
-           path (shape untouched), so each block has its own precise point. -->
       <circle
         v-for="point in blockPoints"
         :key="`block-${point.block}`"
@@ -57,9 +52,6 @@ const props = defineProps<{
 
 const STAR_COUNT = 5
 
-// Map the actual block progress (which can have any number of blocks) onto
-// the artwork's fixed 5 stars, so the shape never changes but it still
-// visually tracks how far along the user is and which part is still pending.
 const litIndex = computed(() => {
   const total = Math.max(props.progress.totalBlocks, 1)
   const ratio = (props.progress.currentBlock - 1) / total
@@ -81,8 +73,6 @@ function lineDash(fromIndex: number) {
   return fromIndex < litIndex.value ? undefined : '2 2'
 }
 
-// The constellation's fixed path (same coordinates as the artwork above),
-// used only to place one exact marker per real block along it.
 const PATH_POINTS = [
   { x: 12, y: 36 },
   { x: 42, y: 20 },

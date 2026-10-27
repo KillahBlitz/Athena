@@ -225,8 +225,6 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       const existing = this.riasecAnswers[riasecId] || { opcionIds: [], respuestaAbierta: '' }
       const opcionIds = existing.opcionIds ?? []
       const yaSeleccionado = opcionIds.includes(opcionId)
-      // Tope de selección por dimensión: evita que el backend construya una
-      // llamada a Jev que exceda su límite de contexto (ver config/riasec.ts).
       if (!yaSeleccionado && opcionIds.length >= MAX_CRITERIOS_POR_DIMENSION) {
         return
       }

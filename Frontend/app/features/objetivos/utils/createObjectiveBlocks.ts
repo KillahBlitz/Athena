@@ -20,7 +20,6 @@ export function normalizeObjectives(
     'Compromiso y Sociedad'
   ]
 
-  // Conserva las sesiones guardadas antes de que objetivos fuera una lista.
   const objetivos: BackendObjetivoDTO[] = Array.isArray(rawObjetivos)
     ? rawObjetivos
     : Object.entries(rawObjetivos).map(([id, objetivo]) => ({
@@ -48,10 +47,6 @@ export function normalizeObjectives(
     })
 }
 
-/**
- * Dynamically partitions normalized objectives into blocks of blockSize (default OBJECTIVES_PER_BLOCK).
- * Preserves order, handles incomplete last blocks, never mutates original array.
- */
 export function createObjectiveBlocks(
   objectives: readonly NormalizedObjective[],
   blockSize = OBJECTIVES_PER_BLOCK
