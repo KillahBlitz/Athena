@@ -10,9 +10,18 @@ export interface ApiResponse<T> {
   loading: boolean
 }
 
+export interface GetResultsCareerDTO {
+  top: number
+  carrera_id: number
+  carrera: string
+  puntaje: number
+  escuelas: string[]
+}
+
 export interface GetResultsResponseDTO {
   user_uuid: string
   status_id: 1 | 2 | 3 | 4
+  results?: GetResultsCareerDTO[] | null
 }
 
 export interface SaveUserObjectiveDTO {

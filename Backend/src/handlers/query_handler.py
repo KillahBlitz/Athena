@@ -7,6 +7,7 @@ from models.repository.puntaje_objetivo_table_repository import PuntajeObjetivoT
 from models.repository.usuario_criterio_table_repository import UsuarioCriterioTableRepository
 from models.repository.resultados_table_repository import ResultadosTableRepository
 from models.repository.areas_table_repository import AreasTableRepository
+from models.repository.escuelas_table_repository import EscuelasTableRepository
 from utils.set_envs import get_dict_envs_db_conection
 
 DB_INFO = get_dict_envs_db_conection()
@@ -22,6 +23,7 @@ class QueryHandler:
         self._usuario_criterio_table_repository = UsuarioCriterioTableRepository(self.engine)
         self._resultados_table_repository = ResultadosTableRepository(self.engine)
         self._areas_table_repository = AreasTableRepository(self.engine)
+        self._escuelas_table_repository = EscuelasTableRepository(self.engine)
 
     def get_users(self, area_id: int):
         return self._usuarios_table_repository.get_users_by_area_id(area_id)
@@ -64,6 +66,12 @@ class QueryHandler:
 
     def get_user_by_uuid(self, user_uuid: str):
         return self._usuarios_table_repository.get_user_by_uuid(user_uuid)
+
+    def get_user_results(self, user_id: int) -> list[dict]:
+        return self._resultados_table_repository.get_by_user(user_id)
+
+    def get_escuelas_by_carreras(self, carrera_ids: list[int]) -> dict[int, list[str]]:
+        return self._escuelas_table_repository.get_by_carreras(carrera_ids)
 
     def get_user_data(self, user_id: int) -> dict[str, pd.DataFrame]:
         return {

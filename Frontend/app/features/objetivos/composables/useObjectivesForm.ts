@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../../../stores/athenaSession'
 import type { RatingValue, ObjectiveBlock, ObjectivesProgress } from '../../../types/objective'
 import type { Avatar } from '../../../types/avatar'
+import { isJustificationRequired } from '../../../config/objectives'
 
 export function useObjectivesForm() {
   const router = useRouter()
@@ -39,7 +40,7 @@ export function useObjectivesForm() {
   const getPendingReason = (carreraId: number): PendingReason | null => {
     const answer = getAnswer(carreraId)
     if (answer.valoracion === null) return 'rating'
-    if (answer.valoracion !== null && answer.valoracion >= 4 && answer.justificacion.trim().length === 0) return 'justification'
+    if (isJustificationRequired(answer.valoracion) && answer.justificacion.trim().length === 0) return 'justification'
     return null
   }
 

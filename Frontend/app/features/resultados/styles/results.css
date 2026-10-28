@@ -1,0 +1,316 @@
+.results-page {
+  --results-violet: #8B5CF6;
+  --results-cyan: #22D3EE;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* ---------- Encabezado ---------- */
+.results-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+}
+
+.results-hero-text {
+  flex: 1 1 26rem;
+  min-width: 0;
+}
+
+.results-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.results-title {
+  margin-bottom: 0.6rem;
+}
+
+.results-description {
+  margin-bottom: 0;
+  max-width: 52ch;
+}
+
+.results-hero-aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+}
+
+.results-companion {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.results-companion-avatar {
+  width: clamp(72px, 9vw, 96px);
+  height: auto;
+  filter: drop-shadow(0 10px 18px rgba(var(--color-primary-rgb), 0.25));
+}
+
+.results-companion-bubble {
+  max-width: 13ch;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--color-primary);
+}
+
+.results-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #92400E;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* ---------- Cuerpo ---------- */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .results-grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 1.75rem;
+  }
+}
+
+.results-profile-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: linear-gradient(170deg, #E0F7FB 0%, #EDE9FE 45%, #FCE7F3 100%);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  break-inside: avoid;
+}
+
+.results-profile-kicker {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.results-profile-icon {
+  position: absolute;
+  top: clamp(1.25rem, 3vw, 1.75rem);
+  right: clamp(1.25rem, 3vw, 1.75rem);
+  color: var(--color-primary);
+}
+
+.results-profile-title {
+  margin: 0.85rem 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text-main);
+}
+
+.results-profile-tagline {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.results-profile-chart {
+  margin: 1rem 0 1.25rem;
+}
+
+.results-traits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.results-trait {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-full);
+}
+
+.results-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.results-paths-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.results-paths-title {
+  font-family: var(--font-display);
+  font-size: var(--text-subtitle);
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.results-paths-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.results-careers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  list-style: none;
+}
+
+.results-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1.15rem 1.35rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.results-status.is-error {
+  color: var(--color-text-main);
+  border-color: var(--color-primary-border);
+}
+
+.results-paths-note {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Cierre ---------- */
+.results-closing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+}
+
+.results-closing-text strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+}
+
+.results-closing-text p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.results-download {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.results-download-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .results-download {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .results-download-hint {
+    text-align: left;
+  }
+}
+
+.results-restart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.results-restart-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.results-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.results-disclaimer svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ---------- PDF / impresión ---------- */
+@media print {
+  .results-page {
+    gap: 1rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .results-no-print {
+    display: none !important;
+  }
+
+  .results-hero {
+    flex-wrap: nowrap;
+  }
+
+  .results-grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 1rem;
+  }
+
+  .results-profile-card {
+    box-shadow: none;
+  }
+}

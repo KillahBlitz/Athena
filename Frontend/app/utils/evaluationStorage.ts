@@ -9,6 +9,19 @@ export function getEvaluationUuid(): string | null {
   }
 }
 
+const ATHENA_STORAGE_PREFIX = 'athena_'
+
+export function clearAthenaStorage(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i))
+    for (const key of keys) {
+      if (key?.startsWith(ATHENA_STORAGE_PREFIX)) localStorage.removeItem(key)
+    }
+  } catch {
+  }
+}
+
 export function saveEvaluationUuid(uuid: string): void {
   try {
     localStorage.setItem(EVALUATION_UUID_KEY, uuid)

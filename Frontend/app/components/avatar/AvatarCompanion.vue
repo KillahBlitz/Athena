@@ -101,8 +101,8 @@ const dockTransition = computed(() =>
 
 const ratingRule = 'Responde cada objetivo del 1 al 5, según qué tanto te identificas con él.'
 const justificationRuleLow = 'Si marcas 1, no necesitas escribir nada.'
-const justificationRuleMid = 'Si marcas 2 o 3, la justificación es opcional.'
-const justificationRuleHigh = 'Si marcas 4 o 5, es obligatorio explicar tu respuesta.'
+const justificationRuleMid = 'Si marcas 2, 3 o 4, la justificación es opcional.'
+const justificationRuleHigh = 'Si marcas 5, es obligatorio explicar tu respuesta.'
 
 interface RichMessage {
   lead: string
@@ -114,8 +114,8 @@ type Message = string | RichMessage
 const objectivesRules: RichMessage['items'] = [
   { text: 'Responde cada objetivo del 1 al 5, según qué tanto te identificas con él.' },
   { tag: '1', text: 'No necesitas escribir nada.' },
-  { tag: '2 y 3', text: 'La justificación es opcional.' },
-  { tag: '4 y 5', text: 'Es obligatorio explicar tu respuesta.' }
+  { tag: '2 a 4', text: 'La justificación es opcional.' },
+  { tag: '5', text: 'Es obligatorio explicar tu respuesta.' }
 ]
 const riasecRules: RichMessage['items'] = [
   { text: 'En cada dimensión, selecciona las habilidades con las que te identifiques.' },

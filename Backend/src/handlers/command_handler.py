@@ -1,9 +1,11 @@
 from kinasis_library.services.postgre_interface import create_postgres_engine
 
 from models.repository.puntaje_objetivo_table_repository import PuntajeObjetivoTableRepository
+from models.repository.resultados_table_repository import ResultadosTableRepository
 from models.repository.usuario_criterio_table_repository import UsuarioCriterioTableRepository
 from models.repository.usuarios_table_repository import UsuariosTableRepository
 from models.tables.puntaje_objetivo import PuntajeObjetivo
+from models.tables.resultados import Resultado
 from models.tables.usuario import Usuario
 from models.tables.usuario_criterio import UsuarioCriterio
 from utils.set_envs import get_dict_envs_db_conection
@@ -18,6 +20,7 @@ class CommandHandler:
         self._usuarios_table_repository = UsuariosTableRepository(self.engine)
         self._puntaje_objetivo_table_repository = PuntajeObjetivoTableRepository(self.engine)
         self._usuario_criterio_table_repository = UsuarioCriterioTableRepository(self.engine)
+        self._resultados_table_repository = ResultadosTableRepository(self.engine)
 
     def insert_user(self, user: Usuario) -> int:
         return self._usuarios_table_repository.insert_user(user)
@@ -44,3 +47,10 @@ class CommandHandler:
 
     def update_user_status(self, user_uuid: str, status_id: int) -> None:
         self._usuarios_table_repository.update_user_status(user_uuid, status_id)
+
+    def save_user_results(self, user_id: int, careers: list[dict]) -> None:
+        resultados = [
+            Resultado(usuario_id=user_id, carrera_id=c["carrera_id"], porc_coincidencia=c["porc_coincidencia"])
+            for c in careers
+        ]
+        self._resultados_table_repository.replace_user_results(user_id, resultados)

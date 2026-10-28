@@ -7,9 +7,9 @@ import type { RiasecAnswer, RiasecProgress } from '../types/riasec'
 import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
-import { OBJECTIVES_PER_BLOCK } from '../config/objectives'
+import { OBJECTIVES_PER_BLOCK, isJustificationRequired } from '../config/objectives'
 import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
-import { getEvaluationUuid } from '../utils/evaluationStorage'
+import { clearAthenaStorage, getEvaluationUuid } from '../utils/evaluationStorage'
 import { applyStepperAccent } from '../utils/avatarTheme'
 
 const STORAGE_KEY = 'athena_session_v2'
@@ -119,7 +119,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         if (!ans || ans.valoracion === null || ans.valoracion < 1 || ans.valoracion > 5) {
           return false
         }
-        if (ans.valoracion >= 4 && ans.justificacion.trim().length === 0) {
+        if (isJustificationRequired(ans.valoracion) && ans.justificacion.trim().length === 0) {
           return false
         }
         return true
@@ -349,6 +349,11 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         localStorage.removeItem(STORAGE_KEY)
         localStorage.removeItem('athena_test_submitted')
       }
+      this.$reset()
+    },
+
+    startOver() {
+      clearAthenaStorage()
       this.$reset()
     }
   }

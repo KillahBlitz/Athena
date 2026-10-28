@@ -44,6 +44,7 @@
 import { computed } from 'vue'
 import type { NormalizedObjective, RatingValue } from '../../../types/objective'
 import RatingScale from './RatingScale.vue'
+import { isJustificationRequired } from '../../../config/objectives'
 
 const props = defineProps<{
   objective: NormalizedObjective
@@ -56,7 +57,7 @@ defineEmits<{
 }>()
 
 const isDisabled = computed(() => props.answer.valoracion === 1)
-const isRequired = computed(() => props.answer.valoracion !== null && props.answer.valoracion >= 4)
+const isRequired = computed(() => isJustificationRequired(props.answer.valoracion))
 
 const placeholderText = computed(() => {
   if (isDisabled.value) {
