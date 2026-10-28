@@ -34,3 +34,14 @@ class UsuariosTableRepository:
         )
         with self.engine.connect() as conn:
             return pd.read_sql(query, conn)
+
+    def get_user_data(self, user_id: int) -> pd.DataFrame:
+        """Mismas columnas que get_users_by_area_and_type, sin filtrar por tipo (los usuarios reales son type_user=4)."""
+        query = select(Usuario.usuario_id, Usuario.type_user).where(Usuario.usuario_id == user_id)
+        with self.engine.connect() as conn:
+            return pd.read_sql(query, conn)
+
+    def get_user_by_uuid(self, user_uuid: str) -> Usuario | None:
+        query = select(Usuario).where(Usuario.uuid_usuario == user_uuid)
+        with self.session_factory() as session:
+            return session.scalar(query)

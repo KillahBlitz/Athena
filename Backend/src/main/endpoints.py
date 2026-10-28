@@ -36,3 +36,10 @@ def save_user(payload: SaveUserRequest) -> str:
     if result is None:
             raise fastapi.HTTPException(status_code=404, detail=f"Error generating user event")
     return result
+
+@api.get("/get-results/{user_uuid}")
+def get_results(user_uuid: str):
+    result = ah.get_results(user_uuid)
+    if result is None:
+        raise fastapi.HTTPException(status_code=404, detail=f"Resultados para el usuario {user_uuid} no encontrados")
+    return result

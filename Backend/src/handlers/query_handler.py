@@ -1,3 +1,5 @@
+import pandas as pd
+
 from kinasis_library.services.postgre_interface import create_postgres_engine
 from models.repository.usuarios_table_repository import UsuariosTableRepository
 from models.repository.carreras_table_repository import CarrerasTableRepository
@@ -56,3 +58,13 @@ class QueryHandler:
 
     def get_criteria_order_by_id_riasec(self, area_id: int):
         return self._areas_table_repository.get_criteria_order_by_id_riasec(area_id)
+
+    def get_user_by_uuid(self, user_uuid: str):
+        return self._usuarios_table_repository.get_user_by_uuid(user_uuid)
+
+    def get_user_data(self, user_id: int) -> dict[str, pd.DataFrame]:
+        return {
+            "usuarios": self._usuarios_table_repository.get_user_data(user_id),
+            "puntaje_objetivo": self._puntaje_objetivo_table_repository.get_by_user(user_id),
+            "usuario_criterio": self._usuario_criterio_table_repository.get_by_user(user_id),
+        }

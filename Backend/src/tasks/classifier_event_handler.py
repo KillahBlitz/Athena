@@ -27,13 +27,18 @@ class ClassifierEventHandler:
         self._tmh = TraineeModelHandler(self._qh, self._ch)
         self._modelos: dict[int, TrainedModel | None] = {}
 
+    def _classify_user_careers(self, modelo: TrainedModel | None, user_id: int):
+        user_data = self._qh.get_user_data(user_id)
+
     def start_trainee_models(self):
         print("Starting trainee models...")
         self._modelos = self._tmh.start_trainee_models()
         print("Trainee models started successfully.")
     
     def classifier_task(self, event: ClassifierEvent):
+        print(f"Processing event: area: {event.id_area}, user: {event.user_uuid}")
         modelo = self._modelos.get(event.id_area)
+        self._classify_user_careers(modelo, event.user_id)
 
 if __name__ == "__main__":
     handler = ClassifierEventHandler()
@@ -47,4 +52,4 @@ if __name__ == "__main__":
                     consumer_name=envs["CONSUMER_NAME"],count=1,block=2000)
         if event:
             result = handler.classifier_task(ClassifierEvent(**event))
-            redis_consumer.event_producer(stream_name=envs["SEND_STREAM_NAME"], data=result)
+            #redis_consumer.event_producer(stream_name=envs["SEND_STREAM_NAME"], data=result)

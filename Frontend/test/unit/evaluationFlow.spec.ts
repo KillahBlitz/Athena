@@ -6,7 +6,6 @@ import { useRiasecForm } from '../../app/features/riasec/composables/useRiasecFo
 import { useAthenaSessionStore } from '../../app/stores/athenaSession'
 import { EVALUATION_UUID_KEY } from '../../app/utils/evaluationStorage'
 import ObjectivesPage from '../../app/pages/objetivos.vue'
-import AvatarCompanion from '../../app/components/avatar/AvatarCompanion.vue'
 
 const { router } = vi.hoisted(() => ({ router: { push: vi.fn(), replace: vi.fn() } }))
 vi.mock('vue-router', () => ({ useRouter: () => router }))
@@ -19,6 +18,8 @@ beforeEach(() => {
   setActivePinia(createPinia())
   localStorage.clear()
   vi.clearAllMocks()
+  // clearAllMocks no vacía la cola de mockResolvedValueOnce; sin esto un test que falla contamina al siguiente.
+  fetchMock.mockReset()
   vi.stubGlobal('$fetch', fetchMock)
   vi.stubGlobal('useRuntimeConfig', () => ({ public: { apiBase: 'http://localhost:8000' } }))
   vi.stubGlobal('defineNuxtRouteMiddleware', (handler: unknown) => handler)
@@ -123,7 +124,7 @@ describe('envío del cuestionario con UUID', () => {
       await card.get('textarea').setValue(justifications[index])
     }
     expect(cards).toHaveLength(2)
-    await page.findComponent(AvatarCompanion).vm.$emit('go-next')
+    await page.get('.block-nav-btn.is-next').trigger('click')
     expect(router.push).toHaveBeenCalledWith('/riasec')
     page.unmount()
 
@@ -214,7 +215,7 @@ describe('navegación con evaluación pendiente', () => {
     return middleware({ path } as RouteLocationNormalized, {} as RouteLocationNormalized)
   }
 
-  it.each(['/datos-personales', '/objetivos', '/riasec', '/resultados', '/otra-ruta'])('bloquea el acceso a %s después del envío', async (path) => {
+  it.each(['/datos-personales', '/objetivos', '/riasec', '/otra-ruta'])('bloquea el acceso a %s después del envío', async (path) => {
     localStorage.setItem(EVALUATION_UUID_KEY, UUID)
 
     await visit(path)
@@ -223,12 +224,18 @@ describe('navegación con evaluación pendiente', () => {
     expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
   })
 
-  it.each(['/', '/espera'])('permite acceder a %s después del envío', async (path) => {
+  it.each(['/', '/espera', '/resultados'])('permite acceder a %s después del envío', async (path) => {
     localStorage.setItem(EVALUATION_UUID_KEY, UUID)
 
     await visit(path)
 
     expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it.each(['/espera', '/resultados'])('requiere un UUID para acceder a %s', async (path) => {
+    await visit(path)
+
+    expect(navigate).toHaveBeenCalledWith('/riasec', { replace: true })
   })
 
   it('deja de forzar la espera cuando se elimina el UUID', async () => {

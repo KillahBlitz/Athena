@@ -31,20 +31,22 @@
 
       <ol class="waiting-steps" role="status" aria-live="polite">
         <li
-          v-for="(step, index) in STEPS"
-          :key="step"
+          v-for="step in STEPS"
+          :key="step.statusId"
           class="waiting-step"
-          :class="{ 'is-done': index < activeStep, 'is-active': index === activeStep }"
+          :class="{ 'is-done': statusId !== null && step.statusId < statusId, 'is-active': step.statusId === statusId }"
+          :aria-current="step.statusId === statusId ? 'step' : undefined"
         >
           <span class="waiting-step-dot" aria-hidden="true">
-            <svg v-if="index < activeStep" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor">
+            <svg v-if="statusId !== null && step.statusId < statusId" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor">
               <path d="M3.5 8.5 L6.5 11.5 L12.5 4.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </span>
-          <span>{{ step }}</span>
+          <span>{{ step.label }}</span>
         </li>
       </ol>
 
+      <p v-if="statusError" class="waiting-hint" role="status">{{ statusError }}</p>
       <p class="waiting-hint">
         <span class="waiting-avatar-name">{{ selectedAvatar.name }} · </span>
         <span>Esto puede tardar unos momentos. Puedes dejar esta pantalla abierta.</span>
@@ -62,16 +64,17 @@ import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../stores/athenaSession'
 import { EVALUATION_UUID_KEY, getEvaluationUuid } from '../utils/evaluationStorage'
 import { useMotionPresets } from '../composables/useMotionPresets'
+import { useResultsApi } from '../composables/useResultsApi'
+import type { GetResultsResponseDTO } from '../types/api'
 
 useHead({
   title: 'ATHENA | Preparando tus resultados'
 })
 
 const STEPS = [
-  'Respuestas guardadas',
-  'Analizando tus objetivos',
-  'Conectando tus habilidades RISEC',
-  'Preparando tu recomendación'
+  { statusId: 1, label: 'Conociendo tus intereses' },
+  { statusId: 2, label: 'Buscando carreras afines a ti' },
+  { statusId: 3, label: 'Preparando tu recomendación' }
 ]
 
 const STARS = [
@@ -86,15 +89,54 @@ const STARS = [
 const router = useRouter()
 const session = useAthenaSessionStore()
 const presets = useMotionPresets()
+const { fetchResults } = useResultsApi()
 
 const selectedAvatar = computed(() => session.selectedAvatar)
 const firstName = computed(() => session.name.split(' ')[0] ?? '')
 
-const activeStep = ref(1)
+const statusId = ref<GetResultsResponseDTO['status_id'] | null>(null)
+const statusError = ref<string | null>(null)
 let timer: ReturnType<typeof setInterval> | null = null
+let pendingRequest: AbortController | null = null
+
+const stopPolling = () => {
+  if (timer !== null) clearInterval(timer)
+  timer = null
+  pendingRequest?.abort()
+}
+
+const refreshStatus = async () => {
+  const uuid = getEvaluationUuid()
+  if (!uuid) {
+    stopPolling()
+    await router.replace('/riasec')
+    return
+  }
+  if (pendingRequest) return
+
+  const request = new AbortController()
+  pendingRequest = request
+  try {
+    const result = await fetchResults(uuid, request.signal)
+    if (request.signal.aborted || getEvaluationUuid() !== uuid) return
+    statusId.value = result.status_id
+    statusError.value = null
+    if (result.status_id === 4) {
+      stopPolling()
+      await router.replace('/resultados')
+    }
+  } catch {
+    if (!request.signal.aborted && getEvaluationUuid() === uuid) {
+      statusError.value = 'No pudimos consultar el estado de tu evaluación. Volveremos a intentarlo en unos segundos.'
+    }
+  } finally {
+    pendingRequest = null
+  }
+}
 
 const handleStorageChange = (event: StorageEvent) => {
   if ((event.key === EVALUATION_UUID_KEY || event.key === null) && !getEvaluationUuid()) {
+    stopPolling()
     router.replace('/riasec')
   }
 }
@@ -106,15 +148,13 @@ onMounted(() => {
   }
   session.restore()
   window.addEventListener('storage', handleStorageChange)
-  timer = setInterval(() => {
-    if (activeStep.value < STEPS.length - 1) activeStep.value++
-    else if (timer !== null) clearInterval(timer)
-  }, 2200)
+  timer = setInterval(() => { void refreshStatus() }, 5000)
+  void refreshStatus()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('storage', handleStorageChange)
-  if (timer !== null) clearInterval(timer)
+  stopPolling()
 })
 </script>
 

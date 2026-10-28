@@ -1,8 +1,9 @@
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import httpx2
 import pytest
+from kinasis_library.events.classifier_event import ClassifierEvent
 from kinasis_library.events.extractor_event import ExtractorEvent
 from sqlalchemy import create_engine
 
@@ -132,17 +133,18 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
                                            "VERCEL_API_URL": "https://ai-gateway.vercel.sh/v1",
                                            "VERCEL_MODEL": "typesafe-ai/jev"})
     assert len(requests) == 1
-    assert result == {
-        "objetives_criteria": [{"criteria_id": 101, "coincidence": 50}],
-        "priority_criteria": [
-            {"criteria_id": 202, "coincidence": 0, "repeat": True},
-            {"criteria_id": 201, "coincidence": 80, "repeat": True},
-        ],
-        "criterias": [{"criteria_id": 201, "coincidence": 80}, {"criteria_id": 203, "coincidence": 60}],
-    }
+    # extractor_task devuelve el evento para el clasificador, no el resultado de la extracción.
+    assert result == ClassifierEvent(user_uuid="USER-test-sdk", user_id=1, id_area=3)
+    # El resultado de la extracción se verifica por lo que se persiste.
     commands.save_objetive_user.assert_called_once_with(score=0.8, user_id=1, career_id=42)
     commands.save_objetive_criteria.assert_called_once_with(user_id=1, criteria_id=101, coincidence=0.5)
-    assert commands.save_user_criteria.call_count == 3
+    assert commands.save_user_criteria.call_args_list == [
+        # criterios prioritarios, en el orden en que los eligió el usuario (repeat=True suma 1)
+        call(user_id=1, criteria_id=202, coincidence=0.0, repeat_count=2),
+        call(user_id=1, criteria_id=201, coincidence=0.8, repeat_count=2),
+        # criterios con coincidencia >= 60 que no son prioritarios (el 201 ya se guardó arriba)
+        call(user_id=1, criteria_id=203, coincidence=0.6, repeat_count=1),
+    ]
     commands.update_user_status.assert_called_once_with(event.uuid_user, 2)
 
 

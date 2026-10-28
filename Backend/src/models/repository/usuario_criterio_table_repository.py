@@ -16,6 +16,17 @@ class UsuarioCriterioTableRepository:
         with self.session_factory.begin() as session:
             session.add(criterion)
 
+    def get_by_user(self, user_id: int) -> pd.DataFrame:
+        query = (
+            select(UsuarioCriterio.usuario_id, Criterio.carrera_id, Criterio.type_id, Criterio.riasec_id,
+                   UsuarioCriterio.repeticiones, UsuarioCriterio.porc_coincidencia)
+            .join(Criterio, Criterio.criterio_id == UsuarioCriterio.criterio_id)
+            .where(UsuarioCriterio.usuario_id == user_id)
+            .order_by(Criterio.carrera_id, Criterio.riasec_id, Criterio.criterio_id)
+        )
+        with self.engine.connect() as conn:
+            return pd.read_sql(query, conn)
+
     def get_by_area(self, area_id: int, type_users: list[int]) -> pd.DataFrame:
         query = (
             select(UsuarioCriterio.usuario_id, Criterio.carrera_id, Criterio.type_id, Criterio.riasec_id,

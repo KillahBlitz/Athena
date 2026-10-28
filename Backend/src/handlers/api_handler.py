@@ -10,6 +10,7 @@ from handlers.command_handler import CommandHandler
 from models.tables.usuario import Usuario
 from models.request.save_user_request import SaveUserRequest
 from models.response.questionary_response import QuestionaryResponse
+from models.response.result_response import ResultResponse, Results
 
 
 redis_credentials = get_dict_envs_redis_conection()
@@ -84,3 +85,12 @@ class ApiHandler:
         )
         self._rc.event_producer("extractor_stream", event)
         return user_uuid
+
+    def get_results(self, user_uuid: str):
+        user = self._qh.get_user_by_uuid(user_uuid)
+        if user is None:
+            return None
+        response = ResultResponse(
+            user_uuid=user_uuid,
+            status_id=user.estatus_id)
+        return response

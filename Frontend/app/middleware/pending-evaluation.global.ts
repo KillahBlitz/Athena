@@ -4,10 +4,10 @@ export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.server) return
 
   const uuid = getEvaluationUuid()
-  if (uuid && !['/', '/espera'].includes(to.path)) {
+  if (uuid && !['/', '/espera', '/resultados'].includes(to.path)) {
     return navigateTo('/espera', { replace: true })
   }
-  if (!uuid && to.path === '/espera') {
+  if (!uuid && ['/espera', '/resultados'].includes(to.path)) {
     return navigateTo('/riasec', { replace: true })
   }
 })

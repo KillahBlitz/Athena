@@ -15,6 +15,15 @@ class PuntajeObjetivoTableRepository:
         with self.session_factory.begin() as session:
             session.add(objective)
 
+    def get_by_user(self, user_id: int) -> pd.DataFrame:
+        query = (
+            select(PuntajeObjetivo.usuario_id, PuntajeObjetivo.carrera_id, PuntajeObjetivo.porc_objetivo)
+            .where(PuntajeObjetivo.usuario_id == user_id)
+            .order_by(PuntajeObjetivo.carrera_id)
+        )
+        with self.engine.connect() as conn:
+            return pd.read_sql(query, conn)
+
     def get_by_area(self, area_id: int, type_users: list[int]) -> pd.DataFrame:
         query = (
             select(PuntajeObjetivo.usuario_id, PuntajeObjetivo.carrera_id, PuntajeObjetivo.porc_objetivo)

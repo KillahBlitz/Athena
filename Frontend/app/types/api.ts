@@ -10,6 +10,11 @@ export interface ApiResponse<T> {
   loading: boolean
 }
 
+export interface GetResultsResponseDTO {
+  user_uuid: string
+  status_id: 1 | 2 | 3 | 4
+}
+
 export interface SaveUserObjectiveDTO {
   id_objetive: number
   id_carrera: number

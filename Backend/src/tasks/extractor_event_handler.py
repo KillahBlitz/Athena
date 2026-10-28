@@ -61,7 +61,8 @@ class ExtractorEventHandler:
               f"preguntas={len(prompt['questions'])} usage={response.get('usage')}", flush=True)
         result = self._eh.format_jev_response(prompt_info, response)
         self._eh.save_result_to_db(result, event)
-        event = ClassifierEvent(user_uuid=event.uuid_user, id_area=event.area_id)
+        event = ClassifierEvent(user_uuid=event.uuid_user, user_id=event.user_id, id_area=event.area_id)
+        print(f"send event to classifier_stream")
         return event
 
 if __name__ == "__main__":

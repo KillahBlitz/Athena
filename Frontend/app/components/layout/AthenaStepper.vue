@@ -73,7 +73,7 @@ const activeStepNumber = computed(() => {
   if (path.startsWith('/datos-personales')) return 2
   if (path.startsWith('/objetivos')) return 3
   if (path.startsWith('/riasec')) return 4
-  if (path.startsWith('/espera')) return 5
+  if (path.startsWith('/espera') || path.startsWith('/resultados')) return 5
   return 1
 })
 
