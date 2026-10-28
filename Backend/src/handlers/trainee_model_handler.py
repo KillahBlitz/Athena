@@ -57,6 +57,9 @@ class TraineeModelHandler:
         porcentajes = [c for c in FEATURES if not c.endswith("_rep")]
         if not ((df[porcentajes] >= 0) & (df[porcentajes] <= 1)).all().all():
             raise ValueError("Hay porcentajes fuera del rango 0–1")
+        # Con valoración menor que 4 (o < 0.75) la justificación es opcional en el Frontend y casi nunca existe.
+        # Se oculta P para que el modelo no confunda "no escribió" con "escribió algo que no coincide".
+        df.loc[df["o"] < 0.75, "p"] = 0.0
 
         one_hot = pd.get_dummies(pd.Categorical(df["carrera_id"], categories=carrera_ids),
                                  prefix="carrera", dtype=float)

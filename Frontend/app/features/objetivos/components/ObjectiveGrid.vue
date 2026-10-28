@@ -112,7 +112,7 @@ const isActiveAnswered = computed(() => {
   if (!objective) return false
   const answer = props.getAnswer(objective.carreraId)
   if (answer.valoracion === null) return false
-  return answer.valoracion !== 5 || answer.justificacion.trim().length > 0
+  return answer.valoracion === null || answer.valoracion < 4 || answer.justificacion.trim().length > 0
 })
 
 const direction = ref<1 | -1>(1)

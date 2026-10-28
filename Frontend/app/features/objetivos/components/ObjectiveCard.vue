@@ -56,14 +56,14 @@ defineEmits<{
 }>()
 
 const isDisabled = computed(() => props.answer.valoracion === 1)
-const isRequired = computed(() => props.answer.valoracion === 5)
+const isRequired = computed(() => props.answer.valoracion !== null && props.answer.valoracion >= 4)
 
 const placeholderText = computed(() => {
   if (isDisabled.value) {
     return 'No es necesario justificar esta valoración.'
   }
   if (isRequired.value) {
-    return 'Cuéntanos a detalle por qué te identificas plenamente con este objetivo...'
+    return 'Cuéntanos a detalle por qué te identificas con este objetivo...'
   }
   return 'Comparte una reflexión detallada sobre qué te motiva o distancia de este objetivo...'
 })

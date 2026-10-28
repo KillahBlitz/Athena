@@ -64,7 +64,7 @@ def test_rag_returns_objective_description_with_matching_area_criteria():
         engine.dispose()
 
 
-def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
+def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch, tmp_path):
     class Query:
         def get_criteria_order_by_id_riasec(self, area_id):
             assert area_id == 3
@@ -73,6 +73,10 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
                  "resumen_criterio": f"Criterio {key}"}
                 for key, dimension in [(101, 0), (201, 1), (202, 1), (203, 1)]
             ]
+
+        def get_main_criteria_by_area(self, area_id):
+            assert area_id == 3
+            return [{"carrera_id": 42, "criterio_id": 101}]
 
     event = ExtractorEvent(
         user_id=1, uuid_user="USER-test-sdk", area_id=3,
@@ -83,6 +87,7 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
     )
     commands = Mock(spec=CommandHandler)
     handler = worker_module.ExtractorEventHandler(qh=Query(), ch=commands)
+    monkeypatch.setattr(extraction_module, "__file__", str(tmp_path / "src" / "handlers" / "extraction_handler.py"))
     handler._eh._prompt = {
         "prompt_objetivo_coincidence": "Reglas de objetivos del diccionario (idx {idx})",
         "prompt_dimension_coincidence": "Reglas de dimensiones del diccionario ({part_key}, {criterio_id})",
@@ -135,17 +140,17 @@ def test_event_prompt_and_sdk_request_preserve_criteria_and_output(monkeypatch):
     assert len(requests) == 1
     # extractor_task devuelve el evento para el clasificador, no el resultado de la extracción.
     assert result == ClassifierEvent(user_uuid="USER-test-sdk", user_id=1, id_area=3)
-    # El resultado de la extracción se verifica por lo que se persiste.
-    commands.save_objetive_user.assert_called_once_with(score=0.8, user_id=1, career_id=42)
-    commands.save_objetive_criteria.assert_called_once_with(user_id=1, criteria_id=101, coincidence=0.5)
-    assert commands.save_user_criteria.call_args_list == [
-        # criterios prioritarios, en el orden en que los eligió el usuario (repeat=True suma 1)
-        call(user_id=1, criteria_id=202, coincidence=0.0, repeat_count=2),
-        call(user_id=1, criteria_id=201, coincidence=0.8, repeat_count=2),
-        # criterios con coincidencia >= 60 que no son prioritarios (el 201 ya se guardó arriba)
-        call(user_id=1, criteria_id=203, coincidence=0.6, repeat_count=1),
+    # El resultado de JEV se guarda en la BD a través del CommandHandler.
+    assert commands.mock_calls == [
+        call.save_objetive_user(score=0.8, user_id=1, career_id=42),
+        call.save_objetive_criteria(user_id=1, criteria_id=101, coincidence=0.5),
+        # Criterios elegidos por el usuario: coincidencia 1.0; repeticiones 2 porque JEV respondió "true".
+        call.save_user_criteria(user_id=1, criteria_id=202, coincidence=1.0, repeat_count=2),
+        call.save_user_criteria(user_id=1, criteria_id=201, coincidence=1.0, repeat_count=2),
+        # Detectado por JEV con 60 % sin que el usuario lo eligiera; el 201 no se repite.
+        call.save_user_criteria(user_id=1, criteria_id=203, coincidence=0.6, repeat_count=1),
+        call.update_user_status("USER-test-sdk", 2),
     ]
-    commands.update_user_status.assert_called_once_with(event.uuid_user, 2)
 
 
 @pytest.mark.parametrize("answer", [

@@ -7,6 +7,7 @@ from kinasis_library.events.extractor_event import ExtractorEvent, Objetives, Ri
 from handlers.command_handler import CommandHandler
 from handlers.query_handler import QueryHandler
 from models.criteria import CriteriaRag
+from models.prompt_response import PromptResponse
 
 PROMPT_PATH = Path(__file__).resolve().parents[1] / "prompts" / "jev_prompt.json"
 SCORE_LEVELS = ["0", "20", "40", "60", "80", "100"]
@@ -187,30 +188,36 @@ class ExtractorHandler:
 
     def save_result_to_db(self, result: dict, event: ExtractorEvent) -> None:
         priority_ids = {crit["criteria_id"] for crit in result["priority_criteria"]}
+        prompt_result = PromptResponse(**result)
+
+        main_criteria_by_career = {row["carrera_id"]: row["criterio_id"] for row in self._qh.get_main_criteria_by_area(event.area_id)}
+        coincidence_by_criteria = { crit["criteria_id"]: crit["coincidence"] / 100 for crit in prompt_result.objetives_criteria}
+
         for obj in event.objetives:
             self._ch.save_objetive_user(
                 score=obj.porc_evaluation,
                 user_id=event.user_id,
                 career_id=obj.id_carrera)
 
-        for crit in result["objetives_criteria"]:
+            criteria_id = main_criteria_by_career.get(obj.id_carrera)
+            if criteria_id is None:
+                continue
             self._ch.save_objetive_criteria(
                 user_id=event.user_id,
-                criteria_id=crit["criteria_id"],
-                coincidence=crit["coincidence"] / 100)
+                criteria_id=criteria_id,
+                coincidence=coincidence_by_criteria.get(criteria_id, 0.0))
 
-        for crit in result["priority_criteria"]:
+        for crit in prompt_result.priority_criteria:
             count = 1
-            coincidence = crit["coincidence"] / 100
             if crit["repeat"]:
                 count = count + 1
             self._ch.save_user_criteria(
                 user_id=event.user_id,
                 criteria_id=crit["criteria_id"],
-                coincidence=coincidence,
+                coincidence=1.0,
                 repeat_count=count)
 
-        for crit in result["criterias"]:
+        for crit in prompt_result.criterias:
             if crit["criteria_id"] in priority_ids:
                 continue
             self._ch.save_user_criteria(

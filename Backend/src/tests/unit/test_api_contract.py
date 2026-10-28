@@ -147,9 +147,10 @@ def test_generate_user_event_maps_answers_without_mutating_request(fake_api_hand
         assert user.correo_usuario == save_user_payload.email
         assert user.estatus_id == 1
         assert user.type_user == 4
+    # Escala de O del entrenamiento (OBJETIVE_DICT): 1→0.0, 2→0.25, 3→0.5, 4→0.75, 5→1.0.
     assert [objective.model_dump() for objective in event.objetives] == [
-        {"id_objetive": 101, "id_carrera": 201, "porc_evaluation": 0.2, "description": "Poco interés"},
-        {"id_objetive": 102, "id_carrera": 202, "porc_evaluation": 0.6, "description": "Interés moderado"},
+        {"id_objetive": 101, "id_carrera": 201, "porc_evaluation": 0.0, "description": "Poco interés"},
+        {"id_objetive": 102, "id_carrera": 202, "porc_evaluation": 0.5, "description": "Interés moderado"},
         {"id_objetive": 103, "id_carrera": 203, "porc_evaluation": 1.0, "description": "Mucho interés"},
     ]
     assert {key: question.model_dump() for key, question in event.questions.items()} == {

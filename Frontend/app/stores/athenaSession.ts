@@ -119,7 +119,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         if (!ans || ans.valoracion === null || ans.valoracion < 1 || ans.valoracion > 5) {
           return false
         }
-        if (ans.valoracion === 5 && ans.justificacion.trim().length === 0) {
+        if (ans.valoracion >= 4 && ans.justificacion.trim().length === 0) {
           return false
         }
         return true

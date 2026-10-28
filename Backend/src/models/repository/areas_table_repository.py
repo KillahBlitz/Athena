@@ -68,3 +68,14 @@ class AreasTableRepository:
         with self.engine.connect() as conn:
             filas = conn.execute(query).mappings().all()
         return [dict(fila) for fila in filas]
+
+    def get_main_criteria_by_area(self, area_id: int) -> list[dict]:
+        query = (
+            select(Criterio.criterio_id, Criterio.carrera_id)
+            .join(Carrera, Carrera.carrera_id == Criterio.carrera_id)
+            .where(Carrera.area_id == area_id, Criterio.riasec_id == 0)
+            .order_by(Criterio.carrera_id)
+        )
+        with self.engine.connect() as conn:
+            filas = conn.execute(query).mappings().all()
+        return [dict(fila) for fila in filas]

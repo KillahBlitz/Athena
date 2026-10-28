@@ -39,7 +39,7 @@ export function useObjectivesForm() {
   const getPendingReason = (carreraId: number): PendingReason | null => {
     const answer = getAnswer(carreraId)
     if (answer.valoracion === null) return 'rating'
-    if (answer.valoracion === 5 && answer.justificacion.trim().length === 0) return 'justification'
+    if (answer.valoracion !== null && answer.valoracion >= 4 && answer.justificacion.trim().length === 0) return 'justification'
     return null
   }
 

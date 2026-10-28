@@ -19,7 +19,9 @@ def handler():
     commands = Mock(spec=[
         "save_objetive_user", "save_objetive_criteria", "save_user_criteria", "update_user_status",
     ])
-    return ExtractorHandler(qh=object(), ch=commands)
+    queries = Mock(spec=["get_main_criteria_by_area"])
+    queries.get_main_criteria_by_area.return_value = [{"carrera_id": 10, "criterio_id": 101}]
+    return ExtractorHandler(qh=queries, ch=commands)
 
 
 @pytest.fixture
@@ -73,9 +75,10 @@ def test_save_result_normalizes_scores_and_saves_overlapping_criteria_once(handl
 
     handler._ch.save_objetive_user.assert_called_once_with(score=0.8, user_id=42, career_id=10)
     handler._ch.save_objetive_criteria.assert_called_once_with(user_id=42, criteria_id=101, coincidence=0.85)
+    # Los criterios que el usuario eligió (201, 202) se guardan con coincidencia 1.0, sin importar la de JEV.
     assert handler._ch.save_user_criteria.call_args_list == [
-        call(user_id=42, criteria_id=201, coincidence=0.8, repeat_count=expected_count),
-        call(user_id=42, criteria_id=202, coincidence=0.0, repeat_count=1),
+        call(user_id=42, criteria_id=201, coincidence=1.0, repeat_count=expected_count),
+        call(user_id=42, criteria_id=202, coincidence=1.0, repeat_count=1),
         call(user_id=42, criteria_id=203, coincidence=1.0, repeat_count=1),
     ]
     handler._ch.update_user_status.assert_called_once_with(event.uuid_user, 2)
@@ -100,9 +103,11 @@ def test_save_result_does_not_mark_extraction_complete_after_write_failure(handl
 
 
 def test_save_result_persists_through_command_handler_and_repositories(database_commands, event):
-    handler = ExtractorHandler(qh=object(), ch=database_commands)
+    queries = Mock(spec=["get_main_criteria_by_area"])
+    queries.get_main_criteria_by_area.return_value = [{"carrera_id": 10, "criterio_id": 101}]
+    handler = ExtractorHandler(qh=queries, ch=database_commands)
     result = {
-        "objetives_criteria": [{"criteria_id": 101, "coincidence": 85}, {"criteria_id": 102, "coincidence": 0}],
+        "objetives_criteria": [{"criteria_id": 101, "coincidence": 85}],
         "priority_criteria": [
             {"criteria_id": 201, "coincidence": 80, "repeat": True},
             {"criteria_id": 202, "coincidence": 0, "repeat": False},
@@ -118,13 +123,47 @@ def test_save_result_persists_through_command_handler_and_repositories(database_
         rows = session.scalars(select(UsuarioCriterio).order_by(UsuarioCriterio.criterio_id)).all()
         assert [(row.usuario_id, row.criterio_id, row.repeticiones, row.porc_coincidencia) for row in rows] == [
             (42, 101, 1, 0.85),
-            (42, 102, 0, 0.0),
-            (42, 201, 2, 0.8),
-            (42, 202, 1, 0.0),
+            (42, 201, 2, 1.0),
+            (42, 202, 1, 1.0),
             (42, 203, 1, 1.0),
         ]
         assert session.get(Usuario, 42).estatus_id == 2
         assert session.get(Usuario, 43).estatus_id == 1
+
+
+def test_save_result_persists_main_criteria_as_zero_when_jev_did_not_evaluate(database_commands):
+    """El criterio principal se guarda con coincidencia 0.0 aunque JEV no lo haya evaluado
+    (objetivo sin justificación escrita), evitando el sesgo de ``P`` ausente."""
+    queries = Mock(spec=["get_main_criteria_by_area"])
+    queries.get_main_criteria_by_area.return_value = [
+        {"carrera_id": 10, "criterio_id": 101},
+        {"carrera_id": 20, "criterio_id": 111},
+    ]
+    handler = ExtractorHandler(qh=queries, ch=database_commands)
+    event = ExtractorEvent(
+        user_id=42, uuid_user="USER-persistence", area_id=3,
+        objetives=[
+            {"id_objetive": 7, "id_carrera": 10, "porc_evaluation": 0.8, "description": "Objetivo"},
+            {"id_objetive": 8, "id_carrera": 20, "porc_evaluation": 0.6, "description": ""},
+        ],
+        questions={},
+    )
+    result = {
+        "objetives_criteria": [{"criteria_id": 101, "coincidence": 85}],
+        "priority_criteria": [],
+        "criterias": [],
+    }
+
+    handler.save_result_to_db(result, event)
+
+    with Session(database_commands.engine) as session:
+        scores = session.scalars(select(PuntajeObjetivo).order_by(PuntajeObjetivo.carrera_id)).all()
+        assert [(s.carrera_id, s.porc_objetivo) for s in scores] == [(10, 0.8), (20, 0.6)]
+        rows = session.scalars(select(UsuarioCriterio).order_by(UsuarioCriterio.criterio_id)).all()
+        assert [(row.criterio_id, row.repeticiones, row.porc_coincidencia) for row in rows] == [
+            (101, 1, 0.85),
+            (111, 0, 0.0),
+        ]
 
 
 def test_objective_repository_rolls_back_duplicate_and_can_insert_again(database_commands):

@@ -59,6 +59,9 @@ class QueryHandler:
     def get_criteria_order_by_id_riasec(self, area_id: int):
         return self._areas_table_repository.get_criteria_order_by_id_riasec(area_id)
 
+    def get_main_criteria_by_area(self, area_id: int):
+        return self._areas_table_repository.get_main_criteria_by_area(area_id)
+
     def get_user_by_uuid(self, user_uuid: str):
         return self._usuarios_table_repository.get_user_by_uuid(user_uuid)
 

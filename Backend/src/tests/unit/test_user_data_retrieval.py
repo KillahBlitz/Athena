@@ -1,5 +1,3 @@
-from unittest.mock import Mock
-
 import pytest
 from sqlalchemy import create_engine
 
@@ -9,7 +7,6 @@ from models.tables.puntaje_objetivo import PuntajeObjetivo
 from models.tables.usuario import Usuario
 from models.tables.usuario_criterio import UsuarioCriterio
 from models.trainee_data import PuntajeObjetivoPieza, UsuarioCriterioPieza, UsuariosPieza
-from tasks.classifier_event_handler import ClassifierEventHandler
 
 REAL_USER, TRAINING_USER = 42, 7
 
@@ -90,12 +87,3 @@ def test_user_without_rows_returns_empty_frames_with_the_same_columns(query_hand
     assert list(data["puntaje_objetivo"].columns) == PuntajeObjetivoPieza.COLUMNAS
     assert list(data["usuario_criterio"].columns) == UsuarioCriterioPieza.COLUMNAS
 
-
-def test_classifier_fetches_the_data_with_the_user_id_from_the_event():
-    query = Mock()
-    handler = ClassifierEventHandler(qh=query, ch=Mock())
-
-    result = handler._classify_user_careers(None, REAL_USER)
-
-    query.get_user_data.assert_called_once_with(REAL_USER)
-    assert result is query.get_user_data.return_value

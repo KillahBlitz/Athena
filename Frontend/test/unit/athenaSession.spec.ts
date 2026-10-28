@@ -74,6 +74,17 @@ describe('athenaSession · bloques de objetivos', () => {
     store.setAnswer(101, 5, 'Me apasiona')
     expect(store.isCurrentBlockComplete).toBe(true)
   })
+
+  it('un 4 sin justificación deja el bloque incompleto', () => {
+    const store = storeWith(6)
+    answerCurrentBlock(store, 3)
+
+    store.setAnswer(101, 4, '')
+
+    expect(store.isCurrentBlockComplete).toBe(false)
+    store.setAnswer(101, 4, 'Me interesa')
+    expect(store.isCurrentBlockComplete).toBe(true)
+  })
 })
 
 describe('athenaSession · sesión restaurada', () => {

@@ -14,6 +14,13 @@ from models.response.result_response import ResultResponse, Results
 
 
 redis_credentials = get_dict_envs_redis_conection()
+OBJETIVE_DICT = {
+    1: 0.0,
+    2: 0.25,
+    3: 0.5,
+    4: 0.75,
+    5: 1.0
+}
 
 class ApiHandler:
     def __init__(self):
@@ -66,7 +73,7 @@ class ApiHandler:
             Objetives(
                 id_objetive=o.id_objetive,
                 id_carrera=o.id_carrera,
-                porc_evaluation=o.puntuation / 5,
+                porc_evaluation=OBJETIVE_DICT[o.puntuation],
                 description=o.description)
             for o in params.objetives]
 
