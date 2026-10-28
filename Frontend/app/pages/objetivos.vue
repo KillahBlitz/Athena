@@ -21,16 +21,6 @@
 
     <div class="objectives-main-row">
       <div class="objectives-cards-column">
-        <ObjectiveGrid
-          v-if="currentBlockData"
-          :block="currentBlockData"
-          :get-answer="getAnswer"
-          @rating="setRating"
-          @justification="setJustification"
-          @leave="handleLeave"
-          @revisit="handleRevisit"
-        />
-
         <div class="objectives-block-nav">
           <button v-if="currentBlock > 1" type="button" class="block-nav-btn is-back" @click="handleBack">
             <span aria-hidden="true">←</span>
@@ -54,6 +44,15 @@
           </button>
         </div>
 
+        <ObjectiveGrid
+          v-if="currentBlockData"
+          :block="currentBlockData"
+          :get-answer="getAnswer"
+          @rating="setRating"
+          @justification="setJustification"
+          @leave="handleLeave"
+          @revisit="handleRevisit"
+        />
       </div>
 
       <AvatarCompanion
