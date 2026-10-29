@@ -21,7 +21,7 @@ OBJETIVE_DICT = {
     4: 0.75,
     5: 1.0
 }
-ESTATUS_RESULTADOS_LISTOS = 4
+READY_STATUS = 4
 TOP_RESULTADOS = 3
 
 class ApiHandler:
@@ -45,6 +45,18 @@ class ApiHandler:
         )
         user_id = self._ch.insert_user(user)
         return user_id, user_uuid
+
+    def _build_results(self, user_id: int) -> list[Results]:
+        carreras = self._qh.get_user_results(user_id)[:TOP_RESULTADOS]
+        escuelas = self._qh.get_escuelas_by_carreras([c["carrera_id"] for c in carreras])
+        return [
+            Results(
+                top=posicion,
+                carrera_id=c["carrera_id"],
+                carrera=c["nom_carrera"],
+                puntaje=round(c["porc_coincidencia"] * 100, 1),
+                escuelas=escuelas.get(c["carrera_id"], []))
+            for posicion, c in enumerate(carreras, start=1)]
 
     def get_areas(self):
         return self._qh.get_areas()
@@ -95,23 +107,11 @@ class ApiHandler:
         self._rc.event_producer("extractor_stream", event)
         return user_uuid
 
-    def _build_results(self, user_id: int) -> list[Results]:
-        carreras = self._qh.get_user_results(user_id)[:TOP_RESULTADOS]
-        escuelas = self._qh.get_escuelas_by_carreras([c["carrera_id"] for c in carreras])
-        return [
-            Results(
-                top=posicion,
-                carrera_id=c["carrera_id"],
-                carrera=c["nom_carrera"],
-                puntaje=round(c["porc_coincidencia"] * 100, 1),
-                escuelas=escuelas.get(c["carrera_id"], []))
-            for posicion, c in enumerate(carreras, start=1)]
-
     def get_results(self, user_uuid: str) -> ResultResponse | None:
         user = self._qh.get_user_by_uuid(user_uuid)
         if user is None:
             return None
-        results = self._build_results(user.usuario_id) if user.estatus_id == ESTATUS_RESULTADOS_LISTOS else None
+        results = self._build_results(user.usuario_id) if user.estatus_id == READY_STATUS else None
         return ResultResponse(
             user_uuid=user_uuid,
             status_id=user.estatus_id,

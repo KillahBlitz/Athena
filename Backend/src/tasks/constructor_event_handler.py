@@ -14,9 +14,9 @@ def get_dict_envs():
         "REDIS_HOST": cm.get_env("REDIS_HOST"),
         "REDIS_PORT": cm.get_env("REDIS_PORT"),
         "REDIS_PASSWORD": cm.get_env("REDIS_PASSWORD"),
-        "STREAM_NAME": cm.get_env("STREAM_CONSTRUCTOR", "constructor_stream"),
-        "GROUP_NAME": cm.get_env("GROUP_CONSTRUCTOR", "constructor_group"),
-        "CONSUMER_NAME": cm.get_env("CONSUMER_CONSTRUCTOR", "constructor_consumer"),
+        "STREAM_NAME": cm.get_env("STREAM_CONSTRUCTOR"),
+        "GROUP_NAME": cm.get_env("GROUP_CONSTRUCTOR"),
+        "CONSUMER_NAME": cm.get_env("CONSUMER_CONSTRUCTOR"),
     }
     return envs
 
