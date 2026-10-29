@@ -505,3 +505,8 @@
   color: var(--color-text-main);
   background-color: var(--color-surface-hover);
 }
+
+.form-card-required-asterisk {
+  color: var(--color-error-text);
+  font-weight: 700;
+}

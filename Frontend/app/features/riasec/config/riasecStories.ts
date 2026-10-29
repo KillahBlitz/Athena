@@ -3,9 +3,7 @@ export interface StoryScene {
   line: string
 }
 
-export const STORY_SCENE_COUNT = 3
-
-const STORIES: Record<number, [string, string, string]> = {
+const STORIES: Record<number, string[]> = {
   1: [
     '{avatar} encontró un taller lleno de piezas sueltas.',
     'Con las manos y un plan, todo empieza a encajar.',
@@ -32,13 +30,12 @@ const STORIES: Record<number, [string, string, string]> = {
     'Liderar es dar el primer paso aunque dé miedo.'
   ],
   6: [
-    '{avatar} encontró un archivo lleno de pistas desordenadas.',
     'Paso a paso, todo tomó su lugar.',
     'El orden convierte el caos en resultados.'
   ]
 }
 
-const FALLBACK_STORY: [string, string, string] = [
+const FALLBACK_STORY: string[] = [
   '{avatar} empieza una nueva aventura.',
   'Cada elección revela algo de ti.',
   'Sigue explorando, vas muy bien.'

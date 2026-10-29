@@ -15,12 +15,25 @@
       <ObjectiveProgress :progress="progress" />
     </div>
 
+    <!--
+    <StageCelebration
+      :show="isLastBlock && isCurrentBlockComplete"
+      title="¡Has valorado todos los objetivos de esta área!"
+      message="Tus respuestas han sido registradas. Puedes revisarlas o modificar cualquier valoración antes de la siguiente fase (RISEC)."
+    >
+      <BaseButton variant="outline" size="sm" @click="handleBack">
+        Revisar bloques anteriores
+      </BaseButton>
+    </StageCelebration>
+    -->
+
     <Transition name="onboarding-backdrop-fade">
       <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
     </Transition>
 
     <div class="objectives-main-row">
       <div class="objectives-cards-column">
+        <!--
         <div class="objectives-block-nav">
           <button v-if="currentBlock > 1" type="button" class="block-nav-btn is-back" @click="handleBack">
             <span aria-hidden="true">←</span>
@@ -43,11 +56,20 @@
             <span aria-hidden="true">→</span>
           </button>
         </div>
+        -->
 
         <ObjectiveGrid
           v-if="currentBlockData"
           :block="currentBlockData"
           :get-answer="getAnswer"
+          :midpoint-pulse="midpointPulse"
+          :is-first-block="currentBlock === 1"
+          :is-last-block="isLastBlock"
+          :block-complete="isCurrentBlockComplete"
+          :confirming-finish="confirmingFinish"
+          @next-block="onNextBlock"
+          @prev-block="handleBack"
+          @review="handleReview"
           @rating="setRating"
           @justification="setJustification"
           @leave="handleLeave"
@@ -69,6 +91,8 @@
         :is-last-block="isLastBlock"
         :block="currentBlock"
         :total-blocks="totalBlocks"
+        :midpoint-pulse="midpointPulse"
+        :confirming-finish="confirmingFinish"
         @dismiss-onboarding="dismissOnboarding"
       />
     </div>
@@ -76,11 +100,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
+// import BaseButton from '../components/ui/BaseButton.vue'
+// import StageCelebration from '../components/ui/StageCelebration.vue'
 import { hasSeenObjectivesOnboarding, markObjectivesOnboardingSeen } from '../utils/objectivesOnboardingStorage'
 
 useHead({
@@ -95,6 +121,7 @@ const {
   progress,
   isCurrentBlockComplete,
   isLastBlock,
+  selectedAreaId,
   getAnswer,
   setRating,
   setJustification,
@@ -102,7 +129,8 @@ const {
   describeSkipped,
   isPending,
   handleNext,
-  handleBack
+  handleBack,
+  goToFirstBlock
 } = useObjectivesForm()
 
 const companion = ref<InstanceType<typeof AvatarCompanion> | null>(null)
@@ -110,13 +138,43 @@ const companion = ref<InstanceType<typeof AvatarCompanion> | null>(null)
 const answerEvent = ref<{ rating: number, id: number } | null>(null)
 let answerCount = 0
 
+const confirmingFinish = ref(false)
+
+watch([currentBlock, isCurrentBlockComplete], () => {
+  confirmingFinish.value = false
+})
+
 function onNextBlock() {
-  if (isCurrentBlockComplete.value) {
-    handleNext()
+  if (!isCurrentBlockComplete.value) {
+    companion.value?.remind()
     return
   }
-  companion.value?.remind()
+  if (isLastBlock.value && !confirmingFinish.value) {
+    confirmingFinish.value = true
+    return
+  }
+  handleNext()
 }
+
+function handleReview() {
+  confirmingFinish.value = false
+  goToFirstBlock()
+}
+
+const MIDPOINT_AREA_ID = 1
+
+const midpointBlock = computed(() => {
+  if (selectedAreaId.value !== MIDPOINT_AREA_ID || totalBlocks.value < 3) return null
+  return Math.floor(totalBlocks.value / 2) + 1
+})
+
+const midpointPulse = ref(0)
+
+watch(currentBlock, (block, previous) => {
+  if (previous !== undefined && block > previous && block === midpointBlock.value) {
+    midpointPulse.value++
+  }
+})
 
 const skippedIds = ref<number[]>([])
 const notice = computed(() => describeSkipped(skippedIds.value))

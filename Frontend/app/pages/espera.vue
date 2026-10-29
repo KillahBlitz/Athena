@@ -51,14 +51,12 @@
         <span class="waiting-avatar-name">{{ selectedAvatar.name }} · </span>
         <span>Esto puede tardar unos momentos. Puedes dejar esta pantalla abierta.</span>
       </p>
-      <AvatarCompanion :avatar="selectedAvatar" :name="firstName" stage="waiting" />
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import TrackingAvatar from '../components/avatar/TrackingAvatar.vue'
-import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../stores/athenaSession'

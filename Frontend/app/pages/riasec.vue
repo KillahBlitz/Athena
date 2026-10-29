@@ -36,6 +36,7 @@
 
     <RiasecDimensionTabs :tabs="tabs" @select="goToDimension" />
 
+    <!--
     <StageCelebration
       :show="isCompleted"
       title="¡Has explorado todas las dimensiones!"
@@ -51,16 +52,17 @@
         </template>
       </BaseButton>
     </StageCelebration>
+    -->
 
     <ErrorMessage
-      v-if="isCompleted && submitError"
+      v-if="submitError"
       class="riasec-submit-error"
       :message="submitError"
       retryable
       @retry="handleFinish"
     />
 
-    <template v-if="!isCompleted && currentQuestion">
+    <template v-if="currentQuestion">
       <AnimatePresence mode="wait" :initial="false">
         <Motion
           :key="currentQuestion.riasec_id"
@@ -78,35 +80,68 @@
               :answer="currentAnswer"
               :selection-limit="selectionLimit"
               :is-selection-limit-reached="isSelectionLimitReached"
+              :block-size="optionBlockSize"
+              :block-columns="optionBlockColumns"
               @toggle="toggleOption"
-            />
+            >
+              <RiasecReflection
+                :riasec-id="currentQuestion.riasec_id"
+                :dimension-name="currentDimension.name"
+                :question="currentQuestion.pregunta_abierta"
+                :model-value="currentAnswer.respuestaAbierta"
+                :locked="currentAnswer.opcionIds.length === 0"
+                @update:model-value="setOpenAnswer"
+              />
+
+              <template #footer>
+                <div class="objectives-block-nav riasec-dimension-nav">
+                  <button type="button" class="block-nav-btn is-back" :class="{ 'is-attention': confirmingFinish }" @click="handleBack">
+                    <span aria-hidden="true">←</span>
+                    <span>Atrás</span>
+                  </button>
+                  <span class="objectives-block-nav-hint">
+                    {{ nextDimension ? `A continuación: ${nextDimension.name}` : 'Última dimensión' }}
+                  </span>
+                  <button
+                    type="button"
+                    class="block-nav-btn is-next"
+                    :class="{ 'is-soft-disabled': !isCurrentComplete || isSubmitting, 'is-celebrating': isCurrentComplete && !isSubmitting, 'is-finish': isLastQuestion }"
+                    :aria-disabled="!isCurrentComplete || isSubmitting"
+                    :aria-busy="isSubmitting"
+                    @click="onNextDimension"
+                  >
+                    <span v-if="isCurrentComplete && !isSubmitting" class="block-nav-sparkles" aria-hidden="true">
+                      <span v-for="n in 5" :key="n" class="block-nav-sparkle" :style="{ '--i': n }">✦</span>
+                    </span>
+                    <span>{{ isSubmitting ? 'Guardando...' : isLastQuestion ? (confirmingFinish ? 'Sí, quiero finalizar' : 'Finalizar etapa') : 'Siguiente' }}</span>
+                    <span v-if="!isSubmitting" aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </template>
+            </RiasecQuestionCard>
 
             <div class="riasec-side">
               <RiasecConnectionsPanel
                 :options="currentOptions"
                 :selected-ids="currentAnswer.opcionIds"
-                :avatar="selectedAvatar"
               />
               <AvatarStoryCard
+                ref="storyCard"
                 :avatar="selectedAvatar"
                 :riasec-id="currentQuestion.riasec_id"
                 :selected-count="currentAnswer.opcionIds.length"
+                :selection-limit="selectionLimit"
+                :stage-complete="isLastQuestion && isCurrentComplete"
+                :is-last-dimension="isLastQuestion"
+                :confirming-finish="confirmingFinish"
               />
             </div>
           </div>
-
-          <RiasecReflection
-            :riasec-id="currentQuestion.riasec_id"
-            :dimension-name="currentDimension.name"
-            :question="currentQuestion.pregunta_abierta"
-            :model-value="currentAnswer.respuestaAbierta"
-            :locked="currentAnswer.opcionIds.length === 0"
-            @update:model-value="setOpenAnswer"
-          />
         </Motion>
       </AnimatePresence>
 
       <AvatarCompanion
+        v-if="showOnboarding"
         :avatar="selectedAvatar"
         stage="riasec"
         :complete="isCurrentComplete"
@@ -114,34 +149,11 @@
         @dismiss-onboarding="dismissOnboarding"
       />
     </template>
-
-    <div v-if="!isCompleted" class="riasec-bottom-bar">
-      <button type="button" class="back-text-btn" @click="handleBack">
-        <span aria-hidden="true">←</span>
-        <span>Atrás</span>
-      </button>
-
-      <span class="riasec-next-hint">
-        {{ nextDimension ? `A continuación: ${nextDimension.name}` : 'Última dimensión' }}
-      </span>
-
-      <BaseButton
-        variant="primary"
-        size="lg"
-        :disabled="!isCurrentComplete"
-        @click="handleNext"
-      >
-        <span>{{ isLastQuestion ? 'Finalizar etapa' : 'Siguiente' }}</span>
-        <template #suffix>
-          <span aria-hidden="true">→</span>
-        </template>
-      </BaseButton>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useRiasecForm } from '../features/riasec/composables/useRiasecForm'
 import RiasecDimensionTabs from '../features/riasec/components/RiasecDimensionTabs.vue'
@@ -149,8 +161,8 @@ import RiasecQuestionCard from '../features/riasec/components/RiasecQuestionCard
 import RiasecConnectionsPanel from '../features/riasec/components/RiasecConnectionsPanel.vue'
 import RiasecReflection from '../features/riasec/components/RiasecReflection.vue'
 import AvatarStoryCard from '../features/riasec/components/AvatarStoryCard.vue'
-import BaseButton from '../components/ui/BaseButton.vue'
-import StageCelebration from '../components/ui/StageCelebration.vue'
+// import BaseButton from '../components/ui/BaseButton.vue'
+// import StageCelebration from '../components/ui/StageCelebration.vue'
 import ErrorMessage from '../components/ui/ErrorMessage.vue'
 import { useMotionPresets } from '../composables/useMotionPresets'
 import { hasSeenRiasecOnboarding, markRiasecOnboardingSeen } from '../utils/riasecOnboardingStorage'
@@ -169,10 +181,11 @@ const {
   selectionLimit,
   isSelectionLimitReached,
   selectedAvatar,
+  optionBlockSize,
+  optionBlockColumns,
   progress,
   isCurrentComplete,
   isLastQuestion,
-  isCompleted,
   isSubmitting,
   submitError,
   toggleOption,
@@ -184,6 +197,27 @@ const {
 } = useRiasecForm()
 
 const presets = useMotionPresets()
+
+const storyCard = ref<InstanceType<typeof AvatarStoryCard> | null>(null)
+
+const confirmingFinish = ref(false)
+
+watch(() => [currentQuestion.value?.riasec_id, isCurrentComplete.value], () => {
+  confirmingFinish.value = false
+})
+
+function onNextDimension() {
+  if (isSubmitting.value) return
+  if (isCurrentComplete.value && isLastQuestion.value && !confirmingFinish.value) {
+    confirmingFinish.value = true
+    return
+  }
+  if (isCurrentComplete.value) {
+    handleNext()
+    return
+  }
+  storyCard.value?.remind(currentAnswer.value.opcionIds.length === 0 ? 'skills' : 'reflection')
+}
 
 const showOnboarding = ref(false)
 

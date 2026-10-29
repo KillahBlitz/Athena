@@ -1,8 +1,7 @@
 export const OBJECTIVES_PER_BLOCK = 6
 
-/** Valoración que exige escribir una justificación. */
-export const REQUIRED_JUSTIFICATION_RATING = 5
+export const MIN_REQUIRED_JUSTIFICATION_RATING = 4
 
 export function isJustificationRequired(rating: number | null | undefined): boolean {
-    return rating === REQUIRED_JUSTIFICATION_RATING
+    return rating != null && rating >= MIN_REQUIRED_JUSTIFICATION_RATING
 }

@@ -33,8 +33,8 @@
 
     <section class="results-paths reveal" style="--reveal-index: 2" aria-labelledby="results-paths-title" :aria-busy="state === 'loading'">
       <div class="results-paths-header">
-        <h2 id="results-paths-title" class="results-paths-title">{{ pathsTitle }}</h2>
-        <span class="results-paths-tag">TOP {{ careers.length || 3 }}</span>
+        <h2 id="results-paths-title" class="results-paths-title">{{ state === 'low-match' ? 'Sin una recomendación clara' : pathsTitle }}</h2>
+        <span v-if="state !== 'low-match'" class="results-paths-tag">TOP {{ careers.length || 3 }}</span>
       </div>
 
       <p v-if="state === 'loading'" class="results-status" role="status">Cargando tus resultados…</p>
@@ -42,6 +42,16 @@
       <div v-else-if="state === 'error'" class="results-status is-error" role="alert">
         <p>{{ errorMessage }}</p>
         <BaseButton variant="outline" size="sm" class="results-no-print" @click="loadResults">Reintentar</BaseButton>
+      </div>
+
+      <div v-else-if="state === 'low-match'" class="results-status results-low-match" role="status">
+        <strong class="results-low-match-title">Esta área no parece ser la tuya, y eso también es un descubrimiento.</strong>
+        <p>
+          Tus respuestas no coinciden lo suficiente con las carreras de esta área como para recomendarte una con confianza.
+          Es probable que tus intereses estén en otra área académica.
+        </p>
+        <p>Te recomendamos repetir el test eligiendo un área distinta.</p>
+        <BaseButton class="results-no-print" @click="restartTest">Probar otra área</BaseButton>
       </div>
 
       <template v-else>
@@ -114,7 +124,9 @@ const router = useRouter()
 const session = useAthenaSessionStore()
 const { fetchResults } = useResultsApi()
 
-const state = ref<'loading' | 'ready' | 'error'>('loading')
+const MIN_TOP_MATCH = 60
+
+const state = ref<'loading' | 'ready' | 'error' | 'low-match'>('loading')
 const errorMessage = ref('')
 const careers = ref<CareerMatch[]>([])
 let pendingRequest: AbortController | null = null
@@ -122,7 +134,9 @@ let pendingRequest: AbortController | null = null
 const selectedAvatar = computed(() => session.selectedAvatar)
 const firstName = computed(() => session.name.trim().split(/\s+/)[0] ?? '')
 const summary = computed(() => {
-  const text = 'estas son las carreras del IPN que más coinciden con tus objetivos e intereses.'
+  const text = state.value === 'low-match'
+    ? 'esta vez no encontramos una carrera que encaje claramente contigo en esta área.'
+    : 'estas son las carreras del IPN que más coinciden con tus objetivos e intereses.'
   return firstName.value
     ? `${firstName.value}, ${text}`
     : `${text.charAt(0).toUpperCase()}${text.slice(1)}`
@@ -152,7 +166,7 @@ async function loadResults() {
       return
     }
     careers.value = toCareerMatches(response.results)
-    state.value = 'ready'
+    state.value = (careers.value[0]?.match ?? 0) < MIN_TOP_MATCH ? 'low-match' : 'ready'
   } catch (err) {
     if (request.signal.aborted) return
     errorMessage.value = err instanceof Error && err.message.startsWith('Tu evaluación')

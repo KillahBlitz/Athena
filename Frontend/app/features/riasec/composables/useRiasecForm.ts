@@ -9,6 +9,10 @@ import { MAX_CRITERIOS_POR_DIMENSION } from '../../../config/riasec'
 import { useSaveUserApi } from '../../../composables/useSaveUserApi'
 import { getEvaluationUuid, saveEvaluationUuid } from '../../../utils/evaluationStorage'
 
+const BLOCKED_OPTIONS_AREA_ID = 1
+const OPTION_BLOCK_SIZE = 9
+const OPTION_BLOCK_COLUMNS = 3
+
 export interface RiasecTab {
   index: number
   dimension: RiasecDimension
@@ -74,6 +78,8 @@ export function useRiasecForm() {
   })
 
   const selectedAvatar = computed<Avatar>(() => session.selectedAvatar)
+  const optionBlockSize = computed<number>(() => session.selectedAreaId === BLOCKED_OPTIONS_AREA_ID ? OPTION_BLOCK_SIZE : 0)
+  const optionBlockColumns = computed<number>(() => session.selectedAreaId === BLOCKED_OPTIONS_AREA_ID ? OPTION_BLOCK_COLUMNS : 0)
   const progress = computed<RiasecProgress>(() => session.riasecProgress)
   const isCurrentComplete = computed<boolean>(() =>
     currentAnswer.value.opcionIds.length > 0 && currentAnswer.value.respuestaAbierta.trim().length > 0
@@ -100,6 +106,10 @@ export function useRiasecForm() {
 
   const handleNext = () => {
     if (!isCurrentComplete.value) return
+    if (isLastQuestion.value) {
+      handleFinish()
+      return
+    }
     session.nextRiasecQuestion()
     scrollTop()
   }
@@ -166,6 +176,8 @@ export function useRiasecForm() {
     selectionLimit: MAX_CRITERIOS_POR_DIMENSION,
     isSelectionLimitReached,
     selectedAvatar,
+    optionBlockSize,
+    optionBlockColumns,
     progress,
     isCurrentComplete,
     isLastQuestion,

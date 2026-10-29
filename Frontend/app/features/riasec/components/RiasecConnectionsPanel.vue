@@ -24,27 +24,18 @@
     </svg>
 
     <div class="riasec-connections-message">
-      <span class="riasec-connections-avatar" aria-hidden="true">
-        <TrackingAvatar class="selected-avatar-tracking" :avatar-id="avatar.id" :name="avatar.name" />
-      </span>
       <strong>Cada habilidad revela algo único de ti.</strong>
     </div>
-    <p class="riasec-connections-note">
-      No necesitas dominarlo todo. Elige lo que reconoces en ti, dentro y fuera del aula.
-    </p>
   </aside>
 </template>
 
 <script setup lang="ts">
-import TrackingAvatar from '../../../components/avatar/TrackingAvatar.vue'
 import { computed } from 'vue'
-import type { Avatar } from '../../../types/avatar'
 import type { RiasecOption } from '../../../types/riasec'
 
 const props = defineProps<{
   options: RiasecOption[]
   selectedIds: number[]
-  avatar: Avatar
 }>()
 
 const nodes = computed(() => {

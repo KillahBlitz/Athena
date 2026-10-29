@@ -23,6 +23,7 @@ export function useObjectivesForm() {
   const progress = computed<ObjectivesProgress>(() => session.progress)
   const isCurrentBlockComplete = computed<boolean>(() => session.isCurrentBlockComplete)
   const isLastBlock = computed<boolean>(() => session.currentBlock === session.totalBlocks)
+  const selectedAreaId = computed<number | null>(() => session.selectedAreaId)
   const isAllCompleted = computed<boolean>(() => session.progress.answeredCount === session.objectives.length && session.objectives.length > 0)
 
   const getAnswer = (carreraId: number) => {
@@ -87,7 +88,7 @@ export function useObjectivesForm() {
 
   const isPending = (carreraId: number) => getPendingReason(carreraId) !== null
   const setRating = (carreraId: number, rating: RatingValue) => {
-    session.setAnswer(carreraId, rating)
+    session.setAnswer(carreraId, rating, rating === 1 ? '' : undefined)
   }
 
   const setJustification = (carreraId: number, text: string) => {
@@ -105,6 +106,11 @@ export function useObjectivesForm() {
       session.persist()
       router.push('/riasec')
     }
+  }
+
+  const goToFirstBlock = () => {
+    session.goToBlock(1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleBack = () => {
@@ -128,11 +134,13 @@ export function useObjectivesForm() {
     describeSkipped,
     isPending,
     isLastBlock,
+    selectedAreaId,
     isAllCompleted,
     getAnswer,
     setRating,
     setJustification,
     handleNext,
-    handleBack
+    handleBack,
+    goToFirstBlock
   }
 }

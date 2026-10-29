@@ -8,7 +8,7 @@
       :exit="presets.swap.exit"
       :transition="presets.swap.transition"
     >
-      <div class="objectives-stack-deck" :style="{ '--deck-count': block.objectives.length }">
+      <div class="objectives-stack-deck" :class="{ 'is-midpoint': isMidpoint }" :style="{ '--deck-count': block.objectives.length }">
         <Motion
           v-for="(objective, index) in block.objectives"
           :key="objective.carreraId"
@@ -36,12 +36,13 @@
         <button
           type="button"
           class="stack-nav-btn is-prev"
-          :disabled="activeIndex === 0"
-          aria-label="Pregunta anterior"
-          @click="goPrev"
+          :class="{ 'is-attention': confirmingFinish }"
+          :disabled="activeIndex === 0 && isFirstBlock && !confirmingFinish"
+          :aria-label="prevLabel"
+          @click="onPrev"
         >
           <span aria-hidden="true">‹</span>
-          <span class="stack-nav-text">Anterior</span>
+          <span class="stack-nav-text">{{ prevLabel }}</span>
         </button>
 
         <span class="stack-nav-progress">
@@ -53,7 +54,7 @@
               v-for="(objective, i) in block.objectives"
               :key="objective.carreraId"
               class="stack-nav-dot"
-              :class="{ 'is-active': i === activeIndex, 'is-past': i < activeIndex }"
+              :class="{ 'is-active': i === activeIndex, 'is-answered': isAnswered(objective.carreraId) }"
             />
           </span>
         </span>
@@ -61,12 +62,20 @@
         <button
           type="button"
           class="stack-nav-btn is-next"
-          :class="{ 'is-ready': isActiveAnswered }"
-          :disabled="activeIndex === block.objectives.length - 1"
-          aria-label="Siguiente pregunta"
-          @click="goNext"
+          :class="{
+            'is-ready': isOnLastCard ? blockComplete : isActiveAnswered,
+            'is-soft-disabled': isOnLastCard && !blockComplete,
+            'is-celebrating': isOnLastCard && blockComplete,
+            'is-finish': isOnLastCard && blockComplete && isLastBlock
+          }"
+          :aria-disabled="isOnLastCard && !blockComplete"
+          :aria-label="nextLabel"
+          @click="onNext"
         >
-          <span class="stack-nav-text">Siguiente</span>
+          <span v-if="isOnLastCard && blockComplete" class="block-nav-sparkles" aria-hidden="true">
+            <span v-for="n in 5" :key="n" class="block-nav-sparkle" :style="{ '--i': n }">✦</span>
+          </span>
+          <span class="stack-nav-text">{{ nextLabel }}</span>
           <span aria-hidden="true">›</span>
         </button>
       </div>
@@ -75,14 +84,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch, type CSSProperties } from 'vue'
+import { computed, nextTick, onUnmounted, ref, watch, type CSSProperties } from 'vue'
 import type { ObjectiveBlock, RatingValue } from '../../../types/objective'
 import ObjectiveCard from './ObjectiveCard.vue'
+import { isJustificationRequired } from '../../../config/objectives'
 import { useMotionPresets } from '../../../composables/useMotionPresets'
 
 const props = defineProps<{
   block: ObjectiveBlock
   getAnswer: (carreraId: number) => { valoracion: RatingValue | null; justificacion: string }
+  midpointPulse?: number
+  isFirstBlock?: boolean
+  isLastBlock?: boolean
+  blockComplete?: boolean
+  confirmingFinish?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -90,22 +105,89 @@ const emit = defineEmits<{
   revisit: [carreraId: number]
   rating: [carreraId: number, value: RatingValue]
   justification: [carreraId: number, text: string]
+  'next-block': []
+  'prev-block': []
+  review: []
 }>()
 
 const presets = useMotionPresets()
 
 const activeIndex = ref(0)
 
+const isMidpoint = ref(false)
+let midpointTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(
+  () => props.midpointPulse,
+  (pulse) => {
+    if (!pulse) return
+    if (midpointTimer) clearTimeout(midpointTimer)
+    isMidpoint.value = true
+    midpointTimer = setTimeout(() => { isMidpoint.value = false }, 1100)
+  }
+)
+
+onUnmounted(() => {
+  if (midpointTimer) clearTimeout(midpointTimer)
+})
+
 watch(
   () => props.block.blockIndex,
-  () => {
-    activeIndex.value = 0
-    direction.value = 1
+  (current, previous) => {
+    const goingBack = previous !== undefined && current < previous && !returningToStart
+    returningToStart = false
+    activeIndex.value = goingBack ? Math.max(0, props.block.objectives.length - 1) : 0
+    direction.value = goingBack ? -1 : 1
     forcedEntryIndex.value = null
   }
 )
 
+let returningToStart = false
+
+const isOnLastCard = computed(() => activeIndex.value === props.block.objectives.length - 1)
+
+const prevLabel = computed(() => {
+  if (props.confirmingFinish) return 'Revisar bloques'
+  if (activeIndex.value === 0 && !props.isFirstBlock) return 'Bloque anterior'
+  return 'Anterior'
+})
+
+const nextLabel = computed(() => {
+  if (!isOnLastCard.value) return 'Siguiente'
+  if (!props.isLastBlock) return 'Siguiente bloque'
+  return props.confirmingFinish ? 'Sí, quiero finalizar' : 'Finalizar etapa'
+})
+
+function onPrev() {
+  if (props.confirmingFinish) {
+    returningToStart = true
+    emit('review')
+    return
+  }
+  if (activeIndex.value === 0) {
+    if (!props.isFirstBlock) emit('prev-block')
+    return
+  }
+  goPrev()
+}
+
+function onNext() {
+  if (!isOnLastCard.value) {
+    goNext()
+    return
+  }
+  const current = props.block.objectives[activeIndex.value]
+  if (current) emit('leave', current.carreraId)
+  emit('next-block')
+}
+
 const cardCount = computed(() => props.block.objectives.length)
+
+function isAnswered(carreraId: number) {
+  const answer = props.getAnswer(carreraId)
+  if (answer.valoracion === null) return false
+  return !isJustificationRequired(answer.valoracion) || answer.justificacion.trim().length > 0
+}
 
 const isActiveAnswered = computed(() => {
   const objective = props.block.objectives[activeIndex.value]
@@ -127,9 +209,13 @@ function goPrev() {
   direction.value = -1
   forcedEntryIndex.value = revealIndex
   nextTick(() => {
-    activeIndex.value = revealIndex
     requestAnimationFrame(() => {
-      if (forcedEntryIndex.value === revealIndex) forcedEntryIndex.value = null
+      requestAnimationFrame(() => {
+        activeIndex.value = revealIndex
+        requestAnimationFrame(() => {
+          if (forcedEntryIndex.value === revealIndex) forcedEntryIndex.value = null
+        })
+      })
     })
   })
 }
@@ -194,7 +280,12 @@ function cardTransitionFor(index: number) {
   if (forcedEntryIndex.value === index && index !== activeIndex.value) {
     return { duration: 0 }
   }
-  return presets.value.cardStack.transition
+  const base = presets.value.cardStack.transition as Record<string, unknown>
+  const isLeaving = index === activeIndex.value - 1 && direction.value > 0
+  if (isLeaving && base.type === 'spring') {
+    return { ...base, stiffness: 110, damping: 20, opacity: { duration: 0.8, ease: 'easeIn' } }
+  }
+  return base
 }
 
 function cardVisual(index: number): CSSProperties {
@@ -212,7 +303,8 @@ function cardVisual(index: number): CSSProperties {
       pointerEvents: 'none'
     }
   }
-  return { zIndex: 10, boxShadow: 'none', pointerEvents: 'none' }
+  const isLeaving = relativeIndex === -1 && direction.value > 0
+  return { zIndex: isLeaving ? 41 : 10, boxShadow: 'none', pointerEvents: 'none' }
 }
 </script>
 

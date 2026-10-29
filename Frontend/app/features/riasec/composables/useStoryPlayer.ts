@@ -5,9 +5,10 @@ interface StoryPlayerOptions {
   sceneCount: number
   intervalMs?: number
   canAutoplay: Ref<boolean>
+  loop?: boolean
 }
 
-export function useStoryPlayer({ sceneCount, intervalMs = 6000, canAutoplay }: StoryPlayerOptions) {
+export function useStoryPlayer({ sceneCount, intervalMs = 6000, canAutoplay, loop = false }: StoryPlayerOptions) {
   const scene = ref(0)
   const isLast = computed(() => scene.value >= sceneCount - 1)
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -19,16 +20,16 @@ export function useStoryPlayer({ sceneCount, intervalMs = 6000, canAutoplay }: S
 
   const schedule = () => {
     clear()
-    if (!canAutoplay.value || isLast.value) return
+    if (!canAutoplay.value || (isLast.value && !loop)) return
     timer = setTimeout(() => {
       timer = null
-      scene.value = Math.min(scene.value + 1, sceneCount - 1)
+      scene.value = isLast.value ? 0 : scene.value + 1
     }, intervalMs)
   }
 
   const goTo = (index: number) => {
     const target = Math.max(0, Math.min(index, sceneCount - 1))
-    if (target === scene.value) schedule() 
+    if (target === scene.value) schedule()
     else scene.value = target
   }
 

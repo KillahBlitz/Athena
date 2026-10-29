@@ -12,12 +12,13 @@
         </svg>
       </span>
       <div class="riasec-reflection-copy">
-        <span class="riasec-reflection-caption">
-          {{ locked ? 'Selecciona al menos una habilidad para continuar' : `Reflexión · ${dimensionName}` }}
-        </span>
         <label :for="`riasec-open-${riasecId}`" class="riasec-reflection-question">
           {{ question }} (obligatoria)
         </label>
+        <span class="riasec-reflection-caption">
+          <template v-if="locked">Selecciona al menos una habilidad para continuar</template>
+          <template v-else><span class="riasec-reflection-caption-accent">Reflexión</span> · {{ dimensionName }}</template>
+        </span>
       </div>
       <span v-if="locked" class="riasec-reflection-status">Aún no disponible</span>
     </div>
@@ -28,7 +29,7 @@
       :value="modelValue"
       class="justification-textarea"
       placeholder="Cuéntanos con tus propias palabras..."
-      rows="3"
+      rows="5"
       required
       @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
     />

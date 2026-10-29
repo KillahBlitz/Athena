@@ -26,7 +26,7 @@
     <form class="personal-form-card" novalidate @submit.prevent="submit">
       <div class="form-card-header">
         <h2 class="form-card-title">Tus datos personales</h2>
-        <span class="form-card-required-note">Todos los campos son obligatorios</span>
+        <span class="form-card-required-note">Todos los campos son obligatorios <span class="form-card-required-asterisk" aria-hidden="true">*</span></span>
       </div>
 
       <div class="personal-inputs-row">

@@ -3,7 +3,7 @@
     as="section"
     layout
     class="avatar-companion"
-    :class="{ 'is-onboarding': onboarding, 'is-reminding': isReminding, 'is-celebrating': celebrating }"
+    :class="{ 'is-onboarding': onboarding, 'is-reminding': isReminding, 'is-midpoint': isMidpoint, 'is-celebrating': celebrating }"
     :transition="dockTransition"
     :aria-label="`Tu compañero ${avatar.name}`"
   >
@@ -20,7 +20,7 @@
         <span aria-hidden="true">✦</span>
         Etapa completada
       </span>
-      <strong>{{ avatar.name }} <span>· {{ avatar.role }}</span></strong>
+      <strong>{{ avatar.name }} <span v-if="showRole">· {{ avatar.role }}</span></strong>
       <AnimatePresence mode="wait">
         <Motion
           :key="messageKey"
@@ -45,7 +45,7 @@
           <p v-if="richMessage.outro" class="companion-message-outro">{{ richMessage.outro }}</p>
         </Motion>
       </AnimatePresence>
-      <div v-if="stage !== 'personal' && !onboarding && !isLastBlock" class="companion-actions">
+      <div v-if="stage !== 'personal' && !onboarding && !complete" class="companion-actions">
         <button type="button" @click="interact('tip')">Dame un consejo</button>
         <button type="button" @click="interact('cheer')">Necesito ánimo <span aria-hidden="true">✦</span></button>
       </div>
@@ -61,6 +61,7 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import type { Avatar } from '../../types/avatar'
 import TrackingAvatar from './TrackingAvatar.vue'
 import { useMotionPresets } from '../../composables/useMotionPresets'
+import { AVATAR_CHEERS, RIASEC_TIPS } from '../../config/avatarMessages'
 
 type Stage = 'personal' | 'objectives' | 'riasec' | 'waiting'
 const props = withDefaults(defineProps<{
@@ -77,12 +78,15 @@ const props = withDefaults(defineProps<{
   isLastBlock?: boolean
   block?: number
   totalBlocks?: number
-}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, notice: '', reminder: '', answerEvent: null, revisitEvent: null, isLastBlock: false, block: 0, totalBlocks: 0 })
+  midpointPulse?: number
+  confirmingFinish?: boolean
+}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, notice: '', reminder: '', answerEvent: null, revisitEvent: null, isLastBlock: false, block: 0, totalBlocks: 0, midpointPulse: 0 })
 
 const emit = defineEmits<{
   'dismiss-onboarding': []
 }>()
 
+const showRole = computed(() => props.stage !== 'objectives' || props.block <= 1)
 const celebrating = computed(() => props.stage === 'objectives' && props.isLastBlock && props.complete && !props.onboarding)
 const SPARKLES = [
   { left: '8%', top: '78%' },
@@ -101,8 +105,8 @@ const dockTransition = computed(() =>
 
 const ratingRule = 'Responde cada objetivo del 1 al 5, según qué tanto te identificas con él.'
 const justificationRuleLow = 'Si marcas 1, no necesitas escribir nada.'
-const justificationRuleMid = 'Si marcas 2, 3 o 4, la justificación es opcional.'
-const justificationRuleHigh = 'Si marcas 5, es obligatorio explicar tu respuesta.'
+const justificationRuleMid = 'Si marcas 2 o 3, la justificación es opcional.'
+const justificationRuleHigh = 'Si marcas 4 o 5, es obligatorio explicar tu respuesta.'
 
 interface RichMessage {
   lead: string
@@ -114,8 +118,8 @@ type Message = string | RichMessage
 const objectivesRules: RichMessage['items'] = [
   { text: 'Responde cada objetivo del 1 al 5, según qué tanto te identificas con él.' },
   { tag: '1', text: 'No necesitas escribir nada.' },
-  { tag: '2 a 4', text: 'La justificación es opcional.' },
-  { tag: '5', text: 'Es obligatorio explicar tu respuesta.' }
+  { tag: '2 - 3', text: 'La justificación es opcional.' },
+  { tag: '4 - 5', text: 'Es obligatorio explicar tu respuesta.' }
 ]
 const riasecRules: RichMessage['items'] = [
   { text: 'En cada dimensión, selecciona las habilidades con las que te identifiques.' },
@@ -135,29 +139,22 @@ const tips: Record<Stage, string[]> = {
     'Puedes apoyar tu respuesta con una experiencia de clase, de casa o de un proyecto.',
     'No necesitas valorar todo igual. Explica con tus palabras qué te atrae o qué no te interesa.'
   ],
-  riasec: [
-    'Selecciona las habilidades con las que te identifiques y responde la pregunta abierta para continuar.',
-    'Para tu reflexión, recuerda una situación concreta: ¿qué hiciste y cómo te sentiste?',
-    'Responde desde tu experiencia. No hace falta elegir una habilidad porque otras personas la prefieran.'
-  ],
+  riasec: RIASEC_TIPS,
   waiting: [
     'Tus respuestas ya fueron enviadas. Puedes volver al inicio y regresar desde «Consultar mi evaluación».',
     'Mientras esperas, piensa qué actividades te gustaría conocer mejor de una carrera.',
     'La recomendación será un punto de partida para explorar tus opciones y conversar con un orientador.'
   ]
 }
-const cheers: Record<string, string[]> = {
-  atlas: ['Paso a paso también se llega lejos. Date tiempo para pensar.', 'Tu experiencia merece ser escuchada. Confía en lo que has vivido.'],
-  nova: ['¡Sigamos explorando! La curiosidad empieza con una pregunta.', 'No necesitas tener todas las respuestas sobre tu futuro hoy.'],
-  pixel: ['¡Tu camino tiene sus propios colores! Exprésate a tu manera.', 'Una idea pequeña puede abrir muchas posibilidades. Dale espacio a la tuya.'],
-  orion: ['Cada reflexión es un paso en tu exploración. Voy contigo.', 'No hace falta ver todo el horizonte para dar el siguiente paso.']
-}
+const cheers = AVATAR_CHEERS
 const reaction = ref(0)
 const tipIndex = ref(0)
 const cheerIndex = ref(0)
 const customMessage = ref<Message>('')
 const isReminding = ref(false)
 let remindTimer: ReturnType<typeof setTimeout> | null = null
+const isMidpoint = ref(false)
+let midpointTimer: ReturnType<typeof setTimeout> | null = null
 
 const blockReminder = 'Aún te faltan objetivos por valorar en este bloque. Usa las flechas de la tarjeta para revisarlos antes de continuar.'
 
@@ -171,9 +168,7 @@ const blockPhrases: Record<string, string[]> = {
 const defaultMotivation = computed(() => {
   const options = blockPhrases[props.avatar.id]
   if (props.stage === 'objectives' && props.block > 0 && options) {
-    const phrase = options[(props.block - 1) % options.length]!
-    const label = props.totalBlocks > 0 ? `Bloque ${props.block} de ${props.totalBlocks}. ` : `Bloque ${props.block}. `
-    return `${label}${phrase}`
+    return options[(props.block - 1) % options.length]!
   }
   return (cheers[props.avatar.id] ?? [props.avatar.encouragement])[0]!
 })
@@ -247,6 +242,33 @@ watch(() => props.block, () => {
   cheerIndex.value = 0
 })
 
+const midpointPhrases: Record<string, string> = {
+  atlas: '¡Ya vas a la mitad! Respira, lo estás haciendo muy bien. Falta poco.',
+  nova: '¡Mitad del camino! Lo que queda se va a pasar volando.',
+  pixel: '¡Ya llevas la mitad! Un último empujón y terminamos.',
+  orion: '¡Vas a la mitad del recorrido! Ya falta poco para llegar.'
+}
+
+watch(() => props.midpointPulse, (pulse) => {
+  if (!pulse || props.stage !== 'objectives') return
+  const phrase = midpointPhrases[props.avatar.id] ?? '¡Ya vas a la mitad! Falta poco.'
+  customMessage.value = `Bloque ${props.block} de ${props.totalBlocks}. ${phrase}`
+  reaction.value++
+  isMidpoint.value = false
+  if (midpointTimer) clearTimeout(midpointTimer)
+  requestAnimationFrame(() => { isMidpoint.value = true })
+  midpointTimer = setTimeout(() => { isMidpoint.value = false }, 1100)
+})
+
+watch(() => props.confirmingFinish, (confirming) => {
+  if (!confirming || props.stage !== 'objectives') return
+  customMessage.value = {
+    lead: '¿Estás seguro de que quieres finalizar?',
+    outro: 'Si quieres revisar, toca «Revisar bloques».'
+  }
+  reaction.value++
+})
+
 watch(() => [props.avatar.id, props.stage], () => {
   customMessage.value = ''
   tipIndex.value = 0
@@ -255,6 +277,7 @@ watch(() => [props.avatar.id, props.stage], () => {
 })
 onUnmounted(() => {
   if (remindTimer) clearTimeout(remindTimer)
+  if (midpointTimer) clearTimeout(midpointTimer)
 })
 
 const ratingReactions: Record<number, string[]> = {
@@ -555,6 +578,14 @@ button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 
 .avatar-companion.is-reminding {
   animation: companion-remind-breathe 1.6s ease-in-out;
 }
+.avatar-companion.is-midpoint {
+  animation: companion-midpoint-pulse 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms both;
+}
+@keyframes companion-midpoint-pulse {
+  0% { scale: 1; box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.45); }
+  35% { scale: 1.025; box-shadow: 0 0 0 8px rgba(var(--color-primary-rgb), 0.25); }
+  100% { scale: 1; box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0); }
+}
 @keyframes companion-remind-breathe {
   0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.45); }
   50% { box-shadow: 0 0 0 14px rgba(var(--color-primary-rgb), 0); }
@@ -576,6 +607,7 @@ button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 
   .companion-touch:hover img, .companion-touch:active img { transform: none; }
   .is-reacting { animation: none; }
   .avatar-companion.is-reminding { animation: none; }
+  .avatar-companion.is-midpoint { animation: none; }
   .avatar-companion.is-onboarding { animation: none; }
   .companion-start-btn { animation: none; }
   .avatar-companion.is-celebrating { animation: none; }
