@@ -8,9 +8,9 @@ import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK, isJustificationRequired } from '../config/objectives'
-import { MAX_CRITERIOS_POR_DIMENSION, OPCIONES_VISIBLES_POR_DIMENSION } from '../config/riasec'
+import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
 import { clearAthenaStorage, getEvaluationUuid } from '../utils/evaluationStorage'
-import { pickRandomOptionIds } from '../utils/riasecOptions'
+import { shuffle } from '../utils/riasecOptions'
 import { applyStepperAccent } from '../utils/avatarTheme'
 
 const STORAGE_KEY = 'athena_session_v2'
@@ -221,16 +221,14 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       const order: Record<number, number[]> = {}
       for (const q of this.areaData?.preguntas ?? []) {
         const total = Object.keys(q.opciones).length
-        const expected = Math.min(OPCIONES_VISIBLES_POR_DIMENSION, total)
         const saved = this.riasecOptionOrder[q.riasec_id]
         const isValid = Array.isArray(saved) &&
-          saved.length === expected &&
+          saved.length === total &&
           new Set(saved).size === saved.length &&
           saved.every(id => Object.hasOwn(q.opciones, id))
-        const selected = this.riasecAnswers[q.riasec_id]?.opcionIds ?? []
         order[q.riasec_id] = isValid
           ? [...saved]
-          : pickRandomOptionIds(q.opciones, OPCIONES_VISIBLES_POR_DIMENSION, selected)
+          : shuffle(Object.keys(q.opciones).map(Number))
 
         const answer = this.riasecAnswers[q.riasec_id]
         if (answer) {

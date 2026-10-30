@@ -32,7 +32,7 @@
         </Motion>
       </div>
 
-      <div v-if="block.objectives.length > 1" class="objective-card-nav" role="group" aria-label="Cambiar de pregunta">
+      <div v-if="block.objectives.length > 0" class="objective-card-nav" role="group" aria-label="Cambiar de pregunta">
         <button
           type="button"
           class="stack-nav-btn is-prev"
@@ -266,7 +266,7 @@ function cardTransform(index: number): CardTransform {
     }
   }
 
-  const toRight = direction.value > 0
+  const toRight = direction.value < 0
   return {
     x: toRight ? '140%' : '-140%',
     y: 6,

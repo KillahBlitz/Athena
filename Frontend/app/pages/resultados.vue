@@ -115,6 +115,7 @@ import type { CareerMatch } from '../features/resultados/types'
 import { useResultsApi } from '../composables/useResultsApi'
 import { useAthenaSessionStore } from '../stores/athenaSession'
 import { getEvaluationUuid } from '../utils/evaluationStorage'
+import { getCachedResults, saveCachedResults } from '../utils/resultsStorage'
 
 useHead({
   title: 'ATHENA | Resultados'
@@ -154,6 +155,14 @@ async function loadResults() {
     await router.replace('/riasec')
     return
   }
+  // Si ya obtuvimos los resultados antes, los mostramos directamente sin volver
+  // a consultar la API. Así persisten aunque se cierre y reabra la ventana.
+  const cached = getCachedResults(uuid)
+  if (cached) {
+    careers.value = toCareerMatches(cached)
+    state.value = (careers.value[0]?.match ?? 0) < MIN_TOP_MATCH ? 'low-match' : 'ready'
+    return
+  }
   pendingRequest?.abort()
   const request = new AbortController()
   pendingRequest = request
@@ -165,6 +174,7 @@ async function loadResults() {
       await router.replace('/espera')
       return
     }
+    saveCachedResults(uuid, response.results ?? [])
     careers.value = toCareerMatches(response.results)
     state.value = (careers.value[0]?.match ?? 0) < MIN_TOP_MATCH ? 'low-match' : 'ready'
   } catch (err) {

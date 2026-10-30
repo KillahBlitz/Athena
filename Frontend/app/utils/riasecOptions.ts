@@ -8,14 +8,3 @@ export function shuffle<T>(items: readonly T[]): T[] {
   }
   return result
 }
-
-export function pickRandomOptionIds(
-  opciones: Record<string, string>,
-  limit: number,
-  preferredIds: readonly number[] = []
-): number[] {
-  const available = Object.keys(opciones).map(Number)
-  const preferred = [...new Set(preferredIds)].filter(id => available.includes(id)).slice(0, limit)
-  const rest = shuffle(available.filter(id => !preferred.includes(id))).slice(0, limit - preferred.length)
-  return shuffle([...preferred, ...rest])
-}

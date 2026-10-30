@@ -101,6 +101,29 @@ describe('estado de la evaluación en /espera', () => {
     expect(vi.getTimerCount()).toBe(0)
   })
 
+  it('guarda los resultados al llegar al estado 4 para no volver a esperar', async () => {
+    const results = [{ top: 1, carrera_id: 10, carrera: 'Ingeniería', puntaje: 0.9, escuelas: ['ESCOM'] }]
+    fetchMock.mockResolvedValue({ user_uuid: UUID, status_id: 4, results })
+    mountPage()
+    await flushPromises()
+
+    expect(router.replace).toHaveBeenCalledExactlyOnceWith('/resultados')
+    expect(JSON.parse(localStorage.getItem('athena_results_v1')!)).toEqual({ user_uuid: UUID, results })
+  })
+
+  it('no consulta la API si ya hay resultados cacheados y va directo a resultados', async () => {
+    localStorage.setItem('athena_results_v1', JSON.stringify({
+      user_uuid: UUID,
+      results: [{ top: 1, carrera_id: 10, carrera: 'Ingeniería', puntaje: 0.9, escuelas: ['ESCOM'] }]
+    }))
+    mountPage()
+    await flushPromises()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(router.replace).toHaveBeenCalledExactlyOnceWith('/resultados')
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it('conserva el último estado y vuelve a consultar después de un error', async () => {
     fetchMock.mockResolvedValueOnce({ user_uuid: UUID, status_id: 2 })
       .mockRejectedValueOnce(new Error('Sin conexión'))

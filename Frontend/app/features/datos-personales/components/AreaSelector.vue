@@ -2,7 +2,6 @@
   <div class="area-selection-block">
     <div class="area-block-titles">
       <h3 class="area-block-heading">¿Qué área te gustaría explorar?</h3>
-      <p class="area-block-subheading">Selecciona una opción para comenzar.</p>
     </div>
 
     <ErrorMessage

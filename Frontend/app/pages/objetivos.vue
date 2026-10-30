@@ -66,7 +66,6 @@
           :is-first-block="currentBlock === 1"
           :is-last-block="isLastBlock"
           :block-complete="isCurrentBlockComplete"
-          :confirming-finish="confirmingFinish"
           @next-block="onNextBlock"
           @prev-block="handleBack"
           @review="handleReview"
@@ -92,10 +91,20 @@
         :block="currentBlock"
         :total-blocks="totalBlocks"
         :midpoint-pulse="midpointPulse"
-        :confirming-finish="confirmingFinish"
         @dismiss-onboarding="dismissOnboarding"
       />
     </div>
+
+    <ConfirmDialog
+      :show="confirmingFinish"
+      :avatar="selectedAvatar"
+      title="Antes de finalizar"
+      message="¿Estás seguro de que quieres finalizar esta etapa? Aún puedes volver a revisar tus respuestas."
+      confirm-label="Sí, quiero finalizar"
+      cancel-label="Revisar respuestas"
+      @confirm="confirmFinish"
+      @cancel="cancelFinish"
+    />
   </div>
 </template>
 
@@ -105,6 +114,7 @@ import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
 import ObjectiveGrid from '../features/objetivos/components/ObjectiveGrid.vue'
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue'
 // import BaseButton from '../components/ui/BaseButton.vue'
 // import StageCelebration from '../components/ui/StageCelebration.vue'
 import { hasSeenObjectivesOnboarding, markObjectivesOnboardingSeen } from '../utils/objectivesOnboardingStorage'
@@ -154,6 +164,15 @@ function onNextBlock() {
     return
   }
   handleNext()
+}
+
+function confirmFinish() {
+  confirmingFinish.value = false
+  handleNext()
+}
+
+function cancelFinish() {
+  confirmingFinish.value = false
 }
 
 function handleReview() {

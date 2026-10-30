@@ -1,59 +1,27 @@
 <template>
   <div class="riasec-page">
-    <div class="objectives-header-row">
-      <div class="objectives-title-group">
-        <span class="eyebrow">
-          <span>✦</span>
-          <span>EXPLORA TUS HABILIDADES · RISEC</span>
-        </span>
-        <h1 class="page-title">Tu curiosidad también es una señal.</h1>
-        <p class="page-description">
-          Explora una dimensión a la vez y reconoce lo que se te da bien.
-        </p>
-      </div>
-
-      <div class="riasec-progress" role="region" aria-label="Progreso RISEC">
-        <div class="progress-labels-row">
-          <span>Dimensión {{ progress.currentQuestion }} de {{ progress.totalQuestions }}</span>
-          <span class="riasec-progress-dimension">{{ currentDimension.name }}</span>
-        </div>
-        <div
-          class="progress-track"
-          role="progressbar"
-          :aria-valuenow="progress.percentage"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          :aria-label="`Progreso: ${progress.percentage}%`"
-        >
-          <div class="progress-fill" :style="{ width: `${progress.percentage}%` }" />
-        </div>
-      </div>
-    </div>
-
     <Transition name="onboarding-backdrop-fade">
       <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
     </Transition>
 
     <RiasecDimensionTabs :tabs="tabs" @select="goToDimension" />
 
-    <!--
-    <StageCelebration
-      :show="isCompleted"
-      title="¡Has explorado todas las dimensiones!"
-      message="Tus habilidades y reflexiones están listas. Revísalas o finaliza el test para enviar tus resultados."
-    >
-      <BaseButton variant="outline" size="sm" :disabled="isSubmitting" @click="handleBack">
-        Revisar respuestas
-      </BaseButton>
-      <BaseButton variant="primary" size="sm" :loading="isSubmitting" @click="handleFinish">
-        <span>{{ isSubmitting ? 'Guardando...' : 'Finalizar' }}</span>
-        <template v-if="!isSubmitting" #suffix>
-          <span aria-hidden="true">→</span>
-        </template>
-      </BaseButton>
-    </StageCelebration>
-    -->
-
+    <div class="riasec-progress" role="region" aria-label="Progreso RISEC">
+      <div class="progress-labels-row">
+        <span>Dimensión {{ progress.currentQuestion }} de {{ progress.totalQuestions }}</span>
+        <span class="riasec-progress-dimension">{{ currentDimension.name }}</span>
+      </div>
+      <div
+        class="progress-track"
+        role="progressbar"
+        :aria-valuenow="progress.percentage"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-label="`Progreso: ${progress.percentage}%`"
+      >
+        <div class="progress-fill" :style="{ width: `${progress.percentage}%` }" />
+      </div>
+    </div>
     <ErrorMessage
       v-if="submitError"
       class="riasec-submit-error"
@@ -95,9 +63,9 @@
 
               <template #footer>
                 <div class="objectives-block-nav riasec-dimension-nav">
-                  <button type="button" class="block-nav-btn is-back" :class="{ 'is-attention': confirmingFinish }" @click="handleBack">
+                  <button type="button" class="block-nav-btn is-back" @click="handleBack">
                     <span aria-hidden="true">←</span>
-                    <span>Atrás</span>
+                    <span>Volver</span>
                   </button>
                   <span class="objectives-block-nav-hint">
                     {{ nextDimension ? `A continuación: ${nextDimension.name}` : 'Última dimensión' }}
@@ -113,7 +81,7 @@
                     <span v-if="isCurrentComplete && !isSubmitting" class="block-nav-sparkles" aria-hidden="true">
                       <span v-for="n in 5" :key="n" class="block-nav-sparkle" :style="{ '--i': n }">✦</span>
                     </span>
-                    <span>{{ isSubmitting ? 'Guardando...' : isLastQuestion ? (confirmingFinish ? 'Sí, quiero finalizar' : 'Finalizar etapa') : 'Siguiente' }}</span>
+                    <span>{{ isSubmitting ? 'Guardando...' : isLastQuestion ? 'Finalizar etapa' : 'Avanzar de sección' }}</span>
                     <span v-if="!isSubmitting" aria-hidden="true">→</span>
                   </button>
                 </div>
@@ -133,7 +101,6 @@
                 :selection-limit="selectionLimit"
                 :stage-complete="isLastQuestion && isCurrentComplete"
                 :is-last-dimension="isLastQuestion"
-                :confirming-finish="confirmingFinish"
               />
             </div>
           </div>
@@ -149,6 +116,17 @@
         @dismiss-onboarding="dismissOnboarding"
       />
     </template>
+
+    <ConfirmDialog
+      :show="confirmingFinish"
+      :avatar="selectedAvatar"
+      title="Antes de finalizar"
+      message="¿Estás seguro de que quieres finalizar esta etapa? Aún puedes volver a revisar tus respuestas."
+      confirm-label="Sí, quiero finalizar"
+      cancel-label="Revisar respuestas"
+      @confirm="confirmFinish"
+      @cancel="cancelFinish"
+    />
   </div>
 </template>
 
@@ -161,6 +139,7 @@ import RiasecQuestionCard from '../features/riasec/components/RiasecQuestionCard
 import RiasecConnectionsPanel from '../features/riasec/components/RiasecConnectionsPanel.vue'
 import RiasecReflection from '../features/riasec/components/RiasecReflection.vue'
 import AvatarStoryCard from '../features/riasec/components/AvatarStoryCard.vue'
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue'
 // import BaseButton from '../components/ui/BaseButton.vue'
 // import StageCelebration from '../components/ui/StageCelebration.vue'
 import ErrorMessage from '../components/ui/ErrorMessage.vue'
@@ -217,6 +196,15 @@ function onNextDimension() {
     return
   }
   storyCard.value?.remind(currentAnswer.value.opcionIds.length === 0 ? 'skills' : 'reflection')
+}
+
+function confirmFinish() {
+  confirmingFinish.value = false
+  handleNext()
+}
+
+function cancelFinish() {
+  confirmingFinish.value = false
 }
 
 const showOnboarding = ref(false)

@@ -4,18 +4,6 @@
   gap: 1.5rem;
 }
 
-.riasec-page .objectives-header-row {
-  align-items: flex-start;
-}
-
-.riasec-page .objectives-title-group {
-  max-width: none;
-}
-
-.riasec-page .page-description {
-  margin-bottom: 0;
-}
-
 .riasec-progress {
   display: flex;
   flex-direction: column;
@@ -25,14 +13,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-}
-
-@media (min-width: 1024px) {
-  .riasec-progress {
-    flex-shrink: 0;
-    width: 360px;
-    margin-top: 2.4rem;
-  }
 }
 
 .riasec-progress .progress-labels-row {
@@ -456,12 +436,6 @@
   fill: var(--color-primary);
 }
 
-.riasec-connections-message {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
 .riasec-connections-avatar {
   width: 48px;
   height: 48px;
@@ -477,13 +451,6 @@
   width: 80%;
   height: 80%;
   object-fit: contain;
-}
-
-.riasec-connections-message strong {
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--color-text-main);
 }
 
 .riasec-connections-note {

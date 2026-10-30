@@ -61,6 +61,7 @@ import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../stores/athenaSession'
 import { EVALUATION_UUID_KEY, getEvaluationUuid } from '../utils/evaluationStorage'
+import { hasCachedResults, saveCachedResults } from '../utils/resultsStorage'
 import { useMotionPresets } from '../composables/useMotionPresets'
 import { useResultsApi } from '../composables/useResultsApi'
 import type { GetResultsResponseDTO } from '../types/api'
@@ -120,6 +121,7 @@ const refreshStatus = async () => {
     statusId.value = result.status_id
     statusError.value = null
     if (result.status_id === 4) {
+      saveCachedResults(uuid, result.results ?? [])
       stopPolling()
       await router.replace('/resultados')
     }
@@ -140,8 +142,15 @@ const handleStorageChange = (event: StorageEvent) => {
 }
 
 onMounted(() => {
-  if (!getEvaluationUuid()) {
+  const uuid = getEvaluationUuid()
+  if (!uuid) {
     router.replace('/riasec')
+    return
+  }
+  // Si la evaluación ya terminó y los resultados están cacheados, no volvemos a
+  // esperar ni a consultar la API: vamos directo a resultados.
+  if (hasCachedResults(uuid)) {
+    router.replace('/resultados')
     return
   }
   session.restore()

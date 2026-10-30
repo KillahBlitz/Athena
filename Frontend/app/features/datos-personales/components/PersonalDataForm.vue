@@ -9,10 +9,6 @@
         <span>Estoy aquí para acompañarte</span>
       </div>
 
-      <div class="companion-panel-text">
-        <h2 class="companion-panel-heading">Siéntete acompañado en tu aventura</h2>
-      </div>
-
       <AvatarSelector
         :avatars="avatarsList"
         :selected-id="form.selectedAvatarId"
@@ -98,7 +94,7 @@
       <div class="form-actions-row">
         <NuxtLink to="/" class="back-text-btn">
           <span aria-hidden="true">←</span>
-          <span>Atrás</span>
+          <span>Volver</span>
         </NuxtLink>
 
         <BaseButton

@@ -1,8 +1,8 @@
 <template>
-  <aside class="riasec-connections" aria-label="Nuevas conexiones">
+  <aside class="riasec-connections" aria-label="Conexiones">
     <span class="riasec-connections-eyebrow">
       <span aria-hidden="true">✦</span>
-      <span>NUEVAS CONEXIONES</span>
+      <span>CONEXIONES</span>
     </span>
 
     <svg class="riasec-constellation" viewBox="0 0 240 190" fill="none" aria-hidden="true">
@@ -22,10 +22,6 @@
         :class="{ 'is-selected': node.selected }"
       />
     </svg>
-
-    <div class="riasec-connections-message">
-      <strong>Cada habilidad revela algo único de ti.</strong>
-    </div>
   </aside>
 </template>
 
