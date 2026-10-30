@@ -8,8 +8,9 @@ import type { SaveUserRequestDTO } from '../types/api'
 import { AVATARS, DEFAULT_AVATAR } from '../config/avatars'
 import { createObjectiveBlocks, normalizeObjectives } from '../features/objetivos/utils/createObjectiveBlocks'
 import { OBJECTIVES_PER_BLOCK, isJustificationRequired } from '../config/objectives'
-import { MAX_CRITERIOS_POR_DIMENSION } from '../config/riasec'
+import { MAX_CRITERIOS_POR_DIMENSION, OPCIONES_VISIBLES_POR_DIMENSION } from '../config/riasec'
 import { clearAthenaStorage, getEvaluationUuid } from '../utils/evaluationStorage'
+import { pickRandomOptionIds } from '../utils/riasecOptions'
 import { applyStepperAccent } from '../utils/avatarTheme'
 
 const STORAGE_KEY = 'athena_session_v2'
@@ -29,6 +30,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     answers: {} as Record<number, { valoracion: RatingValue | null; justificacion: string }>,
     currentBlock: 1,
     riasecAnswers: {} as Record<number, RiasecAnswer>,
+    riasecOptionOrder: {} as Record<number, number[]>,
     currentRiasecIndex: 0,
     status: 'idle' as 'idle' | 'in-progress' | 'objectives-completed' | 'riasec-completed'
   }),
@@ -196,6 +198,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         this.answers = {}
         this.currentBlock = 1
         this.riasecAnswers = {}
+        this.riasecOptionOrder = {}
         this.currentRiasecIndex = 0
         this.status = 'in-progress'
         this.persist()
@@ -207,9 +210,37 @@ export const useAthenaSessionStore = defineStore('athena-session', {
       this.objectives = normalizeObjectives(areaData.objetivos)
       this.currentBlock = 1
       this.riasecAnswers = {}
+      this.riasecOptionOrder = {}
+      this.syncRiasecOptionOrder()
       this.currentRiasecIndex = 0
       this.status = 'in-progress'
       this.persist()
+    },
+
+    syncRiasecOptionOrder() {
+      const order: Record<number, number[]> = {}
+      for (const q of this.areaData?.preguntas ?? []) {
+        const total = Object.keys(q.opciones).length
+        const expected = Math.min(OPCIONES_VISIBLES_POR_DIMENSION, total)
+        const saved = this.riasecOptionOrder[q.riasec_id]
+        const isValid = Array.isArray(saved) &&
+          saved.length === expected &&
+          new Set(saved).size === saved.length &&
+          saved.every(id => Object.hasOwn(q.opciones, id))
+        const selected = this.riasecAnswers[q.riasec_id]?.opcionIds ?? []
+        order[q.riasec_id] = isValid
+          ? [...saved]
+          : pickRandomOptionIds(q.opciones, OPCIONES_VISIBLES_POR_DIMENSION, selected)
+
+        const answer = this.riasecAnswers[q.riasec_id]
+        if (answer) {
+          const visible = order[q.riasec_id]!
+          answer.opcionIds = (answer.opcionIds ?? [])
+            .filter(id => visible.includes(id))
+            .slice(0, MAX_CRITERIOS_POR_DIMENSION)
+        }
+      }
+      this.riasecOptionOrder = order
     },
 
     setAnswer(carreraId: number, rating?: RatingValue | null, justificacion?: string) {
@@ -310,6 +341,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             answers: this.answers,
             currentBlock: this.currentBlock,
             riasecAnswers: this.riasecAnswers,
+            riasecOptionOrder: this.riasecOptionOrder,
             currentRiasecIndex: this.currentRiasecIndex,
             status: this.status
           }
@@ -328,6 +360,8 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             this.$patch(data)
             if (this.areaData) {
               this.objectives = normalizeObjectives(this.areaData.objetivos)
+              this.syncRiasecOptionOrder()
+              this.persist()
             }
             this.clampCurrentBlock()
           }

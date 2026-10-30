@@ -49,11 +49,12 @@ export function useRiasecForm() {
     return next ? getRiasecDimension(next.riasec_id) : null
   })
   const currentOptions = computed<RiasecOption[]>(() => {
-    if (!currentQuestion.value) return []
-    return Object.entries(currentQuestion.value.opciones).map(([id, texto]) => ({
-      opcionId: Number(id),
-      texto
-    }))
+    const question = currentQuestion.value
+    if (!question) return []
+    const order = session.riasecOptionOrder[question.riasec_id] ?? []
+    return order
+      .filter(id => Object.hasOwn(question.opciones, id))
+      .map(id => ({ opcionId: id, texto: question.opciones[id]! }))
   })
   const currentAnswer = computed<RiasecAnswer>(() => getAnswerFor(currentQuestion.value?.riasec_id ?? -1))
   const isSelectionLimitReached = computed<boolean>(
