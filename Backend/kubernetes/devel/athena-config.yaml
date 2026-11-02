@@ -4,9 +4,9 @@ metadata:
   name: athena-config
   namespace: dev-athena
 data:
-  DB_HOST: "34.61.68.60"
+  DB_HOST: "100.95.220.1"
   DB_PORT: "5432"
-  DB_USER: "postgres"
+  DB_USER: "admin"
   DB_NAME: "athena"
   DB_CONECTION: "athena"
   REDIS_HOST: "redis-service"

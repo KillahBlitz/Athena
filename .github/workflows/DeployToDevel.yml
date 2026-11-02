@@ -1,4 +1,4 @@
-name: Athena CI/CD to GKE
+name: Athena CI/CD (Development - Local K3s)
 
 on:
   push:
@@ -112,7 +112,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           IMAGE_TAG="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:${{ github.sha }}"
-          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:latest"
+          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:devel-latest"
           docker build -t $IMAGE_TAG -t $IMAGE_LATEST ./Backend
           docker push us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend --all-tags
 
@@ -121,33 +121,38 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           IMAGE_TAG="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:${{ github.sha }}"
-          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:latest"
+          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:devel-latest"
           docker build -t $IMAGE_TAG -t $IMAGE_LATEST ./Frontend
           docker push us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend --all-tags
 
   # -------------------------------------------------------------
-  # FASE 3: DESPLIEGUE DIRECTO EN GKE (athena-cluster)
+  # FASE 3: DESPLIEGUE EN CLÚSTER K3S LOCAL (Servidor kinasis-root)
   # -------------------------------------------------------------
-  deploy-to-gke:
-    name: Deploy to Athena GKE Cluster
+  deploy-to-local-k3s:
+    name: Deploy to Local K3s (dev-athena)
     needs: [build-and-push]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, k3s-devel]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Autenticación en Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Validar estado del clúster K3s local
+        run: |
+          echo "Conexion al servidor local exitosa."
+          kubectl get nodes
+          echo "Verificando el entorno aislado (dev-athena)..."
+          kubectl get pods -n dev-athena
 
-      - name: Conectar kubectl con el clúster GKE
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: athena-cluster
-          location: us-central1-a
+      - name: Autenticar Runner en Artifact Registry
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > "${HOME}/key.json"
+          gcloud auth activate-service-account --key-file="${HOME}/key.json"
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+          rm "${HOME}/key.json"
 
-      - name: Desplegar manifiestos en namespace dev-athena
+      - name: Desplegar manifiestos de desarrollo en K3s
         env:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
@@ -161,7 +166,7 @@ jobs:
           sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/devel/athena-constructor/deployment.yaml
           sed -i "s|__IMAGE__|$FRONTEND_IMAGE|g" Backend/kubernetes/devel/athena-frontend/deployment.yaml
 
-          # Aplicar ConfigMap y Redis
+          # Aplicar ConfigMap local (apunta a BD local 100.95.220.1) y Redis
           kubectl apply -f Backend/kubernetes/devel/athena-config.yaml -n dev-athena
           kubectl apply -f Backend/kubernetes/devel/redis.yaml -n dev-athena
 
@@ -173,4 +178,4 @@ jobs:
           kubectl apply -f Backend/kubernetes/devel/athena-frontend/ -n dev-athena
           kubectl apply -f Backend/kubernetes/devel/ingress.yaml -n dev-athena
 
-          echo " Despliegue completado con éxito en el namespace dev-athena."
+          echo "Despliegue completado con exito en el servidor local K3s (dev-athena)."
