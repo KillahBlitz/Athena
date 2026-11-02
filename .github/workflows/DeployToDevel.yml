@@ -1,4 +1,4 @@
-name: Athena CI/CD (Development - Local K3s)
+name: Deploy - Devel (Local K3s)
 
 on:
   push:

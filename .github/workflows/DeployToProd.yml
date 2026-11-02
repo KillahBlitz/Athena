@@ -1,4 +1,4 @@
-name: Athena CI/CD to GKE (Production)
+name: Deploy - Prod (GCP GKE)
 
 on:
   push:
