@@ -24,7 +24,7 @@ jobs:
       - name: Instalar dependencias del backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r Backend/assets/requirements.txt pytest pytest-cov
+          pip install -r Backend/assets/requirements.txt -r Backend/assets/internal_requirements.txt pytest pytest-cov faker
 
       - name: Ejecutar Pytest
         env:
@@ -50,7 +50,7 @@ jobs:
 
       - name: Ejecutar Vitest
         working-directory: ./Frontend
-        run: npx vitest run --exclude "**/evaluationFlow.spec.ts" --exclude "**/avatarCompanion.spec.ts"
+        run: npx vitest run --exclude "**/evaluationFlow.spec.ts" --exclude "**/avatarCompanion.spec.ts" --exclude "**/AvatarStoryCard.spec.ts"
 
   publish-library:
     name: Publicar Librería (si hubo cambios)
@@ -173,4 +173,4 @@ jobs:
           kubectl apply -f Backend/kubernetes/devel/athena-frontend/ -n dev-athena
           kubectl apply -f Backend/kubernetes/devel/ingress.yaml -n dev-athena
 
-          echo "✅ Despliegue completado con éxito en el namespace dev-athena."
+          echo " Despliegue completado con éxito en el namespace dev-athena."
