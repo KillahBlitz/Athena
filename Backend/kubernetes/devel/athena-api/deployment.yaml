@@ -12,7 +12,7 @@ spec:
     matchLabels:
       app: athena-api
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:

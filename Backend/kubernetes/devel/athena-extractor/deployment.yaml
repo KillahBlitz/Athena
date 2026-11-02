@@ -12,7 +12,7 @@ spec:
     matchLabels:
       app: athena-extractor
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:

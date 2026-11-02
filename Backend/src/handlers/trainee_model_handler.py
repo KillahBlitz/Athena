@@ -108,7 +108,7 @@ class TraineeModelHandler:
         mae_por_carrera = error.groupby(vectores["llaves_val"]["carrera_id"]).mean().round(4)
         return metricas, {int(c): float(v) for c, v in mae_por_carrera.items()}
 
-    def _train_area(self, area_id: int) -> TrainedModel:
+    def _train_area(self, area_id: int) -> TrainedModel | None:
         print(f"\n[Área {area_id}] Extrayendo datos de entrenamiento y validación...")
         trainee_data = TraineeData(**self._load_area_data(area_id))
         usuarios = trainee_data.piezas.usuarios.datos["type_user"].value_counts()
@@ -118,6 +118,10 @@ class TraineeModelHandler:
               f"{usuarios.get(TYPE_VALIDACION, 0):,} de validación")
         for nombre, pieza in trainee_data.piezas:
             print(f"[Área {area_id}]   {nombre}: {len(pieza.datos):,} filas")
+
+        if usuarios.get(TYPE_ENTRENAMIENTO, 0) == 0:
+            print(f"[Área {area_id}] Sin datos sintéticos de entrenamiento. Modelo en espera.")
+            return None
 
         vectores = self._vectorize(trainee_data)
         print(f"[Área {area_id}] Vectorizado: "
@@ -145,11 +149,11 @@ class TraineeModelHandler:
             3: self.start_trainee_model_area_3(),
         }
 
-    def start_trainee_model_area_1(self) -> TrainedModel:
+    def start_trainee_model_area_1(self) -> TrainedModel | None:
         return self._train_area(1)
 
-    def start_trainee_model_area_2(self) -> TrainedModel:
+    def start_trainee_model_area_2(self) -> TrainedModel | None:
         return self._train_area(2)
 
-    def start_trainee_model_area_3(self) -> TrainedModel:
+    def start_trainee_model_area_3(self) -> TrainedModel | None:
         return self._train_area(3)
