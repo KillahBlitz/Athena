@@ -166,7 +166,7 @@ jobs:
           sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/devel/athena-constructor/deployment.yaml
           sed -i "s|__IMAGE__|$FRONTEND_IMAGE|g" Backend/kubernetes/devel/athena-frontend/deployment.yaml
 
-          # Aplicar ConfigMap local (apunta a BD local 100.95.220.1) y Redis
+          # Aplicar ConfigMap local y Redis
           kubectl apply -f Backend/kubernetes/devel/athena-config.yaml -n dev-athena
           kubectl apply -f Backend/kubernetes/devel/redis.yaml -n dev-athena
 
