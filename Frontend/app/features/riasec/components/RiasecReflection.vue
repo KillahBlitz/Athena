@@ -27,17 +27,20 @@
       v-if="!locked"
       :id="`riasec-open-${riasecId}`"
       :value="modelValue"
-      class="justification-textarea"
+      ref="textarea"
+      class="justification-textarea riasec-reflection-textarea"
       placeholder="Cuéntanos con tus propias palabras..."
-      rows="5"
+      rows="2"
       required
-      @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
+      @input="onInput"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { nextTick, ref, watch } from 'vue'
+
+const props = defineProps<{
   riasecId: number
   dimensionName: string
   question: string
@@ -45,9 +48,27 @@ defineProps<{
   locked: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:modelValue': [text: string]
 }>()
+
+// Starts short and grows with the text (capped in CSS by max-height).
+const textarea = ref<HTMLTextAreaElement | null>(null)
+
+function autoGrow() {
+  const el = textarea.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = `${el.scrollHeight + 2}px`
+}
+
+function onInput(event: Event) {
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value)
+  autoGrow()
+}
+
+// Fit saved answers when the field appears or the dimension changes.
+watch(() => [props.locked, props.riasecId], () => nextTick(autoGrow), { immediate: true })
 </script>
 
 <style scoped>

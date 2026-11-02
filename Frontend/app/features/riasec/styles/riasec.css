@@ -1,52 +1,138 @@
 .riasec-page {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.riasec-progress {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 1rem 1.25rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-
-.riasec-progress .progress-labels-row {
-  font-size: 0.85rem;
-  color: var(--color-text-main);
-  margin-bottom: 0.6rem;
-}
-
-.riasec-progress-dimension {
-  font-weight: 500;
-  color: var(--color-text-muted);
+  gap: 1rem;
 }
 
 .riasec-tabs {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.5rem 0.75rem;
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xl);
+}
+
+.riasec-tabs-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.riasec-tabs-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
 }
 
-.riasec-tabs::-webkit-scrollbar {
+.riasec-tabs-list::-webkit-scrollbar {
   display: none;
 }
 
 @media (min-width: 1024px) {
-  .riasec-tabs {
+  .riasec-tabs-list {
     justify-content: space-between;
     overflow-x: visible;
+  }
+}
+
+.riasec-tabs-progress {
+  position: relative;
+  height: 8px;
+  margin: 0 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  overflow: hidden;
+}
+
+/*
+ * Puntos del tamaño de la barra, en el color principal del avatar (--color-primary).
+ * Cada punto sale del extremo derecho y se desliza hacia la izquierda
+ * hasta apilarse en el frente, llenando la barra hasta el progreso actual.
+ */
+.riasec-progress-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  transform: translateX(var(--x));
+  animation: riasec-progress-dot-in 450ms var(--ease-out, ease-out) var(--enter-delay, 0ms) backwards;
+}
+
+/* Al retroceder, los puntos sobrantes regresan al extremo derecho, el del frente primero */
+.riasec-progress-dot.riasec-dot-leave-active {
+  animation: riasec-progress-dot-out 450ms ease-in var(--leave-delay, 0ms) forwards;
+}
+
+@keyframes riasec-progress-dot-out {
+  from {
+    transform: translateX(var(--x)) scale(1);
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(var(--dot-start, 0px)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Punto en el frente: late suave cuando la fila ya llegó, para que no se vea estática */
+.riasec-progress-dot.is-next {
+  opacity: 0;
+  animation: riasec-progress-dot-pulse 1.2s ease-in-out infinite both;
+}
+
+@keyframes riasec-progress-dot-in {
+  from {
+    transform: translateX(var(--dot-start, 0px)) scale(0.4);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(var(--x)) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes riasec-progress-dot-pulse {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(var(--x)) scale(0.6);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(var(--x)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .riasec-progress-dot,
+  .riasec-progress-dot.is-next,
+  .riasec-progress-dot.riasec-dot-leave-active {
+    animation: none;
   }
 }
 
@@ -104,13 +190,13 @@
 .riasec-dimension {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .riasec-main-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(1rem, 2.5vw, 1.5rem);
+  gap: clamp(0.85rem, 2vw, 1.25rem);
   align-items: stretch;
 }
 
@@ -137,8 +223,8 @@
 .riasec-card {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: clamp(1.25rem, 3vw, 1.75rem);
+  gap: 0.9rem;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
@@ -153,8 +239,8 @@
 }
 
 .riasec-dimension-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -164,8 +250,8 @@
 }
 
 .riasec-dimension-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 
 .riasec-dimension-name {
@@ -183,10 +269,10 @@
 
 .riasec-question-text {
   font-family: var(--font-display);
-  font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
+  font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.3rem);
   font-weight: 600;
   text-wrap: pretty;
-  line-height: 1.35;
+  line-height: 1.3;
   color: var(--color-text-main);
 }
 
@@ -194,7 +280,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: 1fr;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 @media (min-width: 480px) {
@@ -203,7 +289,7 @@
   }
 
   .riasec-option {
-    min-height: 84px;
+    min-height: 64px;
   }
 }
 
@@ -217,9 +303,9 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.75rem;
+  gap: 0.4rem;
   min-height: var(--tap-target);
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.85rem;
   text-align: left;
   background-color: var(--color-surface-hover);
   border: 1.5px solid var(--color-border);
@@ -462,8 +548,8 @@
 .riasec-reflection {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: clamp(1rem, 3vw, 1.25rem) clamp(1rem, 3vw, 1.5rem);
+  gap: 0.6rem;
+  padding: 0.75rem clamp(0.85rem, 2.5vw, 1.15rem);
   background-color: var(--color-surface);
   border: 1px solid var(--color-primary-border);
   border-radius: var(--radius-xl);
@@ -516,6 +602,16 @@
 .riasec-reflection-question {
   font-size: 0.95rem;
   color: var(--color-text-main);
+}
+
+/* Empieza en 2 filas y crece con el texto hasta un tope */
+.riasec-reflection-textarea {
+  min-height: 64px;
+  max-height: 200px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.95rem;
+  resize: none;
+  overflow-y: auto;
 }
 
 .riasec-reflection-status {
@@ -600,7 +696,7 @@
 
 .objectives-block-nav.riasec-dimension-nav {
   max-width: none;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   padding-bottom: 0;
   border-top: 1px solid var(--color-border);
 }

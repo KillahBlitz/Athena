@@ -4,24 +4,13 @@
       <div v-if="showOnboarding" class="onboarding-backdrop" @click="dismissOnboarding" />
     </Transition>
 
-    <RiasecDimensionTabs :tabs="tabs" @select="goToDimension" />
-
-    <div class="riasec-progress" role="region" aria-label="Progreso RISEC">
-      <div class="progress-labels-row">
-        <span>Dimensión {{ progress.currentQuestion }} de {{ progress.totalQuestions }}</span>
-        <span class="riasec-progress-dimension">{{ currentDimension.name }}</span>
-      </div>
-      <div
-        class="progress-track"
-        role="progressbar"
-        :aria-valuenow="progress.percentage"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        :aria-label="`Progreso: ${progress.percentage}%`"
-      >
-        <div class="progress-fill" :style="{ width: `${progress.percentage}%` }" />
-      </div>
-    </div>
+    <RiasecDimensionTabs
+      :tabs="tabs"
+      :percentage="progress.percentage"
+      :current="progress.currentQuestion"
+      :total="progress.totalQuestions"
+      @select="goToDimension"
+    />
     <ErrorMessage
       v-if="submitError"
       class="riasec-submit-error"
@@ -237,5 +226,12 @@ function dismissOnboarding() {
 .onboarding-backdrop-fade-enter-from,
 .onboarding-backdrop-fade-leave-to {
   opacity: 0;
+}
+</style>
+
+<style>
+/* Less space between the header and the tabs on this page so the whole block fits */
+body:has(.riasec-page) .main-content {
+  padding-top: clamp(0.5rem, 1.2vw, 0.85rem);
 }
 </style>
