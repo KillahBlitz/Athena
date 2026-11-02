@@ -30,8 +30,8 @@ spec:
                 name: athena-secret
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "150m"
+              memory: "128Mi"
+              cpu: "50m"
             limits:
               memory: "512Mi"
               cpu: "500m"
