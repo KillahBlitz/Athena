@@ -63,4 +63,9 @@ htmlcov/
 .nox/
 .pytype/
 *.log
-\n# Ignore __init__.py files only in the Backend directory\nBackend/**/__init__.py
+
+# Scripts y documentacion local
+Backend/start.sh
+Backend/start_workers.sh
+docs/
+
