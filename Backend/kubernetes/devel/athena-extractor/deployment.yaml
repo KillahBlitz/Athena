@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-extractor
+  namespace: dev-athena
+  labels:
+    app: athena-extractor
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-extractor
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: athena-extractor
+    spec:
+      containers:
+        - name: athena-extractor
+          image: __IMAGE__
+          imagePullPolicy: Always
+          args: ["src/tasks/extractor_event_handler.py"]
+          envFrom:
+            - configMapRef:
+                name: athena-config
+            - secretRef:
+                name: athena-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      restartPolicy: Always

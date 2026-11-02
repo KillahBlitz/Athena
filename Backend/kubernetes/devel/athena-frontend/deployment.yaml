@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-frontend
+  namespace: dev-athena
+  labels:
+    app: athena-frontend
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-frontend
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: athena-frontend
+    spec:
+      containers:
+        - name: athena-frontend
+          image: __IMAGE__
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: NITRO_HOST
+              value: "0.0.0.0"
+            - name: NITRO_PORT
+              value: "3000"
+            - name: NUXT_PUBLIC_API_BASE
+              value: "/api"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: athena-frontend-service
+  namespace: dev-athena
+  labels:
+    app: athena-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: athena-frontend
+  ports:
+    - port: 3000
+      targetPort: 3000

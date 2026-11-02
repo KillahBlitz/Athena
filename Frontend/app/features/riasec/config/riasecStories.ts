@@ -3,6 +3,8 @@ export interface StoryScene {
   line: string
 }
 
+export const STORY_SCENE_COUNT = 3
+
 const STORIES: Record<number, string[]> = {
   1: [
     '{avatar} encontró un taller lleno de piezas sueltas.',
@@ -30,8 +32,9 @@ const STORIES: Record<number, string[]> = {
     'Liderar es dar el primer paso aunque dé miedo.'
   ],
   6: [
-    'Paso a paso, todo tomó su lugar.',
-    'El orden convierte el caos en resultados.'
+    '{avatar} vio cómo, paso a paso, todo tomó su lugar.',
+    'El orden convierte el caos en resultados.',
+    'Organizar es el puente entre una idea y su realidad.'
   ]
 }
 
@@ -48,12 +51,12 @@ const REACTIONS = ['¡Buena elección!', '¡Eso dice mucho de ti!', '¡Sigue as�
 export function storyFor(riasecId: number, avatarName: string): StoryScene[] {
   const lines = STORIES[riasecId] ?? FALLBACK_STORY
   return lines.map((line, index) => ({
-    title: SCENE_TITLES[index] ?? '',
-    line: line.replaceAll('{avatar}', avatarName)
+    title: SCENE_TITLES[index] ?? `Momento ${index + 1}`,
+    line: line.replace('{avatar}', avatarName)
   }))
 }
 
-export function reactionFor(selectionCount: number): string {
-  const index = (Math.max(1, selectionCount) - 1) % REACTIONS.length
-  return REACTIONS[index] ?? REACTIONS[0]!
+export function reactionFor(index: number): string {
+  const normalizedIndex = Math.abs(index) === 0 ? 0 : Math.abs(index) - 1
+  return REACTIONS[normalizedIndex % REACTIONS.length] ?? '¡Bien!'
 }

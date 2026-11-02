@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-api
+  namespace: dev-athena
+  labels:
+    app: athena-api
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-api
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: athena-api
+    spec:
+      containers:
+        - name: athena-api
+          image: __IMAGE__
+          imagePullPolicy: Always
+          command: ["uvicorn"]
+          args: ["src.main.endpoints:api", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: athena-config
+            - secretRef:
+                name: athena-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: athena-api-service
+  namespace: dev-athena
+  labels:
+    app: athena-api
+spec:
+  type: ClusterIP
+  selector:
+    app: athena-api
+  ports:
+    - port: 8000
+      targetPort: 8000
