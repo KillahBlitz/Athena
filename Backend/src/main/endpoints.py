@@ -5,7 +5,12 @@ from models.request.save_user_request import SaveUserRequest
 from models.response.questionary_response import QuestionaryResponse
 from models.response.result_response import ResultResponse
 
-api = fastapi.FastAPI(title="Athena API", version="1.0.0")
+api = fastapi.FastAPI(
+    title="Athena API",
+    version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+)
 
 api.add_middleware(
     CORSMiddleware,
@@ -19,10 +24,12 @@ ah = ApiHandler()
 
 @api.get("/")
 @api.get("/health")
+@api.get("/api/health")
 def health_check():
     return {"status": "ok", "service": "athena-api"}
 
 @api.get("/get_areas")
+@api.get("/api/get_areas")
 def get_areas():
     result = ah.get_areas()
     if result is None:
@@ -30,6 +37,7 @@ def get_areas():
     return result
 
 @api.get("/{area_id}", response_model=QuestionaryResponse)
+@api.get("/api/{area_id}", response_model=QuestionaryResponse)
 def get_area_data(area_id: int):
     result = ah.get_area_data(area_id)
     if result is None:
@@ -37,6 +45,7 @@ def get_area_data(area_id: int):
     return result
 
 @api.post("/save-user")
+@api.post("/api/save-user")
 def save_user(payload: SaveUserRequest) -> str:
     result = ah.generate_user_event(payload)
     if result is None:
@@ -44,6 +53,7 @@ def save_user(payload: SaveUserRequest) -> str:
     return result
 
 @api.get("/get-results/{user_uuid}", response_model=ResultResponse)
+@api.get("/api/get-results/{user_uuid}", response_model=ResultResponse)
 def get_results(user_uuid: str):
     result = ah.get_results(user_uuid)
     if result is None:
