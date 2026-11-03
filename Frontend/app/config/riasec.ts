@@ -1,0 +1,1 @@
+export const MAX_CRITERIOS_POR_DIMENSION = 5

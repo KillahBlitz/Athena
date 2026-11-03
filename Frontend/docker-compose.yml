@@ -1,0 +1,11 @@
+services:
+  athena-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: athena_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+environment:
+  - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}

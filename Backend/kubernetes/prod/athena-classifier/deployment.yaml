@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-classifier
+  namespace: dev-athena
+  labels:
+    app: athena-classifier
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-classifier
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: athena-classifier
+    spec:
+      containers:
+        - name: athena-classifier
+          image: __IMAGE__
+          imagePullPolicy: Always
+          args: ["src/tasks/classifier_event_handler.py"]
+          envFrom:
+            - configMapRef:
+                name: athena-config
+            - secretRef:
+                name: athena-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+      restartPolicy: Always

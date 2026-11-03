@@ -7,6 +7,12 @@ from typing import Any, Mapping
 
 from sqlalchemy import Connection, CursorResult, Engine, TextClause, create_engine, text
 
+DEFAULT_ENGINE_OPTIONS: dict[str, Any] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 1800,
+    "pool_size": 5,
+    "max_overflow": 5,
+}
 
 def create_postgres_engine(
     host: str,
@@ -14,10 +20,11 @@ def create_postgres_engine(
     user: str,
     password: str,
     database: str | None = None,
+    **engine_options: Any,
 ) -> Engine:
     database_suffix: str = f"/{database}" if database else ""
     url: str = f"postgresql://{user}:{password}@{host}:{port}{database_suffix}"
-    return create_engine(url)
+    return create_engine(url, **{**DEFAULT_ENGINE_OPTIONS, **engine_options})
 
 
 def create_postgres_connection(
@@ -38,22 +45,27 @@ def create_postgres_connection(
 
 
 class Repository(ABC):
-    def __init__(self, connection: Connection, table: str) -> None:
-        self.connection: Connection = connection
+    def __init__(self, bind: Engine | Connection, table: str) -> None:
+        self.engine: Engine | None = bind if isinstance(bind, Engine) else None
+        self.connection: Connection | None = bind if isinstance(bind, Connection) else None
         self.table: str = table
 
     def get_connection(self) -> Connection:
-        return self.connection
+        if self.connection is not None:
+            return self.connection
+        return self.engine.connect()
 
     def close(self) -> None:
-        if hasattr(self, "connection") and self.connection is not None and not self.connection.closed:
+        if self.connection is not None and not self.connection.closed:
             self.connection.close()
 
     def commit(self) -> None:
-        self.connection.commit()
+        if self.connection is not None:
+            self.connection.commit()
 
     def rollback(self) -> None:
-        self.connection.rollback()
+        if self.connection is not None:
+            self.connection.rollback()
 
     def execute_query(
         self,
@@ -61,9 +73,17 @@ class Repository(ABC):
         parameters: Mapping[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         statement: TextClause = text(query) if isinstance(query, str) else query
-        result: CursorResult[Any] = self.connection.execute(
-            statement, parameters or {}
-        )
+        if self.engine is not None:
+            with self.engine.begin() as connection:
+                return self._rows(connection.execute(statement, parameters or {}))
+        try:
+            return self._rows(self.connection.execute(statement, parameters or {}))
+        except Exception:
+            self.connection.rollback()
+            raise
+
+    @staticmethod
+    def _rows(result: CursorResult[Any]) -> list[dict[str, Any]]:
         if result.returns_rows:
             return [dict(row) for row in result.mappings().all()]
         return []

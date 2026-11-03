@@ -1,5 +1,12 @@
 openpyxl
+pandas
 polars
 fastexcel
 pydantic
 sqlalchemy
+psycopg2-binary
+markitdown[pdf]
+google-genai
+tqdm
+ipykernel
+jupyterlab

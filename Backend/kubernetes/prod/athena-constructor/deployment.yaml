@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: athena-constructor
+  namespace: dev-athena
+  labels:
+    app: athena-constructor
+    env: devel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: athena-constructor
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: athena-constructor
+    spec:
+      containers:
+        - name: athena-constructor
+          image: __IMAGE__
+          imagePullPolicy: Always
+          args: ["src/tasks/constructor_event_handler.py"]
+          envFrom:
+            - configMapRef:
+                name: athena-config
+            - secretRef:
+                name: athena-secret
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "30m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always

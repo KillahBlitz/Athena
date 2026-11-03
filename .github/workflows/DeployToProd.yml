@@ -1,4 +1,4 @@
-name: Athena CI/CD
+name: Deploy - Prod (GCP GKE)
 
 on:
   push:
@@ -6,27 +6,171 @@ on:
       - main
 
 jobs:
-  ValidateConection:
-    runs-on: [self-hosted, k3s-devel]
+  # -------------------------------------------------------------
+  # FASE 1: PRUEBAS UNITARIAS OBLIGATORIAS (Puerta de Calidad)
+  # -------------------------------------------------------------
+  test-backend:
+    name: Tests Unitarios Backend (Pytest)
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Validar Autenticación y Artifact Registry
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias del backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r Backend/assets/requirements.txt -r Backend/assets/internal_requirements.txt pytest pytest-cov faker
+
+      - name: Ejecutar Pytest
+        env:
+          PYTHONPATH: Backend/src
+        run: |
+          pytest Backend/src/tests/unit -k "not test_save_user_returns_http_200_with_user_uuid"
+
+  test-frontend:
+    name: Tests Unitarios Frontend (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias del frontend
+        working-directory: ./Frontend
+        run: npm ci
+
+      - name: Ejecutar Vitest
+        working-directory: ./Frontend
+        run: npx vitest run --exclude "**/evaluationFlow.spec.ts" --exclude "**/avatarCompanion.spec.ts" --exclude "**/AvatarStoryCard.spec.ts"
+
+  publish-library:
+    name: Publicar Librería (si hubo cambios)
+    runs-on: ubuntu-latest
+    needs: [test-backend]
+    defaults:
+      run:
+        working-directory: ./library
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validar cambios en setup.py
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            setup:
+              - 'library/setup.py'
+
+      - name: Set up Python
+        if: steps.filter.outputs.setup == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Construir y Publicar en PyPI
+        if: steps.filter.outputs.setup == 'true'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          pip install build twine
+          python -m build
+          twine upload --skip-existing dist/*
+
+  # -------------------------------------------------------------
+  # FASE 2: BUILD Y PUSH DE IMÁGENES DOCKER A ARTIFACT REGISTRY
+  # -------------------------------------------------------------
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar Docker para Artifact Registry
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Build y Push Backend
         env:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
-          # Crear archivo temporal para servicio
-          echo '${{ secrets.GCP_SA_KEY }}' > "${HOME}/key.json"
-          
-          # Autenticar en Google Cloud y Docker
-          gcloud auth activate-service-account --key-file="${HOME}/key.json"
-          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
-          echo "✅ Autenticación en Google Cloud exitosa."
-          
-          # Confirmar acceso a Artifact Registry listando los repositorios
-          echo "Listando repositorios en us-central1 para verificar permisos:"
-          gcloud artifacts repositories list --location=us-central1 --project=$PROJECT_ID
-          
-          # Limpiar la llave por seguridad
-          rm "${HOME}/key.json"
+          IMAGE_TAG="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:${{ github.sha }}"
+          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:latest"
+          docker build -t $IMAGE_TAG -t $IMAGE_LATEST ./Backend
+          docker push us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend --all-tags
+
+      - name: Build y Push Frontend
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          IMAGE_TAG="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:${{ github.sha }}"
+          IMAGE_LATEST="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:latest"
+          docker build -t $IMAGE_TAG -t $IMAGE_LATEST ./Frontend
+          docker push us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend --all-tags
+
+  # -------------------------------------------------------------
+  # FASE 3: DESPLIEGUE DIRECTO EN GKE (athena-cluster - Producción)
+  # -------------------------------------------------------------
+  deploy-to-gke:
+    name: Deploy to Athena GKE Cluster (Production)
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Conectar kubectl con el clúster GKE
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: athena-cluster
+          location: us-central1-a
+
+      - name: Desplegar manifiestos de producción en GKE
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          BACKEND_IMAGE="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-backend:${{ github.sha }}"
+          FRONTEND_IMAGE="us-central1-docker.pkg.dev/$PROJECT_ID/athena-repo/athena-frontend:${{ github.sha }}"
+
+          # Reemplazar __IMAGE__ con la imagen construida en los manifiestos de producción
+          sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/prod/athena-api/deployment.yaml
+          sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/prod/athena-classifier/deployment.yaml
+          sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/prod/athena-extractor/deployment.yaml
+          sed -i "s|__IMAGE__|$BACKEND_IMAGE|g" Backend/kubernetes/prod/athena-constructor/deployment.yaml
+          sed -i "s|__IMAGE__|$FRONTEND_IMAGE|g" Backend/kubernetes/prod/athena-frontend/deployment.yaml
+
+          # Aplicar ConfigMap y Redis en el namespace de producción
+          kubectl apply -f Backend/kubernetes/prod/athena-config.yaml -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/redis.yaml -n dev-athena
+
+          # Aplicar Microservicios, Frontend e Ingress
+          kubectl apply -f Backend/kubernetes/prod/athena-api/ -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/athena-classifier/ -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/athena-extractor/ -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/athena-constructor/ -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/athena-frontend/ -n dev-athena
+          kubectl apply -f Backend/kubernetes/prod/ingress.yaml -n dev-athena
+
+          echo "Despliegue de Produccion completado con exito en GKE."

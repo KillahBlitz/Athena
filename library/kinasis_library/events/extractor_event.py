@@ -1,20 +1,19 @@
 from pydantic import BaseModel
 from typing import List
 
+class Objetives(BaseModel):
+    id_objetive: int
+    id_carrera: int
+    porc_evaluation: float
+    description: str
 
-class Hability(BaseModel):
-    id_hablity: int
-    hablity_name: str
-
-class FormData(BaseModel):
-    form_id: int
-    response_s: str
-    response_t: str
-    response_a: str
-    response_r: str
+class RisecAnswer(BaseModel):
+    criteria_list: List[dict[int, str]]
+    open_question: str
 
 class ExtractorEvent(BaseModel):
-    user_uuid: str
-    id_area: int
-    hablities_list: List[Hability]
-    form_list: List[FormData]
+    user_id: int
+    uuid_user: str
+    area_id: int
+    objetives: List[Objetives]
+    questions: dict[int, RisecAnswer]
