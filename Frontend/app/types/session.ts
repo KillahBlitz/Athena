@@ -10,7 +10,7 @@ export interface PersonalData {
 
 export interface UserSessionState {
   personalData: PersonalData
-  selectedAvatarId: string
+  selectedAvatarId: string | null
   selectedAreaId: number | null
   selectedAreaName: string | null
   areaData: BackendQuestionaryResponseDTO | null

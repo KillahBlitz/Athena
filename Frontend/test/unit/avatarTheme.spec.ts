@@ -44,4 +44,10 @@ describe('buildPrimaryScale', () => {
     expect(b).toBeGreaterThan(r!)
     expect(g).toBeGreaterThan(r!)
   })
+
+  it('genera un tono muted que cumple contraste AA sobre blanco', () => {
+    const scale = buildPrimaryScale('#7C3AED')
+    expect(scale.muted).toBeDefined()
+    expect(contrastRatio(scale.muted, WHITE)).toBeGreaterThanOrEqual(4.5)
+  })
 })

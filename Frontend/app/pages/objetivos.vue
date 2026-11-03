@@ -69,8 +69,8 @@
           @next-block="onNextBlock"
           @prev-block="handleBack"
           @review="handleReview"
-          @rating="setRating"
-          @justification="setJustification"
+          @rating="handleRating"
+          @justification="handleJustification"
           @leave="handleLeave"
           @revisit="handleRevisit"
         />
@@ -84,6 +84,7 @@
         :complete="isCurrentBlockComplete"
         :onboarding="showOnboarding"
         :notice="notice"
+        :notice-event="noticeEvent"
         :reminder="pendingMessage"
         :answer-event="answerEvent"
         :revisit-event="revisitEvent"
@@ -110,6 +111,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import type { RatingValue } from '../types/objective'
 import AvatarCompanion from '../components/avatar/AvatarCompanion.vue'
 import { useObjectivesForm } from '../features/objetivos/composables/useObjectivesForm'
 import ObjectiveProgress from '../features/objetivos/components/ObjectiveProgress.vue'
@@ -150,7 +152,12 @@ let answerCount = 0
 
 const confirmingFinish = ref(false)
 
-watch([currentBlock, isCurrentBlockComplete], () => {
+watch(currentBlock, () => {
+  skippedIds.value = []
+  confirmingFinish.value = false
+})
+
+watch(isCurrentBlockComplete, () => {
   confirmingFinish.value = false
 })
 
@@ -197,8 +204,23 @@ watch(currentBlock, (block, previous) => {
 
 const skippedIds = ref<number[]>([])
 const notice = computed(() => describeSkipped(skippedIds.value))
+const noticeEvent = ref<{ text: string, id: number } | null>(null)
 
 const revisitEvent = ref<{ kind: 'answered' | 'rating' | 'justification', id: number } | null>(null)
+
+function handleRating(carreraId: number, rating: RatingValue) {
+  setRating(carreraId, rating)
+  if (!isPending(carreraId) && skippedIds.value.includes(carreraId)) {
+    skippedIds.value = skippedIds.value.filter(id => id !== carreraId)
+  }
+}
+
+function handleJustification(carreraId: number, text: string) {
+  setJustification(carreraId, text)
+  if (!isPending(carreraId) && skippedIds.value.includes(carreraId)) {
+    skippedIds.value = skippedIds.value.filter(id => id !== carreraId)
+  }
+}
 
 function handleRevisit(carreraId: number) {
   const answer = getAnswer(carreraId)
@@ -213,7 +235,11 @@ function handleLeave(carreraId: number) {
     if (!skippedIds.value.includes(carreraId)) {
       skippedIds.value = [...skippedIds.value, carreraId]
     }
+    noticeEvent.value = { text: describeSkipped(skippedIds.value), id: ++answerCount }
     return
+  }
+  if (skippedIds.value.includes(carreraId)) {
+    skippedIds.value = skippedIds.value.filter(id => id !== carreraId)
   }
   const rating = getAnswer(carreraId).valoracion
   if (rating !== null) answerEvent.value = { rating, id: ++answerCount }

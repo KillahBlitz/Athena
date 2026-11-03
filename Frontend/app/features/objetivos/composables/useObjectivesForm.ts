@@ -72,18 +72,20 @@ export function useObjectivesForm() {
 
   const pendingMessage = computed(() => buildMessage(
     pendingNumbers(),
-    (numbers, plural) => plural ? `Te faltan las preguntas ${numbers}.` : `Te falta la pregunta ${numbers}.`,
     (numbers, plural) => plural
-      ? `Las preguntas ${numbers} son de explicación y falta tu justificación.`
-      : `La pregunta ${numbers} es de explicación y falta tu justificación.`
+      ? `Te faltan las preguntas ${numbers} por responder para poder ${isLastBlock.value ? 'finalizar.' : 'continuar.'}`
+      : `Te falta la pregunta ${numbers} por responder para poder ${isLastBlock.value ? 'finalizar.' : 'continuar.'}`,
+    (numbers, plural) => plural
+      ? `Las preguntas ${numbers} son de explicación y falta tu justificación para poder ${isLastBlock.value ? 'finalizar.' : 'continuar.'}`
+      : `La pregunta ${numbers} es de explicación y falta tu justificación para poder ${isLastBlock.value ? 'finalizar.' : 'continuar.'}`
   ))
 
   const describeSkipped = (ids: number[]) => buildMessage(
     pendingNumbers(ids),
     (numbers, plural) => plural ? `Pasaste las preguntas ${numbers}.` : `Pasaste la pregunta ${numbers}.`,
     (numbers, plural) => plural
-      ? `Pasaste las preguntas ${numbers}, que son de explicación.`
-      : `Pasaste la pregunta ${numbers}, que es de explicación.`
+      ? `Pasaste las preguntas ${numbers}, que son de explicación y requieren justificación.`
+      : `Pasaste la pregunta ${numbers}, que es de explicación y requiere justificación.`
   )
 
   const isPending = (carreraId: number) => getPendingReason(carreraId) !== null

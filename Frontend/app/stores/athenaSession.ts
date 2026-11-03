@@ -21,7 +21,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     email: '',
     age: null as number | null,
     termsAccepted: false,
-    selectedAvatarId: DEFAULT_AVATAR.id,
+    selectedAvatarId: null as string | null,
     avatarChosen: false,
     selectedAreaId: null as number | null,
     selectedAreaName: null as string | null,
@@ -48,14 +48,30 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     },
 
     isPersonalDataValid: (state): boolean => {
+      const name = state.name.trim()
+      const isNameValid =
+        name.length >= 3 &&
+        name.length <= 100 &&
+        /[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/.test(name) &&
+        !/^[\d\s]+$/.test(name)
+      const email = state.email.trim()
+      const emailParts = email.split('@')
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const isEmailValid =
+        email.length > 0 &&
+        email.length <= 254 &&
+        emailParts.length === 2 &&
+        (emailParts[0]?.length ?? 0) >= 1 &&
+        (emailParts[0]?.length ?? 0) <= 64 &&
+        emailRegex.test(email)
       const ageNum = Number(state.age)
       return (
-        state.name.trim().length > 0 &&
-        emailRegex.test(state.email.trim()) &&
+        isNameValid &&
+        isEmailValid &&
         !Number.isNaN(ageNum) &&
-        ageNum >= 12 &&
-        ageNum <= 100 &&
+        Number.isInteger(ageNum) &&
+        ageNum >= 13 &&
+        ageNum <= 45 &&
         Boolean(state.selectedAvatarId) &&
         state.selectedAreaId !== null &&
         state.termsAccepted === true

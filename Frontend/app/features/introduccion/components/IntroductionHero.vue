@@ -1,10 +1,6 @@
 <template>
   <section class="intro-hero" aria-labelledby="hero-main-title">
     <div class="hero-copy">
-      <span class="eyebrow reveal" style="--reveal-index: 0">
-        <span>✦</span>
-        <span>ATHENA</span>
-      </span>
       <h1 id="hero-main-title" class="hero-title reveal" style="--reveal-index: 1">Sistema Inteligente de <span class="hero-highlight">Orientación Vocacional</span></h1>
       <h2 class="hero-subtitle reveal" style="--reveal-index: 2">Instituto Politécnico Nacional</h2>
       <p class="hero-lead reveal" style="--reveal-index: 3">

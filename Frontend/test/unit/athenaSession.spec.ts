@@ -81,6 +81,8 @@ describe('athenaSession · bloques de objetivos', () => {
 
     store.setAnswer(101, 4, '')
 
+    expect(store.isCurrentBlockComplete).toBe(false)
+    store.setAnswer(101, 4, 'Me interesa')
     expect(store.isCurrentBlockComplete).toBe(true)
   })
 })

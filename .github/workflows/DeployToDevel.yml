@@ -150,6 +150,8 @@ jobs:
           echo '${{ secrets.GCP_SA_KEY }}' > "${HOME}/key.json"
           gcloud auth activate-service-account --key-file="${HOME}/key.json"
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+          kubectl create secret docker-registry gcr-secret             --docker-server=us-central1-docker.pkg.dev             --docker-username=_json_key             --docker-password='${{ secrets.GCP_SA_KEY }}'             --namespace=dev-athena             --dry-run=client -o yaml | kubectl apply -f -
+          kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-secret"}]}' -n dev-athena
           rm "${HOME}/key.json"
 
       - name: Desplegar manifiestos de desarrollo en K3s

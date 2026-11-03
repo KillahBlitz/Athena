@@ -44,6 +44,7 @@ export function contrastRatio(foreground: string, background: string): number {
 
 const WHITE: RGB = [255, 255, 255]
 const BLACK: RGB = [0, 0, 0]
+const SLATE: RGB = [100, 116, 139]
 const ON_PRIMARY = '#FFFFFF'
 const MIN_TEXT_CONTRAST = 4.5
 const DARKEN_STEPS = 50
@@ -73,6 +74,7 @@ export interface PrimaryScale {
   rgb: string
   accent: string
   onPrimary: string
+  muted: string
 }
 
 export function buildPrimaryScale(baseColor: string): PrimaryScale {
@@ -86,7 +88,8 @@ export function buildPrimaryScale(baseColor: string): PrimaryScale {
     border: rgbToHex(mix(base, WHITE, 0.6)),
     rgb: base.map(c => clamp(c)).join(', '),
     accent: rgbToHex(original),
-    onPrimary: ON_PRIMARY
+    onPrimary: ON_PRIMARY,
+    muted: rgbToHex(mix(base, SLATE, 0.4))
   }
 }
 
@@ -119,4 +122,5 @@ export function applyAvatarTheme(baseColor: string): void {
   root.setProperty('--color-border-focus', scale.primary)
   root.setProperty('--color-accent', scale.accent)
   root.setProperty('--color-on-primary', scale.onPrimary)
+  root.setProperty('--color-primary-muted', scale.muted)
 }
