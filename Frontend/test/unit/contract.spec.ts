@@ -52,6 +52,55 @@ describe('contrato GET /{area_id}', () => {
     wrapper.unmount()
   })
 
+  it('muestra etiqueta opcional al seleccionar valoración 2 o 3', () => {
+    const objective = normalizeObjectives(sample.objetivos)[0]!
+    const wrapper = mount(ObjectiveCard, {
+      props: { objective, answer: { valoracion: 2, justificacion: '' } },
+      global: { stubs: { RatingScale: true } }
+    })
+    expect(wrapper.find('.justification-optional').text()).toBe('· Es opcional')
+    expect(wrapper.find('.justification-required').exists()).toBe(false)
+    wrapper.unmount()
+
+    const wrapper3 = mount(ObjectiveCard, {
+      props: { objective, answer: { valoracion: 3, justificacion: '' } },
+      global: { stubs: { RatingScale: true } }
+    })
+    expect(wrapper3.find('.justification-optional').text()).toBe('· Es opcional')
+    expect(wrapper3.find('.justification-required').exists()).toBe(false)
+    wrapper3.unmount()
+  })
+
+  it('muestra etiqueta obligatorio al seleccionar valoración 4 o 5', () => {
+    const objective = normalizeObjectives(sample.objetivos)[0]!
+    const wrapper = mount(ObjectiveCard, {
+      props: { objective, answer: { valoracion: 4, justificacion: '' } },
+      global: { stubs: { RatingScale: true } }
+    })
+    expect(wrapper.find('.justification-required').text()).toBe('· Obligatorio contestar')
+    expect(wrapper.find('.justification-optional').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('no muestra etiquetas cuando la valoración es 1 o null', () => {
+    const objective = normalizeObjectives(sample.objetivos)[0]!
+    const wrapper1 = mount(ObjectiveCard, {
+      props: { objective, answer: { valoracion: 1, justificacion: '' } },
+      global: { stubs: { RatingScale: true } }
+    })
+    expect(wrapper1.find('.justification-optional').exists()).toBe(false)
+    expect(wrapper1.find('.justification-required').exists()).toBe(false)
+    wrapper1.unmount()
+
+    const wrapperNull = mount(ObjectiveCard, {
+      props: { objective, answer: { valoracion: null, justificacion: '' } },
+      global: { stubs: { RatingScale: true } }
+    })
+    expect(wrapperNull.find('.justification-optional').exists()).toBe(false)
+    expect(wrapperNull.find('.justification-required').exists()).toBe(false)
+    wrapperNull.unmount()
+  })
+
   it('agrupa los objetivos normalizados en bloques de como máximo 6', () => {
     const blocks = createObjectiveBlocks(normalizeObjectives(sample.objetivos), OBJECTIVES_PER_BLOCK)
 

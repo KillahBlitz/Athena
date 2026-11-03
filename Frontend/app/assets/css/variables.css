@@ -14,6 +14,7 @@
   --color-primary-rgb: 124, 58, 237;
   --color-on-primary: #FFFFFF;
   --color-accent: #7C3AED;
+  --color-primary-muted: #7251C6;
 
   --gradient-brand: linear-gradient(120deg, #E879F9 0%, #8B5CF6 48%, #22D3EE 100%);
   --gradient-brand-soft: linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #ECFEFF 100%);

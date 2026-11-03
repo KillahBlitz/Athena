@@ -72,6 +72,7 @@ const props = withDefaults(defineProps<{
   complete?: boolean
   onboarding?: boolean
   notice?: string
+  noticeEvent?: { text: string, id: number } | null
   reminder?: string
   answerEvent?: { rating: number, id: number } | null
   revisitEvent?: { kind: 'answered' | 'rating' | 'justification', id: number } | null
@@ -80,7 +81,7 @@ const props = withDefaults(defineProps<{
   totalBlocks?: number
   midpointPulse?: number
   confirmingFinish?: boolean
-}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, notice: '', reminder: '', answerEvent: null, revisitEvent: null, isLastBlock: false, block: 0, totalBlocks: 0, midpointPulse: 0 })
+}>(), { name: '', complete: false, trackingEnabled: true, onboarding: false, notice: '', noticeEvent: null, reminder: '', answerEvent: null, revisitEvent: null, isLastBlock: false, block: 0, totalBlocks: 0, midpointPulse: 0 })
 
 const emit = defineEmits<{
   'dismiss-onboarding': []
@@ -158,7 +159,7 @@ let remindTimer: ReturnType<typeof setTimeout> | null = null
 const isMidpoint = ref(false)
 let midpointTimer: ReturnType<typeof setTimeout> | null = null
 
-const blockReminder = 'Aún te faltan objetivos por valorar en este bloque. Usa las flechas de la tarjeta para revisarlos antes de continuar.'
+const blockReminder = 'Aún te faltan preguntas por responder o justificar en este bloque para poder continuar.'
 
 const blockPhrases: Record<string, string[]> = {
   atlas: ['Empecemos con calma. Cada valoración dice algo de ti.', 'Vas con buen ritmo. Sigue reflexionando con tranquilidad.', 'La constancia también es sabiduría. Continúa a tu paso.', 'Ya recorriste buen camino. Piensa en lo que de verdad te mueve.', 'Estás por cerrar esta etapa. Confía en lo que has pensado.'],
@@ -240,6 +241,12 @@ watch(() => props.notice, (text, previous) => {
   }
 })
 
+watch(() => props.noticeEvent, (event) => {
+  if (!event || !event.text || props.onboarding || props.stage !== 'objectives') return
+  customMessage.value = event.text
+  reaction.value++
+})
+
 watch(() => props.block, () => {
   customMessage.value = props.notice
   tipIndex.value = 0
@@ -293,6 +300,7 @@ const ratingReactions: Record<number, string[]> = {
 }
 watch(() => props.answerEvent, (event) => {
   if (!event || props.onboarding || props.stage !== 'objectives') return
+  if (isReminding.value || props.notice) return
   const options = ratingReactions[event.rating]
   if (!options) return
   customMessage.value = options[event.id % options.length]!

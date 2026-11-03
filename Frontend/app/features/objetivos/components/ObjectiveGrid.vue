@@ -176,6 +176,10 @@ function onNext() {
     goNext()
     return
   }
+  if (!props.blockComplete) {
+    emit('next-block')
+    return
+  }
   const current = props.block.objectives[activeIndex.value]
   if (current) emit('leave', current.carreraId)
   emit('next-block')

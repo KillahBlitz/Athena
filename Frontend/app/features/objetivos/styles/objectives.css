@@ -934,6 +934,14 @@
   color: var(--color-text-main);
 }
 
+.justification-optional {
+  color: var(--color-primary-muted, color-mix(in srgb, var(--color-primary) 60%, var(--color-text-muted)));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+
 .justification-required {
   color: var(--color-primary);
   font-weight: 700;

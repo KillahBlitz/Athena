@@ -23,6 +23,7 @@
       <label :for="`justification-${objective.carreraId}`" class="justification-label">
         ¿Por qué seleccionaste esta valoración?
         <span v-if="isRequired" class="justification-required">· Obligatorio contestar</span>
+        <span v-else-if="isOptional" class="justification-optional">· Es opcional</span>
       </label>
       <textarea
         :id="`justification-${objective.carreraId}`"
@@ -58,6 +59,7 @@ defineEmits<{
 
 const isDisabled = computed(() => props.answer.valoracion === 1)
 const isRequired = computed(() => isJustificationRequired(props.answer.valoracion))
+const isOptional = computed(() => props.answer.valoracion === 2 || props.answer.valoracion === 3)
 
 const placeholderText = computed(() => {
   if (isDisabled.value) {

@@ -61,8 +61,8 @@ export const useAthenaSessionStore = defineStore('athena-session', {
         email.length > 0 &&
         email.length <= 254 &&
         emailParts.length === 2 &&
-        emailParts[0].length >= 1 &&
-        emailParts[0].length <= 64 &&
+        (emailParts[0]?.length ?? 0) >= 1 &&
+        (emailParts[0]?.length ?? 0) <= 64 &&
         emailRegex.test(email)
       const ageNum = Number(state.age)
       return (

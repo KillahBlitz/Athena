@@ -40,9 +40,9 @@ export function validatePersonalData(form: {
     errors.email = 'El correo no puede contener más de un @.'
   } else if (emailParts.length < 2) {
     errors.email = 'Ingresa un correo electrónico con formato válido (ej. usuario@correo.com).'
-  } else if (emailParts[0].length > 64) {
+  } else if ((emailParts[0]?.length ?? 0) > 64) {
     errors.email = 'El correo no puede tener más de 64 caracteres antes del @.'
-  } else if (emailParts[0].length === 0 || !emailRegex.test(email)) {
+  } else if ((emailParts[0]?.length ?? 0) === 0 || !emailRegex.test(email)) {
     errors.email = 'Ingresa un correo electrónico con formato válido (ej. usuario@correo.com).'
   }
 
