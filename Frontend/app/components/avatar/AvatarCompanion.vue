@@ -176,7 +176,9 @@ const defaultMotivation = computed(() => {
 })
 
 const greeting = computed<Message>(() => {
-  const firstName = props.name.trim().split(/\s+/)[0]
+  const rawFirst = props.name.trim().split(/\s+/)[0] || ''
+
+  const firstName = rawFirst.length > 18 ? rawFirst.slice(0, 16) + '...' : rawFirst
   const base = `${props.avatar.greeting}${firstName ? `, ${firstName}` : ''}! Soy ${props.avatar.name}. ${props.stage === 'waiting' ? 'Te acompaño mientras esperas tus resultados.' : 'Vamos a descubrir lo que te interesa.'}`
 
   if (props.stage === 'objectives') {
@@ -415,13 +417,27 @@ watch(() => props.complete, (complete, previous) => {
 .companion-tracking { width: 72px; }
 .companion-touch:hover img { transform: rotate(-6deg) scale(1.08); }
 .companion-touch:active img { transform: scale(0.93); }
-.companion-dialogue { flex: 1; min-width: 0; }
+.companion-dialogue {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .companion-dialogue strong { color: var(--color-primary); font-size: 0.9rem; }
 .companion-dialogue strong span { font-weight: 400; color: var(--color-text-secondary); }
 .companion-dialogue p { margin-block: 0.5rem 0.85rem; line-height: 1.6; font-size: 0.95rem; }
-.companion-message { margin-block: 0.5rem 0.85rem; }
+.companion-message {
+  margin-block: 0.5rem 0.85rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .companion-message p { margin: 0; line-height: 1.6; font-size: 0.95rem; }
-.companion-message-lead { font-weight: 600; }
+.companion-message-lead {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .companion-message-list {
   display: grid;
   gap: 0.45rem;

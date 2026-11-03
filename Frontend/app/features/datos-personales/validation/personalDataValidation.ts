@@ -17,24 +17,40 @@ export function validatePersonalData(form: {
 }): { isValid: boolean; errors: ValidationErrors } {
   const errors: ValidationErrors = {}
 
-  if (!form.name || form.name.trim().length === 0) {
+  const name = (form.name || '').trim()
+  if (!name || name.length === 0) {
     errors.name = 'El nombre es obligatorio.'
-  } else if (form.name.trim().length < 2) {
-    errors.name = 'Por favor ingresa un nombre válido.'
+  } else if (name.length < 3) {
+    errors.name = 'El nombre debe tener al menos 3 caracteres.'
+  } else if (name.length > 100) {
+    errors.name = 'El nombre no puede exceder los 100 caracteres.'
+  } else if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/.test(name) || /^[\d\s]+$/.test(name)) {
+    errors.name = 'El nombre no puede estar compuesto únicamente por números.'
   }
 
+  const email = (form.email || '').trim()
+  const emailParts = email.split('@')
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!form.email || form.email.trim().length === 0) {
+
+  if (!email || email.length === 0) {
     errors.email = 'El correo electrónico es obligatorio.'
-  } else if (!emailRegex.test(form.email.trim())) {
+  } else if (email.length > 254) {
+    errors.email = 'El correo no puede exceder los 254 caracteres en total.'
+  } else if (emailParts.length > 2) {
+    errors.email = 'El correo no puede contener más de un @.'
+  } else if (emailParts.length < 2) {
+    errors.email = 'Ingresa un correo electrónico con formato válido (ej. usuario@correo.com).'
+  } else if (emailParts[0].length > 64) {
+    errors.email = 'El correo no puede tener más de 64 caracteres antes del @.'
+  } else if (emailParts[0].length === 0 || !emailRegex.test(email)) {
     errors.email = 'Ingresa un correo electrónico con formato válido (ej. usuario@correo.com).'
   }
 
   const ageNum = Number(form.age)
   if (form.age === null || Number.isNaN(ageNum) || String(form.age).trim() === '') {
     errors.age = 'La edad es obligatoria.'
-  } else if (ageNum < 12 || ageNum > 100) {
-    errors.age = 'Ingresa una edad válida (entre 12 y 100 años).'
+  } else if (!Number.isInteger(ageNum) || ageNum < 13 || ageNum > 45) {
+    errors.age = 'Ingresa una edad válida (entre 13 y 45 años).'
   }
 
   if (!form.selectedAvatarId) {

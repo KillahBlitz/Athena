@@ -29,7 +29,19 @@
       />
     </aside>
 
-    <form class="personal-form-card" novalidate @submit.prevent="submit">
+    <form
+      class="personal-form-card"
+      :style="form.selectedAvatarId && selectedAvatar ? {
+        '--color-border-focus': selectedAvatar.theme.primary,
+        '--color-primary': selectedAvatar.theme.primary
+      } : {
+        '--color-border-focus': '#521FA4',
+        '--color-primary': '#521FA4',
+        '--color-primary-rgb': '82, 31, 164'
+      }"
+      novalidate
+      @submit.prevent="submit"
+    >
       <div class="form-card-header">
         <h2 class="form-card-title">Tus datos personales</h2>
         <span class="form-card-required-note">Todos los campos son obligatorios <span class="form-card-required-asterisk" aria-hidden="true">*</span></span>
@@ -40,9 +52,10 @@
           id="name"
           v-model="form.name"
           label="Nombre Completo"
-          placeholder="Valeria Hernández"
+          hint="Ej. Valeria Hernández"
           autocomplete="name"
           :required="true"
+          :maxlength="100"
           :error="touched.name ? errors.name : ''"
           @blur="touch('name')"
         />
@@ -52,9 +65,10 @@
           v-model="form.email"
           type="email"
           label="Correo electrónico"
-          placeholder="valeria.h@email.com"
+          hint="Ej. valeria.h@correo.com"
           autocomplete="email"
           :required="true"
+          :maxlength="254"
           :error="touched.email ? errors.email : ''"
           @blur="touch('email')"
         />
@@ -64,9 +78,10 @@
           v-model="form.age"
           type="number"
           label="Edad"
-          placeholder="18"
-          :min="12"
-          :max="100"
+          hint="Ej. 18 (13 a 45 años)"
+          :min="13"
+          :max="45"
+          :maxlength="2"
           :required="true"
           :error="touched.age ? errors.age : ''"
           @blur="touch('age')"
