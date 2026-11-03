@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from kinasis_library.utils.utils import generate_uuid
+from kinasis_library.utils.config_manager import ConfigManager
 from kinasis_library.services.redis_interface import RedisConsumer
 from kinasis_library.events.extractor_event import ExtractorEvent, Objetives, RisecAnswer
 
@@ -28,6 +29,7 @@ class ApiHandler:
     def __init__(self):
         self._qh = QueryHandler()
         self._ch = CommandHandler()
+        self._stream_extractor = ConfigManager.get_env('STREAM_EXTRACTOR', 'stream:extractor')
         self._rc = RedisConsumer(
             redis_host=redis_credentials["REDIS_HOST"],
             redis_port=redis_credentials["REDIS_PORT"],
@@ -104,7 +106,7 @@ class ApiHandler:
             objetives=objetives,
             questions=anwsers
         )
-        self._rc.event_producer("extractor_stream", event)
+        self._rc.event_producer(self._stream_extractor, event)
         return user_uuid
 
     def get_results(self, user_uuid: str) -> ResultResponse | None:

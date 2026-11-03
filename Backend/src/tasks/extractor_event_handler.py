@@ -20,10 +20,10 @@ def get_dict_envs():
         "REDIS_HOST": cm.get_env("REDIS_HOST"),
         "REDIS_PORT": cm.get_env("REDIS_PORT"),
         "REDIS_PASSWORD": cm.get_env("REDIS_PASSWORD"),
-        "STREAM_NAME": cm.get_env("STREAM_EXTRACTOR"),
+        "STREAM_NAME": cm.get_env("STREAM_EXTRACTOR", "stream:extractor"),
         "GROUP_NAME": cm.get_env("GROUP_EXTRACTOR"),
         "CONSUMER_NAME": cm.get_env("CONSUMER_EXTRACTOR"),
-        "SEND_STREAM_NAME": cm.get_env("STREAM_EXTRACTOR_SEND"),
+        "SEND_STREAM_NAME": cm.get_env("STREAM_EXTRACTOR_SEND", "stream:classifier"),
     }
     return envs
 
@@ -77,4 +77,4 @@ if __name__ == "__main__":
                     consumer_name=envs["CONSUMER_NAME"],count=1,block=2000)
         if event:
             event_result = handler.extractor_task(ExtractorEvent(**event), api_envs)
-            redis_consumer.event_producer("classifier_stream", event_result)
+            redis_consumer.event_producer(envs["SEND_STREAM_NAME"], event_result)
