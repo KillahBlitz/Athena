@@ -135,7 +135,7 @@ def test_generate_user_event_maps_answers_without_mutating_request(fake_api_hand
     assert save_user_payload.model_dump() == original
     assert len(fake_api_handler._rc.events) == 1
     stream_name, event = fake_api_handler._rc.events[0]
-    assert stream_name == "extractor_stream"
+    assert stream_name == "stream:extractor"
     assert event.uuid_user == user_uuid
     assert event.area_id == 1
     with Session(fake_api_handler._ch.engine) as session:
