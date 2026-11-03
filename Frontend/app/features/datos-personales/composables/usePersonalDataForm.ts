@@ -22,7 +22,7 @@ export function usePersonalDataForm() {
     name: session.name,
     email: session.email,
     age: session.age,
-    selectedAvatarId: session.selectedAvatarId || 'nova',
+    selectedAvatarId: (session.avatarChosen && session.selectedAvatarId) ? session.selectedAvatarId : null,
     selectedAreaId: session.selectedAreaId,
     termsAccepted: session.termsAccepted
   })
@@ -57,8 +57,9 @@ export function usePersonalDataForm() {
     })
   })
 
-  const selectedAvatar = computed<Avatar>(() => {
-    return AVATARS.find(a => a.id === form.selectedAvatarId) ?? AVATARS[1] ?? session.selectedAvatar
+  const selectedAvatar = computed<Avatar | null>(() => {
+    if (!form.selectedAvatarId) return null
+    return AVATARS.find(a => a.id === form.selectedAvatarId) ?? null
   })
 
   const validation = computed(() => {
@@ -117,7 +118,13 @@ export function usePersonalDataForm() {
         age: form.age,
         termsAccepted: form.termsAccepted
       })
-      session.selectAvatar(form.selectedAvatarId)
+      if (form.selectedAvatarId) {
+        if (form.selectedAvatarId) {
+
+        session.selectAvatar(form.selectedAvatarId)
+
+      }
+      }
 
       const areaData = await fetchAreaData(form.selectedAreaId)
 
@@ -139,7 +146,11 @@ export function usePersonalDataForm() {
     form.name = session.name
     form.email = session.email
     form.age = session.age
-    if (session.selectedAvatarId) form.selectedAvatarId = session.selectedAvatarId
+    if (session.avatarChosen && session.selectedAvatarId) {
+      form.selectedAvatarId = session.selectedAvatarId
+    } else {
+      form.selectedAvatarId = null
+    }
     if (session.selectedAreaId) form.selectedAreaId = session.selectedAreaId
     form.termsAccepted = session.termsAccepted
 

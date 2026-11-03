@@ -30,6 +30,6 @@ useHead({
 }
 
 .page-heading {
-  margin-bottom: clamp(1rem, 3vw, 2rem);
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
 }
 </style>

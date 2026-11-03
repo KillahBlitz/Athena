@@ -21,7 +21,7 @@ export const useAthenaSessionStore = defineStore('athena-session', {
     email: '',
     age: null as number | null,
     termsAccepted: false,
-    selectedAvatarId: DEFAULT_AVATAR.id,
+    selectedAvatarId: null as string | null,
     avatarChosen: false,
     selectedAreaId: null as number | null,
     selectedAreaName: null as string | null,

@@ -1,7 +1,11 @@
 <template>
   <div class="personal-data-layout">
-    <aside class="companion-panel" aria-label="Acompañamiento vocacional">
-      <div class="companion-badge-pill" role="status">
+    <aside
+      class="companion-panel"
+      :class="{ 'needs-selection': !form.selectedAvatarId }"
+      aria-label="Acompañamiento vocacional"
+    >
+      <div v-if="form.selectedAvatarId && selectedAvatar" class="companion-badge-pill" role="status">
         <span class="companion-badge-avatar" aria-hidden="true">
           <TrackingAvatar v-if="hasChosenAvatar" class="badge-tracking" :avatar-id="selectedAvatar.id" :name="selectedAvatar.name" />
           <img v-else :src="selectedAvatar.image" alt="">
@@ -16,7 +20,13 @@
         @select="chooseAvatar"
       />
 
-      <AvatarCompanion :avatar="selectedAvatar" :name="form.name" stage="personal" :tracking-enabled="hasChosenAvatar" />
+      <AvatarCompanion
+        v-if="form.selectedAvatarId && selectedAvatar"
+        :avatar="selectedAvatar"
+        :name="form.name"
+        stage="personal"
+        :tracking-enabled="hasChosenAvatar"
+      />
     </aside>
 
     <form class="personal-form-card" novalidate @submit.prevent="submit">
@@ -142,7 +152,7 @@ const {
   loadAreas
 } = usePersonalDataForm()
 
-const hasChosenAvatar = ref(false)
+const hasChosenAvatar = ref(Boolean(form.selectedAvatarId))
 function chooseAvatar(id: string) {
   selectAvatar(id)
   hasChosenAvatar.value = true
