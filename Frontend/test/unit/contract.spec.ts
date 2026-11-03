@@ -58,7 +58,7 @@ describe('contrato GET /{area_id}', () => {
       props: { objective, answer: { valoracion: 2, justificacion: '' } },
       global: { stubs: { RatingScale: true } }
     })
-    expect(wrapper.find('.justification-optional').text()).toBe('· Es opcional')
+    expect(wrapper.find('.justification-optional').text()).toBe('· Es opcional contestar')
     expect(wrapper.find('.justification-required').exists()).toBe(false)
     wrapper.unmount()
 
@@ -66,7 +66,7 @@ describe('contrato GET /{area_id}', () => {
       props: { objective, answer: { valoracion: 3, justificacion: '' } },
       global: { stubs: { RatingScale: true } }
     })
-    expect(wrapper3.find('.justification-optional').text()).toBe('· Es opcional')
+    expect(wrapper3.find('.justification-optional').text()).toBe('· Es opcional contestar')
     expect(wrapper3.find('.justification-required').exists()).toBe(false)
     wrapper3.unmount()
   })
