@@ -23,7 +23,7 @@
       <label :for="`justification-${objective.carreraId}`" class="justification-label">
         ¿Por qué seleccionaste esta valoración?
         <span v-if="isRequired" class="justification-required">· Obligatorio contestar</span>
-        <span v-else-if="isOptional" class="justification-optional">· Es opcional</span>
+        <span v-else-if="isOptional" class="justification-optional">· Es opcional contestar</span>
       </label>
       <textarea
         :id="`justification-${objective.carreraId}`"
