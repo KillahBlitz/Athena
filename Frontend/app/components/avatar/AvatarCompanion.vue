@@ -117,16 +117,16 @@ interface RichMessage {
 type Message = string | RichMessage
 
 const objectivesRules: RichMessage['items'] = [
-  { text: 'Responde cada pregunta, según qué tanto te identificas con él.' },
+  { text: 'Responde cada objetivo, según qué tanto te identificas con él.' },
   { tag: '1', text: 'No necesitas escribir nada.' },
   { tag: '2 - 3', text: 'La justificación es opcional.' },
   { tag: '4 - 5', text: 'Es obligatorio explicar tu respuesta.' }
 ]
 const riasecRules: RichMessage['items'] = [
-  { text: 'En cada pregunta, selecciona los criterios con las que te identifiques.' },
-  { text: 'Debes seleccionar por lo menos uno a cinco criterios.' },
+  { text: 'En cada pregunta, selecciona los criterios con los que te identifiques.' },
+  { text: 'Debes seleccionar de uno a cinco criterios.' },
   { text: 'Después responde una pregunta abierta explicando tu elección.' },
-  { text: 'Navega entre las opciones con los botones atras y siguiente.' }
+  { text: 'Navega entre las opciones con los botones atrás y siguiente.' }
 
 ]
 const startHint = 'Toca «Comenzar» cuando quieras empezar.'

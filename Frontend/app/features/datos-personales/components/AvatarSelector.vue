@@ -1,7 +1,7 @@
 <template>
   <div class="avatar-selector-section" :class="{ 'needs-attention': !selectedId }">
     <div class="companion-selector-header">
-      <span class="companion-selector-title">Elige a tu acompañero</span>
+      <span class="companion-selector-title">Elige a tu compañero</span>
       <span v-if="selectedAvatar" class="companion-active-note">{{ selectedAvatar.name }}</span>
       <span v-else class="companion-prompt-badge">
         <span class="prompt-dot" aria-hidden="true" />
