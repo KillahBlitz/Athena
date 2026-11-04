@@ -4,7 +4,7 @@ export const SAMPLE_PROFILE: VocationalProfile = {
   dominantRiasecId: 2,
   title: 'Investigador',
   tagline: 'Encuentras posibilidades donde otros ven preguntas.',
-  summary: 'tu curiosidad abre caminos donde investigar, analizar y crear soluciones.',
+  summary: 'Tu curiosidad abre caminos donde investigar, analizar y crear soluciones.',
   traits: ['Analítico', 'Curioso', 'Reflexivo'],
   scores: [
     { riasecId: 1, score: 0.72 },

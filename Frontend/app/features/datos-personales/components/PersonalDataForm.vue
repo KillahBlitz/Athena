@@ -51,7 +51,7 @@
         <BaseInput
           id="name"
           v-model="form.name"
-          label="Nombre Completo"
+          label="Nombre completo"
           hint="Ej. Valeria Hernández"
           autocomplete="name"
           :required="true"
@@ -108,7 +108,7 @@
           >
           <span>
             Acepto los
-            <a href="#terminos" class="terms-link" @click.prevent="openTermsModal">términos y condiciones.</a>
+            <a href="#terminos" class="terms-link" @click.prevent="openTermsModal">términos y condiciones</a>.
           </span>
         </label>
         <span v-if="touched.terms && errors.terms" class="input-error" role="alert">

@@ -51,7 +51,7 @@ export const AVATARS: Avatar[] = [
   },
   {
     id: 'orion',
-    name: 'Orion',
+    name: 'Orión',
     role: 'Visionario y Explorador',
     image: '/avatars/orion-full.webp',
     greeting: '¡Listo para despegar contigo',

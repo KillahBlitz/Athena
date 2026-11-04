@@ -58,7 +58,7 @@
         <div class="roadmap-step-card reveal" style="--reveal-index: 2">
           <div class="step-badge-number">2</div>
           <h4>Datos personales</h4>
-          <p>Ingresa tus datos, selecciona un comañpero y elige el área académica que deseas explorar.</p>
+          <p>Ingresa tus datos, selecciona un compañero y elige el área académica que deseas explorar.</p>
         </div>
         <div class="roadmap-step-card reveal" style="--reveal-index: 3">
           <div class="step-badge-number">3</div>
