@@ -360,9 +360,12 @@ export const useAthenaSessionStore = defineStore('athena-session', {
             status: this.status
           }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot))
+          return true
         } catch {
+          return false
         }
       }
+      return false
     },
 
     restore() {

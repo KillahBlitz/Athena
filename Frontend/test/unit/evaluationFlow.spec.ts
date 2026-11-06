@@ -124,7 +124,9 @@ describe('envío del cuestionario con UUID', () => {
       await card.get('textarea').setValue(justifications[index])
     }
     expect(cards).toHaveLength(2)
-    await page.get('.block-nav-btn.is-next').trigger('click')
+    await page.get('.stack-nav-btn.is-next').trigger('click')
+    await page.get('.stack-nav-btn.is-next').trigger('click')
+    await page.get('.confirm-finish-btn').trigger('click')
     expect(router.push).toHaveBeenCalledWith('/riasec')
     page.unmount()
 

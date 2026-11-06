@@ -29,3 +29,11 @@ export function saveEvaluationUuid(uuid: string): void {
     throw new Error('No fue posible guardar el identificador de tu evaluación en este navegador.')
   }
 }
+
+export function clearEvaluationUuid(): void {
+  try {
+    localStorage.removeItem(EVALUATION_UUID_KEY)
+  } catch {
+    throw new Error('No fue posible reiniciar la evaluación en este navegador. Tus respuestas se conservan.')
+  }
+}

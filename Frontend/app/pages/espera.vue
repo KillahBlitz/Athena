@@ -47,6 +47,15 @@
       </ol>
 
       <p v-if="statusError" class="waiting-hint" role="status">{{ statusError }}</p>
+      <div v-if="canRetry" class="waiting-retry">
+        <p class="waiting-hint" role="status">
+          Tu evaluación está tardando más de lo esperado. Puedes volver a enviarla con las respuestas que ya guardaste.
+        </p>
+        <BaseButton :loading="isRetrying" @click="retryEvaluation">
+          Reintentar evaluación
+        </BaseButton>
+      </div>
+      <p v-if="retryError" class="waiting-hint" role="alert">{{ retryError }}</p>
       <p class="waiting-hint">
         <span class="waiting-avatar-name">{{ selectedAvatar.name }} · </span>
         <span>Esto puede tardar unos momentos. Puedes dejar esta pantalla abierta.</span>
@@ -57,10 +66,11 @@
 
 <script setup lang="ts">
 import TrackingAvatar from '../components/avatar/TrackingAvatar.vue'
+import BaseButton from '../components/ui/BaseButton.vue'
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAthenaSessionStore } from '../stores/athenaSession'
-import { EVALUATION_UUID_KEY, getEvaluationUuid } from '../utils/evaluationStorage'
+import { EVALUATION_UUID_KEY, getEvaluationUuid, clearEvaluationUuid } from '../utils/evaluationStorage'
 import { hasCachedResults, saveCachedResults } from '../utils/resultsStorage'
 import { useMotionPresets } from '../composables/useMotionPresets'
 import { useResultsApi } from '../composables/useResultsApi'
@@ -95,6 +105,11 @@ const firstName = computed(() => session.name.split(' ')[0] ?? '')
 
 const statusId = ref<GetResultsResponseDTO['status_id'] | null>(null)
 const statusError = ref<string | null>(null)
+const RETRY_AFTER_REQUESTS = 20
+const completedRequests = ref(0)
+const isRetrying = ref(false)
+const retryError = ref<string | null>(null)
+const canRetry = computed(() => completedRequests.value >= RETRY_AFTER_REQUESTS && statusId.value !== 4)
 let timer: ReturnType<typeof setInterval> | null = null
 let pendingRequest: AbortController | null = null
 
@@ -102,6 +117,29 @@ const stopPolling = () => {
   if (timer !== null) clearInterval(timer)
   timer = null
   pendingRequest?.abort()
+}
+
+const retryEvaluation = async () => {
+  if (!canRetry.value || isRetrying.value) return
+  isRetrying.value = true
+  retryError.value = null
+  try {
+    session.$patch({
+      currentRiasecIndex: Math.max(0, session.riasecQuestions.length - 1),
+      status: 'objectives-completed'
+    })
+    // Guarda el formulario antes de liberar la evaluación pendiente.
+    if (!session.persist()) {
+      throw new Error('No pudimos guardar tus respuestas en este navegador. Intenta nuevamente; tu evaluación sigue activa.')
+    }
+    clearEvaluationUuid()
+    stopPolling()
+    await router.replace('/riasec')
+  } catch (error) {
+    retryError.value = error instanceof Error ? error.message : 'No pudimos reintentar la evaluación.'
+  } finally {
+    isRetrying.value = false
+  }
 }
 
 const refreshStatus = async () => {
@@ -130,6 +168,9 @@ const refreshStatus = async () => {
       statusError.value = 'No pudimos consultar el estado de tu evaluación. Volveremos a intentarlo en unos segundos.'
     }
   } finally {
+    if (!request.signal.aborted && getEvaluationUuid() === uuid) {
+      completedRequests.value++
+    }
     pendingRequest = null
   }
 }
@@ -296,6 +337,15 @@ onBeforeUnmount(() => {
   font-size: 0.85rem;
   color: var(--color-text-muted);
   text-wrap: pretty;
+}
+
+.waiting-retry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-block: 1rem;
+  width: 100%;
 }
 
 .waiting-avatar-name {

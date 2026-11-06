@@ -4,8 +4,10 @@ import { createPinia, setActivePinia } from 'pinia'
 import WaitingPage from '../../app/pages/espera.vue'
 import { EVALUATION_UUID_KEY } from '../../app/utils/evaluationStorage'
 import type { GetResultsResponseDTO } from '../../app/types/api'
+import { useAthenaSessionStore } from '../../app/stores/athenaSession'
+import { useRiasecForm } from '../../app/features/riasec/composables/useRiasecForm'
 
-const { router } = vi.hoisted(() => ({ router: { replace: vi.fn() } }))
+const { router } = vi.hoisted(() => ({ router: { replace: vi.fn(), push: vi.fn() } }))
 vi.mock('vue-router', () => ({ useRouter: () => router }))
 vi.mock('../../app/composables/useMotionPresets', () => ({
   useMotionPresets: () => ({ breathe: { animate: {}, transition: {} } })
@@ -21,7 +23,11 @@ function mountPage() {
       stubs: {
         Motion: { template: '<div><slot /></div>' },
         TrackingAvatar: true,
-        AvatarCompanion: true
+        AvatarCompanion: true,
+        BaseButton: {
+          props: ['loading'],
+          template: '<button :disabled="loading"><slot /></button>'
+        }
       }
     }
   })
@@ -35,6 +41,7 @@ beforeEach(() => {
   localStorage.setItem(EVALUATION_UUID_KEY, UUID)
   fetchMock.mockReset()
   router.replace.mockReset()
+  router.push.mockReset()
   vi.stubGlobal('$fetch', fetchMock)
   vi.stubGlobal('useRuntimeConfig', () => ({ public: { apiBase: 'http://localhost:8000' } }))
   vi.stubGlobal('useHead', vi.fn())
@@ -45,10 +52,116 @@ afterEach(() => {
   wrapper = undefined
   localStorage.clear()
   vi.useRealTimers()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
 describe('estado de la evaluación en /espera', () => {
+  it.each(['pending', 'error'])('ofrece reintentar después de 20 consultas terminadas: %s', async (mode) => {
+    if (mode === 'error') fetchMock.mockRejectedValue(new Error('Sin conexión'))
+    else fetchMock.mockResolvedValue({ user_uuid: UUID, status_id: 1 })
+    const page = mountPage()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(18 * 5000)
+    expect(fetchMock).toHaveBeenCalledTimes(19)
+    expect(page.find('.waiting-retry').exists()).toBe(false)
+
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(fetchMock).toHaveBeenCalledTimes(20)
+    expect(page.get('.waiting-retry button').text()).toBe('Reintentar evaluación')
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(fetchMock).toHaveBeenCalledTimes(21)
+  })
+
+  it('conserva las respuestas tras reintentar y permite reenviarlas después de recargar', async () => {
+    const session = useAthenaSessionStore()
+    session.setAreaData({
+      area_id: 1, nom_area: 'Área de prueba',
+      objetivos: [{ id_objetivo: 101, id_carrera: 101, pregunta: 'Construir soluciones' }],
+      preguntas: [1, 2].map(id => ({
+        riasec_id: id, texto_pregunta: '¿Qué disfrutas?', pregunta_abierta: 'Cuéntanos',
+        opciones: { [id * 10]: 'Reparar' }
+      }))
+    })
+    session.$patch({
+      name: 'Prueba', email: 'test@example.com', age: 20, selectedAreaId: 1,
+      answers: { 101: { valoracion: 4, justificacion: 'Me interesa' } },
+      riasecAnswers: {
+        1: { opcionIds: [10], respuestaAbierta: 'Reparo aparatos' },
+        2: { opcionIds: [20], respuestaAbierta: 'Investigo fallas' }
+      }
+    })
+    session.persist()
+    const originalPayload = structuredClone(session.saveUserPayload)
+    fetchMock.mockResolvedValue({ user_uuid: UUID, status_id: 1 })
+    const page = mountPage()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(19 * 5000)
+
+    // Una respuesta tardía de la consulta 21 no debe recuperar la evaluación anterior.
+    let resolve!: (result: GetResultsResponseDTO) => void
+    fetchMock.mockImplementationOnce(() => new Promise<GetResultsResponseDTO>(done => { resolve = done }))
+    await vi.advanceTimersByTimeAsync(5000)
+    const signal = fetchMock.mock.calls[20]![1].signal as AbortSignal
+    await page.get('.waiting-retry button').trigger('click')
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBeNull()
+    expect(session.saveUserPayload).toEqual(originalPayload)
+    expect(signal.aborted).toBe(true)
+    expect(vi.getTimerCount()).toBe(0)
+    expect(router.replace).toHaveBeenCalledExactlyOnceWith('/riasec')
+    resolve({ user_uuid: UUID, status_id: 4, results: [] })
+    await flushPromises()
+    expect(router.replace).toHaveBeenCalledTimes(1)
+
+    page.unmount()
+    wrapper = undefined
+    setActivePinia(createPinia())
+    let form!: ReturnType<typeof useRiasecForm>
+    wrapper = mount({ setup() { form = useRiasecForm(); return () => null } })
+    expect(useAthenaSessionStore().saveUserPayload).toEqual(originalPayload)
+    expect(form.isLastQuestion.value).toBe(true)
+    expect(form.isCurrentComplete.value).toBe(true)
+    fetchMock.mockResolvedValueOnce('USER-retry')
+    await form.handleFinish()
+    expect(fetchMock).toHaveBeenLastCalledWith('http://localhost:8000/save-user', expect.objectContaining({
+      method: 'POST', body: originalPayload
+    }))
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe('USER-retry')
+    expect(router.push).toHaveBeenCalledWith('/espera')
+  })
+
+  it('conserva el UUID y las consultas si no puede persistir las respuestas', async () => {
+    fetchMock.mockResolvedValue({ user_uuid: UUID, status_id: 1 })
+    const page = mountPage()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(19 * 5000)
+    const storage = localStorage
+    vi.stubGlobal('localStorage', {
+      getItem: storage.getItem.bind(storage),
+      removeItem: storage.removeItem.bind(storage),
+      clear: storage.clear.bind(storage),
+      setItem: () => { throw new Error('Quota exceeded') }
+    })
+    await page.get('.waiting-retry button').trigger('click')
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
+    expect(page.get('[role="alert"]').text()).toContain('No pudimos guardar tus respuestas')
+    expect(router.replace).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(fetchMock).toHaveBeenCalledTimes(21)
+  })
+
+  it('abre resultados sin ofrecer reintentar si la consulta 20 termina la evaluación', async () => {
+    for (let i = 0; i < 19; i++) fetchMock.mockResolvedValueOnce({ user_uuid: UUID, status_id: 1 })
+    fetchMock.mockResolvedValueOnce({ user_uuid: UUID, status_id: 4, results: [] })
+    const page = mountPage()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(19 * 5000)
+    expect(page.find('.waiting-retry').exists()).toBe(false)
+    expect(localStorage.getItem(EVALUATION_UUID_KEY)).toBe(UUID)
+    expect(router.replace).toHaveBeenCalledExactlyOnceWith('/resultados')
+  })
+
   it.each([
     [1, 'Conociendo tus intereses'],
     [2, 'Buscando carreras afines a ti'],
